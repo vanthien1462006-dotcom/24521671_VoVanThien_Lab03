@@ -1,6 +1,7 @@
-import { Fragment, useId } from 'react'
+import { Fragment, useId, useState } from 'react'
 import styles from './DeveloperCard.module.css'
 import { SkillBadge } from './SkillBadge.jsx'
+import { getInitials } from '../utils/getInitials.js'
 
 /**
  * Semantic developer profile card.
@@ -19,17 +20,26 @@ export function DeveloperCard({
   ],
 }) {
   const headingId = useId()
+  const [failedUrl, setFailedUrl] = useState(null)
+  const showInitials = failedUrl === avatarUrl
 
   return (
     <article className={styles.card} aria-labelledby={headingId}>
       <header className={styles.header}>
-        <img
-          className={styles.avatar}
-          src={avatarUrl}
-          alt={fullName}
-          width="64"
-          height="64"
-        />
+        {showInitials ? (
+          <span className={styles.initials} role="img" aria-label={fullName}>
+            {getInitials(fullName)}
+          </span>
+        ) : (
+          <img
+            className={styles.avatar}
+            src={avatarUrl}
+            alt={fullName}
+            width="64"
+            height="64"
+            onError={() => setFailedUrl(avatarUrl)}
+          />
+        )}
         <hgroup>
           <h2 id={headingId}>{fullName}</h2>
           <p>{role}</p>
