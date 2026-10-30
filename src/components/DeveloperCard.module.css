@@ -1,23 +1,78 @@
 .card {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  width: 100%;
+  max-width: var(--card-max-width);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-card-bg);
+  color: var(--color-text);
 }
 
 .header {
   display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.header hgroup {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.header h2 {
+  font-size: var(--font-size-lg);
+  line-height: 1.2;
+}
+
+.header p {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 .avatar {
-  display: block;
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
 }
 
 .initials {
-  display: inline-block;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-tier-core-bg);
+  color: var(--color-tier-core-text);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
 }
 
 .metrics {
   display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-1) var(--space-4);
+}
+
+.metrics dt {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.metrics dd {
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .skills {
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
