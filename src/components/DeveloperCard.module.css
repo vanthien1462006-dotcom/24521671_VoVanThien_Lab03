@@ -1,0 +1,19 @@
+.card {
+  display: block;
+}
+
+.header {
+  display: flex;
+}
+
+.avatar {
+  display: block;
+}
+
+.metrics {
+  display: grid;
+}
+
+.skills {
+  display: flex;
+}
