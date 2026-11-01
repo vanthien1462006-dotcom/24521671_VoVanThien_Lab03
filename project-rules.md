@@ -119,3 +119,24 @@ This file is the project constitution. Read it fully before proposing or making 
 - src/ contains source code, styles and tests only. Screenshots, logs and other evidence never go in src/.
 - docs/ has two folders: docs/evidence/<Folder>/ for screenshots and docs/prompt_logs/<Folder>.txt for the AI prompt log, one per assignment. <Folder> is EX1_DeveloperCard, EX2_ScientistDirectory, EX3_PubgMatchTelemetry, HW1_DrumMachine, HW2_GrandPiano88, HW3_KraftonPubgVnArena or HW4_BonusSituationship. Screenshot names follow <code>-NN-<what>.png, for example ex2-05-profiler-one-commit.png.
 - Evidence and prompt logs are added only in docs(evidence) commits, copied from the author's working folders outside the repo. The AI never edits, regenerates or deletes evidence files or prompt logs.
+
+## 15. Exercise 2 rules: forms, lists and focus
+
+### Components
+- The no-div rule of section 3 applies to every file in src/components/, not only DeveloperCard.jsx and SkillBadge.jsx. The same plain-text check covers comments and JSDoc.
+
+### Forms
+- A form with role='search' calls e.preventDefault() in onSubmit so pressing Enter never reloads the page.
+- A <select> uses stable string values (for example 'iq-desc') that map to a sort comparator. Never use the visible option text as the value.
+- If a number input is cleared, valueAsNumber is NaN; fall back to a defined number (0) and never store NaN in state.
+
+### Lists and state
+- Remove list items by id with prev.filter((x) => x.id !== id). Never splice or delete by index.
+- Reset restores the original immutable snapshot passed in as a prop or imported from src/data/. Data modules export frozen arrays (Object.freeze) and are never mutated.
+- Static data constants live in src/data/ as named exports, not inside component files (oxlint only-export-components).
+- Filtering and sorting run in a pure helper in src/utils/ that the component calls during render. The helper never mutates its input.
+
+### Focus after delete
+- When an action removes the element that has focus (for example a Delete button), move focus to a logical target in the same event handler: the next item, else the previous item, else the main input of the widget.
+- Do this with flushSync from react-dom followed by a ref (a ref callback that stores the node in a Map and returns a cleanup that deletes it). Never use useEffect for focus management after a user action.
+- Never move focus on page load or on every render.
