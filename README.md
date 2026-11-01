@@ -104,3 +104,77 @@ These commands only search `src/`, so the `<div` and `http://` text in this READ
 
 - The avatar is loaded from `images.unsplash.com`, so it needs a network connection. Without one, the card shows the author's initials instead of the image.
 - Lighthouse results and the card metrics are measured by the author in the browser, not written by the AI. For the numbers, see report.
+
+## Exercise 2: Interactive Scientist & Pioneer Directory
+
+`ScientistDirectory` renders a `<section>` titled "Pioneer Directory" below the profile card, inside the same `<main>`. It lists six pioneers and lets the user:
+
+- **Search** by name. The match is case-insensitive and ignores leading and trailing spaces.
+- **Filter** by a minimum IQ (default 160).
+- **Sort** by IQ, high to low (`iq-desc`), or by age, young to old (`age-asc`).
+- **Delete** one row, or **Reset** the list to the original six pioneers.
+
+The number of visible pioneers is announced in an `<output role="status" aria-live="polite">`, so screen readers hear the new count after every change.
+
+### Source layout
+
+New files only. The Exercise 1 files are listed above.
+
+```
+src/
+  App.jsx                  <main> with the page <h1>, <DeveloperCard /> and <ScientistDirectory />
+  contracts/
+    scientist-directory.contract.js   JSDoc typedefs only (Pioneer, PioneerSortKey, PioneerFilter, ScientistDirectoryProps)
+  data/
+    smartPeople.js / .test.js         frozen SMART_PEOPLE sample data and its tests
+  components/
+    ScientistDirectory.jsx / .module.css
+  utils/
+    selectVisiblePeople.js / .test.js pure filter and sort helper and its tests
+    pickNextFocusId.js / .test.js     pure helper that picks the focus target after a delete
+```
+
+### Constraints
+
+- No `useEffect` for derived data. The visible rows are computed during render with `selectVisiblePeople(people, { query, minIq, sortBy })`. The only state is the four raw inputs: `people`, `query`, `minIq` and `sortBy`.
+- Sorting uses `.toSorted()` only. Never `.sort()`, which mutates the array in place.
+- State updates are immutable: Delete uses `prev.filter((p) => p.id !== id)`, and Reset restores the frozen `initialData`. Rows are keyed by `p.id`.
+- Every `input` and `select` has a visible `<label htmlFor={id}>`, with the id from `useId()`. The Min IQ input is read with `valueAsNumber`.
+- Focus after delete: focus moves to the Delete button of the next visible row, else the previous one, else the Name input. This happens in the click handler with `flushSync` and refs, not in an effect.
+- Every `button` has `type="button"`. No `div` in any component file.
+
+### Text checks
+
+C1 now covers every component file. C5 is new. C2 to C4 are unchanged from Exercise 1. Each command must print nothing.
+
+| Check | Looks for |
+| --- | --- |
+| C1 | `<div` in every file of `src/components/*.jsx` |
+| C5 | `useEffect` in `ScientistDirectory.jsx`, `selectVisiblePeople.js` and `pickNextFocusId.js`; `.sort(` anywhere in `src/` |
+
+PowerShell:
+
+```powershell
+# C1
+Get-ChildItem src\components -Filter *.jsx | Select-String -Pattern '<div'
+# C5
+Select-String -Path src\components\ScientistDirectory.jsx, src\utils\selectVisiblePeople.js, src\utils\pickNextFocusId.js -Pattern 'useEffect' -ErrorAction SilentlyContinue
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern '\.sort\('
+```
+
+Git Bash:
+
+```sh
+# C1
+grep -n '<div' src/components/*.jsx
+# C5
+grep -n 'useEffect' src/components/ScientistDirectory.jsx src/utils/selectVisiblePeople.js src/utils/pickNextFocusId.js
+grep -rn '\.sort(' src --include='*.jsx' --include='*.js'
+```
+
+### Known limits
+
+- Clearing the Min IQ input sets it to 0, so every pioneer is shown.
+- Reset restores the list only, not the filters. The search text, Min IQ and sort order stay as they are.
+- Render counts, focus behaviour and Lighthouse results are checked by the author in the browser, not written by the AI. For the numbers, see report.
+- WBS deviation: commits ef3dd95 (E2-T08) and a28386e (E2-T09) also add minimal layout rules to ScientistDirectory.module.css (.controls, .status, .reset, .delete) that their WBS rows do not list. The task prompts allowed minimal CSS; the WBS was not edited afterwards (project-rules section 14).
