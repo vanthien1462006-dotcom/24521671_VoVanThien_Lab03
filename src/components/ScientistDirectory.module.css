@@ -20,14 +20,44 @@
 
 .controls {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  margin-block-end: var(--space-3);
+}
+
+.controls label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.controls input,
+.controls select {
+  width: 100%;
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
 }
 
 .status {
   display: block;
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
 }
 
 .reset {
+  min-height: var(--control-min-height);
   margin-block-end: var(--space-3);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
 }
 
 .delete {
