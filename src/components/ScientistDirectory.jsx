@@ -1,7 +1,9 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import styles from './ScientistDirectory.module.css'
 import { SMART_PEOPLE } from '../data/smartPeople.js'
 import { selectVisiblePeople } from '../utils/selectVisiblePeople.js'
+import { pickNextFocusId } from '../utils/pickNextFocusId.js'
 
 /**
  * Directory of pioneers, one row per person.
@@ -16,10 +18,22 @@ export function ScientistDirectory({ initialData = SMART_PEOPLE }) {
   const [query, setQuery] = useState('')
   const [minIq, setMinIq] = useState(160)
   const [sortBy, setSortBy] = useState('iq-desc')
+  const searchInputRef = useRef(null)
+  const deleteButtonsRef = useRef(new Map())
 
   const visible = selectVisiblePeople(people, { query, minIq, sortBy })
 
-  const handleDelete = (id) => setPeople((prev) => prev.filter((p) => p.id !== id))
+  const handleDelete = (id) => {
+    const nextId = pickNextFocusId(
+      visible.map((p) => p.id),
+      id,
+    )
+    flushSync(() => {
+      setPeople((prev) => prev.filter((p) => p.id !== id))
+    })
+    const target = nextId === null ? searchInputRef.current : deleteButtonsRef.current.get(nextId)
+    target?.focus()
+  }
   const handleReset = () => setPeople(initialData)
 
   function handleIqChange(e) {
@@ -32,7 +46,13 @@ export function ScientistDirectory({ initialData = SMART_PEOPLE }) {
       <h2 id={headingId}>Pioneer Directory</h2>
       <form role="search" className={styles.controls} onSubmit={(e) => e.preventDefault()}>
         <label htmlFor={searchId}>Name</label>
-        <input id={searchId} type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input
+          id={searchId}
+          ref={searchInputRef}
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
         <label htmlFor={iqId}>Min IQ</label>
         <input id={iqId} type="number" min="0" value={minIq} onChange={handleIqChange} />
         <label htmlFor={sortId}>Sort by</label>
@@ -59,6 +79,12 @@ export function ScientistDirectory({ initialData = SMART_PEOPLE }) {
             </dl>
             <button
               type="button"
+              ref={(node) => {
+                deleteButtonsRef.current.set(p.id, node)
+                return () => {
+                  deleteButtonsRef.current.delete(p.id)
+                }
+              }}
               className={styles.delete}
               aria-label={`Delete ${p.name}`}
               onClick={() => handleDelete(p.id)}
