@@ -1,0 +1,19 @@
+.directory {
+  max-width: var(--card-max-width);
+}
+
+.list {
+  padding: 0;
+}
+
+.row {
+  padding-block: var(--space-2);
+}
+
+.name {
+  font-weight: 600;
+}
+
+.stats {
+  display: flex;
+}
