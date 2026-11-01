@@ -21,3 +21,15 @@
 .controls {
   display: grid;
 }
+
+.status {
+  display: block;
+}
+
+.reset {
+  margin-block-end: var(--space-3);
+}
+
+.delete {
+  margin-block-start: var(--space-2);
+}

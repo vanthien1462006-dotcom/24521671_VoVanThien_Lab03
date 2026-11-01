@@ -12,12 +12,15 @@ export function ScientistDirectory({ initialData = SMART_PEOPLE }) {
   const searchId = useId()
   const iqId = useId()
   const sortId = useId()
-  const [people] = useState(initialData)
+  const [people, setPeople] = useState(initialData)
   const [query, setQuery] = useState('')
   const [minIq, setMinIq] = useState(160)
   const [sortBy, setSortBy] = useState('iq-desc')
 
   const visible = selectVisiblePeople(people, { query, minIq, sortBy })
+
+  const handleDelete = (id) => setPeople((prev) => prev.filter((p) => p.id !== id))
+  const handleReset = () => setPeople(initialData)
 
   function handleIqChange(e) {
     const value = e.target.valueAsNumber
@@ -38,6 +41,12 @@ export function ScientistDirectory({ initialData = SMART_PEOPLE }) {
           <option value="age-asc">Age (young to old)</option>
         </select>
       </form>
+      <output role="status" aria-live="polite" className={styles.status}>
+        {`Found ${visible.length} ${visible.length === 1 ? 'pioneer' : 'pioneers'}`}
+      </output>
+      <button type="button" className={styles.reset} onClick={handleReset}>
+        Reset list
+      </button>
       <ul className={styles.list}>
         {visible.map((p) => (
           <li key={p.id} className={styles.row}>
@@ -48,6 +57,14 @@ export function ScientistDirectory({ initialData = SMART_PEOPLE }) {
               <dt>IQ</dt>
               <dd>{p.iq}</dd>
             </dl>
+            <button
+              type="button"
+              className={styles.delete}
+              aria-label={`Delete ${p.name}`}
+              onClick={() => handleDelete(p.id)}
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
