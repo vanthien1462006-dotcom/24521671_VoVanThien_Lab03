@@ -11,7 +11,7 @@ export function DeveloperCard({
   fullName = 'Võ Văn Thiện',
   role = 'Student at the University of Information Technology – VNU-HCM',
   avatarUrl = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=240',
-  metrics = { commits: 18, vdomNodes: 0, a11yScore: 100 },
+  metrics = { commits: 41, vdomNodes: 0, a11yScore: 100 },
   skills = [
     { id: 'sk-1', name: 'React 19 createRoot + StrictMode', tier: 'Core' },
     { id: 'sk-2', name: 'Hooks: useState, useEffect, useId', tier: 'Core' },
