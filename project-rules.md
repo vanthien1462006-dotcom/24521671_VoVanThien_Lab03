@@ -140,3 +140,27 @@ This file is the project constitution. Read it fully before proposing or making 
 - When an action removes the element that has focus (for example a Delete button), move focus to a logical target in the same event handler: the next item, else the previous item, else the main input of the widget.
 - Do this with flushSync from react-dom followed by a ref (a ref callback that stores the node in a Map and returns a cleanup that deletes it). Never use useEffect for focus management after a user action.
 - Never move focus on page load or on every render.
+
+## 16. Exercise 3 rules: async state, abort and retry
+
+### State machine
+- Async UI state is one object { status, data, error } with status 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR', built only through the helpers in src/utils/telemetryView.js. Never use separate isLoading / isError booleans.
+- data is not null only in SUCCESS and error is not null only in ERROR.
+
+### Fetch and abort
+- Network access lives in one helper in src/utils/. Components never call fetch directly.
+- Every effect that fetches creates a new AbortController, passes { signal } to the helper and returns () => controller.abort().
+- A rejection whose name is 'AbortError' is a normal outcome: return without changing state. It never shows an error banner.
+- Build request URLs only from a whitelist of known ids. Validate the response (status and payload id) before using it.
+- Randomness (simulated packet loss) and fetch are injected parameters so unit tests are deterministic and never use the real network.
+
+### Effects and dependencies
+- react/exhaustive-deps is enabled. Never silence it with a disable comment or by removing a dependency; restructure the code instead.
+- Retry is a counter in state (retryTick) listed in the effect dependencies. Never call the fetch helper from the click handler.
+- No setInterval in committed code unless a task asks for it; any interval is cleared in the effect cleanup.
+
+### Loading, errors and focus
+- Loading uses a skeleton with aria-busy='true' and the same minimum block size as the loaded content, so the layout never shifts (CLS 0.00).
+- Errors render in an element with role='alert' and a type='button' retry control. Never window.alert().
+- When the control that has focus disappears (for example a retry button), move focus to a stable control in the same click handler. Never with useEffect.
+- Every animation stops under prefers-reduced-motion: reduce.
