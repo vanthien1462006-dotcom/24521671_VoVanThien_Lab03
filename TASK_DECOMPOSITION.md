@@ -305,3 +305,111 @@ Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern '\.sort\
 - Device toolbar at 375px and 320px: no horizontal scroll.
 - Console: no warning or error.
 - Lighthouse on the preview build (`npm run preview`, port 4173), mobile and desktop.
+
+## Part 4. Exercise 3: KRAFTON PUBG VN Live Match Telemetry
+
+### 4.1 Overview
+`PubgMatchTelemetry` (src/components/PubgMatchTelemetry.jsx) shows live PVS telemetry for three Vietnamese squads (CES, TE, GE). A selector inside the component switches squads. A four-state machine (IDLE, LOADING, SUCCESS, ERROR) drives the view. Each squad switch or retry starts a real fetch of a local JSON file with an AbortController; the previous request is aborted in the effect cleanup. 35% simulated packet loss leads to an accessible error alert with a Reconnect Satellite button. Source: slides 20 to 23.
+
+### 4.2 Contract
+```js
+/**
+ * @typedef {Object} PubgSquad
+ * @property {string} id        Stable id: 'ces', 'te' or 'ge'. React key and payload file name.
+ * @property {string} name
+ * @property {string} map
+ * @property {string} phase
+ * @property {number} alive
+ * @property {number} kills
+ * @property {string} wwcdProb  Display string from the slide, for example '68%'.
+ * @property {string} status
+ */
+
+/**
+ * @typedef {'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'} TelemetryStatus
+ */
+
+/**
+ * @typedef {Object} TelemetryView
+ * @property {TelemetryStatus} status
+ * @property {PubgSquad | null} data  Not null only when status is 'SUCCESS'.
+ * @property {string | null} error    Not null only when status is 'ERROR'.
+ */
+
+/**
+ * @typedef {Object} FetchTelemetryOptions
+ * @property {AbortSignal} [signal]
+ * @property {typeof fetch} [fetchImpl]  Defaults to the global fetch. Injected in tests.
+ * @property {() => number} [random]     Defaults to Math.random. Injected in tests.
+ */
+
+/**
+ * @typedef {Object} PubgMatchTelemetryProps
+ * @property {string} [initialSquadId]  Defaults to 'te'. An unknown id falls back to 'te'.
+ */
+
+export {};
+```
+
+### 4.3 Invariants
+1. The component is one `<section aria-labelledby>` with `<h2>KRAFTON PUBG VN Live Telemetry</h2>`. The squad name is an `<h3>` inside the success `<article>`.
+2. The view is always one of four shapes: `IDLE {data: null, error: null}`, `LOADING {null, null}`, `SUCCESS {data, null}`, `ERROR {null, message}`. Built only through `src/utils/telemetryView.js`. No `isLoading` / `isError` booleans.
+3. State: `squadId`, `view` and (from E3-T12) `retryTick`. Nothing derived is stored.
+4. Exactly one `useEffect`. It creates a new `AbortController`, sets `LOADING`, calls `fetchKraftonPubgTelemetry(squadId, { signal })` and returns `() => controller.abort()`. Dependencies are exactly `[squadId]` in E3-T09 and `[squadId, retryTick]` from E3-T12.
+5. A rejection whose `name` is `'AbortError'` never changes the view.
+6. The payload URL is built only from a whitelisted id: `/telemetry/${id}.json`. An unknown id rejects before any request.
+7. Packet loss: after a successful HTTP response, `random() < 0.35` rejects with an `Error`. Exactly `0.35` passes. A non-OK HTTP status rejects. The payload must match the requested id.
+8. IDLE, LOADING, SUCCESS and ERROR are drawn in a panel with the same minimum block size, `--telemetry-panel-min-height: 220px`, so switching states shifts nothing (CLS 0.00).
+9. Error UI: `<section role="alert">` with "Blue-Zone Link Lost: {message}" and a `<button type="button">Reconnect Satellite</button>` that runs `setRetryTick((t) => t + 1)`, then moves focus to the selected squad button.
+10. Squad buttons: `<button type="button" aria-pressed>`, keys are squad ids, label shows the full name. Clicking the selected squad starts nothing new.
+11. The skeleton pulse stops under `prefers-reduced-motion: reduce`.
+12. No `window.alert`, no `setInterval`, `fetch(` only in the fetch helper.
+
+### 4.4 Data
+| id | name | map | phase | alive | kills | wwcdProb | status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `ces` | Cerberus Esports | Erangel | Phase 6 | 4 | 14 | `'68%'` | In Safe Zone |
+| `te` | The Expendables | Miramar | Phase 7 | 4 | 18 | `'82%'` | Holding High Ground |
+| `ge` | Genius Esports | Taego | Phase 5 | 3 | 9 | `'41%'` | Rotating Blue Zone |
+
+`src/data/pubgVnSquads.js` exports them frozen as `PUBG_VN_SQUADS` (selector order). Each `public/telemetry/<id>.json` holds exactly the matching object. A test proves the two never drift.
+
+### 4.5 Expected results of fetchKraftonPubgTelemetry
+| Input | Expected |
+| --- | --- |
+| `'te'`, `random = () => 0.9`, fake fetch returns the `te` payload | Resolves to the `te` object; fake fetch was called once with `/telemetry/te.json` and the same `signal` |
+| `'ces'`, `random = () => 0.1` | Rejects with an `Error` whose message mentions packet loss; `name` is not `'AbortError'` |
+| `random = () => 0.35` | Resolves (boundary passes) |
+| `'xyz'` | Rejects; fake fetch was **not** called |
+| fake fetch returns status 503 | Rejects with an `Error` mentioning 503 |
+| payload id differs from the requested id | Rejects |
+| signal already aborted (fake fetch honours the signal) | Rejects with `name === 'AbortError'` |
+
+### 4.6 Work breakdown structure
+| ID | Task | File | Acceptance criteria | Commit message |
+| --- | --- | --- | --- | --- |
+| E3-T01 | Write this WBS for Exercise 3 | `TASK_DECOMPOSITION.md` | Part 4 appended. Parts 1 to 3 unchanged. 22 rows. Commit lists one file. | `docs(spec): add ex3 task decomposition` |
+| E3-T02 | Enable the exhaustive-deps lint rule | `.oxlintrc.json` | `"react/exhaustive-deps": "error"` added to `rules`. Nothing else changes. `npm run lint` passes on the current code. | `chore(lint): enable exhaustive-deps rule` |
+| E3-T03 | Add the Exercise 3 rules | `project-rules.md` | New section 16 appended. Sections 1 to 15 unchanged. | `docs(rules): add ex3 async, abort and retry rules` |
+| E3-T04 | Add the JSDoc contract | `src/contracts/pubg-match-telemetry.contract.js` | Exactly the five typedefs of section 4.2 and `export {};`. No function, no logic. Build and lint pass. | `docs(ex3): add PubgMatchTelemetry JSDoc contract` |
+| E3-T05 | Add the squad data, test first | `src/data/pubgVnSquads.js`, `src/data/pubgVnSquads.test.js` | First test run fails because the module is missing. Named export `PUBG_VN_SQUADS` with the three rows of section 4.4, in that order, values unchanged. Array and entries frozen. Tests check count, unique ids, field types and frozen state. Build, lint and test pass. | `feat(ex3): add PUBG VN squad data with stable IDs` |
+| E3-T06 | Add the static payloads, test first | `public/telemetry/ces.json`, `public/telemetry/te.json`, `public/telemetry/ge.json`, `src/data/telemetryPayloads.test.js` | First test run fails because the files are missing. Each JSON file holds exactly the matching `PUBG_VN_SQUADS` entry. The test reads the three files with `node:fs` and deep-equals them to the data. Build, lint and test pass. | `feat(ex3): add static squad telemetry payloads` |
+| E3-T07 | Add the view state helpers, test first | `src/utils/telemetryView.js`, `src/utils/telemetryView.test.js` | First test run fails because the module is missing. Named exports `IDLE_VIEW`, `loadingView()`, `successView(data)`, `errorView(message)`. Every result is frozen and has exactly `status`, `data`, `error` with the shapes of invariant 2. Tests cover all four. Build, lint and test pass. | `feat(ex3): add telemetry view state helpers with unit tests` |
+| E3-T08 | Add the abortable fetch helper, test first | `src/utils/fetchKraftonPubgTelemetry.js`, `src/utils/fetchKraftonPubgTelemetry.test.js` | First test run fails because the module is missing. Named exports `PACKET_LOSS_RATE` (0.35), `isKnownSquadId(id)` and `fetchKraftonPubgTelemetry(squadId, options)`. Every row of section 4.5 passes, using an injected fake fetch and random. No real network in tests. Build, lint and test pass. | `feat(ex3): add abortable telemetry fetch with packet loss` |
+| E3-T09 | Implement the 4-state telemetry with AbortController | `src/components/PubgMatchTelemetry.jsx`, `src/components/PubgMatchTelemetry.module.css` | Named export, `initialSquadId = 'te'` with fallback. Section with h2, squad buttons (type button, aria-pressed, key id), state `squadId` and `view`. One `useEffect` with deps `[squadId]`: new AbortController, `loadingView()`, fetch with signal, `successView` or `errorView`, AbortError guard, cleanup abort. SUCCESS renders `<article aria-live="polite">` with h3 and a `dl` from `Object.entries` with Fragment keys. ERROR renders a paragraph with the message. CSS Module minimal. Build, lint, test pass. C1 to C7 as expected. | `feat(ex3): implement PUBG VN 4-state telemetry & AbortController` |
+| E3-T10 | Render the telemetry inside `<main>` | `src/App.jsx` | `<PubgMatchTelemetry />` added after `<ScientistDirectory />` with default props. Nothing else changes. Build and lint pass. | `feat(ex3): render PubgMatchTelemetry inside main landmark` |
+| E3-T11 | Describe Exercise 3 in the page metadata | `index.html` | Only the meta description changes and now names all three exercises. Title unchanged. Build passes. | `chore(page): describe exercise 3 in page metadata` |
+| E3-T12 | Add the skeleton UI and the retry alert | `src/components/PubgMatchTelemetry.jsx`, `src/components/PubgMatchTelemetry.module.css` | IDLE renders the panel with "Radar idle.". LOADING renders `<section aria-busy="true">` "Syncing KRAFTON Radar...". ERROR renders `<section role="alert">` with "Blue-Zone Link Lost: {message}" and a `<button type="button">Reconnect Satellite</button>` that runs `setRetryTick((t) => t + 1)`. State `retryTick` added; deps exactly `[squadId, retryTick]`. Minimal CSS only. Build, lint, test pass. C1 to C7 as expected. | `feat(ex3): add skeleton UI & retry alert` |
+| E3-T13 | Return focus after retry | `src/components/PubgMatchTelemetry.jsx` | The Reconnect handler increments `retryTick` and moves focus to the selected squad button through a ref. No `useEffect` added. Exactly one `useEffect` remains. Build, lint, test pass. | `feat(a11y): return focus to selected squad after retry` |
+| E3-T14 | Add the telemetry panel tokens | `src/styles/tokens.css` | Only additions in `:root`: `--telemetry-panel-min-height: 220px`, skeleton colors that reuse existing color tokens, pulse duration. Existing tokens unchanged. Build passes. C4 prints nothing. | `style(ex3): add telemetry panel tokens` |
+| E3-T15 | Add the blue-zone skeleton pulse | `src/components/PubgMatchTelemetry.module.css` | Skeleton uses the tokens, has the panel min height and a pulse animation that is disabled under `prefers-reduced-motion: reduce`. JSX untouched. C4 prints nothing. | `style(ex3): add blue-zone skeleton pulse` |
+| E3-T16 | Add the responsive 375px layout | `src/components/PubgMatchTelemetry.module.css` | Mobile first. Section styled like the other cards. All four state panels share the min height. Squad buttons wrap, targets at least 24px (44px used). Tokens only, no nowrap. JSX untouched. User confirms no horizontal scroll at 375px and 320px. | `style(ex3): add responsive 375px telemetry layout` |
+| E3-T17 | Fix Lighthouse findings (conditional) | Files named by the finding | Only if Lighthouse reports an Accessibility finding. One fix, no refactor. No commit if there is no finding. | `fix(a11y): <finding>` |
+| E3-T18 | Document Exercise 3 in the README | `README.md` | New "Exercise 3" section after Exercise 2: features, source layout, constraints, C6/C7 commands, Known limits (D7 prop name, StrictMode cancel on load, aria-live note, randomness). Earlier sections unchanged. No scores or measured numbers. | `docs(readme): document ex3 usage and checks` |
+| E3-T19 | Record AI failures (conditional) | `AI_FAILURE_AUDIT.md` | Only real Exercise 3 defects pasted by the user are appended after the existing entry, numbered from #02. Each has Prompt, AI Code, Bug, DevTools Proof, Engineering Fix with commit hash. No commit if none was logged. | `docs(audit): record ex3 ai failures` |
+| E3-T20 | Sync the commits metric again | `src/components/DeveloperCard.jsx` | Only `metrics.commits` changes, to `git rev-list --count HEAD` plus 2 (this commit and the E3-T22 evidence commit), supplied by the author. Build, lint, test pass. | `fix(ex1): sync commits metric after ex3` |
+| E3-T21 | Final audit | No file changes | build, lint, test, C1 to C7 pass; `git log` matches Parts 1 to 4 row by row. No commit. | (no commit) |
+| E3-T22 | Archive Exercise 3 evidence | `docs/evidence/EX3_PubgMatchTelemetry/*.png`, `docs/prompt_logs/EX3_PubgMatchTelemetry.txt` | Screenshots and the prompt log copied from the author's folders, names unchanged. After the commit `git rev-list --count HEAD` equals the card value. | `docs(evidence): archive ex3 screenshots and prompt log` |
+
+### 4.7 Verification gate
+Before every commit: npm run build, npm run lint, npm test (when tests exist), C1 to C6 print nothing, C7 prints its three lines from E3-T09 on. Browser checks are done by the user with Network throttling Slow 3G.
