@@ -178,3 +178,80 @@ grep -rn '\.sort(' src --include='*.jsx' --include='*.js'
 - Reset restores the list only, not the filters. The search text, Min IQ and sort order stay as they are.
 - Render counts, focus behaviour and Lighthouse results are checked by the author in the browser, not written by the AI. For the numbers, see report.
 - WBS deviation: commits ef3dd95 (E2-T08) and a28386e (E2-T09) also add minimal layout rules to ScientistDirectory.module.css (.controls, .status, .reset, .delete) that their WBS rows do not list. The task prompts allowed minimal CSS; the WBS was not edited afterwards (project-rules section 14).
+
+## Exercise 3: KRAFTON PUBG VN Live Match Telemetry
+
+`PubgMatchTelemetry` renders a `<section>` titled "KRAFTON PUBG VN Live Telemetry" below the directory, inside the same `<main>`. It shows live telemetry for three Vietnamese squads (CES, TE, GE) with a squad selector. A four-state machine (`IDLE`, `LOADING`, `SUCCESS`, `ERROR`) drives the view. Every squad switch or retry fetches a local JSON file with an `AbortController` and aborts the previous request. 35% simulated packet loss shows a `role="alert"` panel with a **Reconnect Satellite** button. A 220px Blue-Zone skeleton keeps the layout stable while the data loads.
+
+### Source layout
+
+New files only. The Exercise 1 and 2 files are listed above.
+
+```
+public/
+  telemetry/
+    ces.json, te.json, ge.json        static squad payloads served by Vite
+src/
+  App.jsx                  <main> with the page <h1>, <DeveloperCard />, <ScientistDirectory /> and <PubgMatchTelemetry />
+  contracts/
+    pubg-match-telemetry.contract.js  JSDoc typedefs only (PubgSquad, TelemetryStatus, TelemetryView, FetchTelemetryOptions, PubgMatchTelemetryProps)
+  data/
+    pubgVnSquads.js / .test.js        frozen PUBG_VN_SQUADS data and its tests
+    telemetryPayloads.test.js         proves public/telemetry/*.json match PUBG_VN_SQUADS
+  components/
+    PubgMatchTelemetry.jsx / .module.css
+  utils/
+    telemetryView.js / .test.js       frozen view state helpers and their tests
+    fetchKraftonPubgTelemetry.js / .test.js   abortable fetch with simulated packet loss and its tests
+```
+
+The new design tokens are in `src/styles/tokens.css`, in the "Telemetry (Exercise 3)" group.
+
+### Constraints
+
+- The async UI state is one `view` object `{ status, data, error }`, built only by the `telemetryView` helpers. No `isLoading` / `isError` booleans.
+- Exactly one `useEffect`, with dependencies `[squadId, retryTick]`.
+- Each effect run creates a new `AbortController` and returns the cleanup `() => controller.abort()`.
+- A rejection whose name is `AbortError` is ignored: it never changes the view and never shows the error panel.
+- `fetch` is called only in `fetchKraftonPubgTelemetry`. Request URLs are built only from whitelisted squad ids.
+- `react/exhaustive-deps` is enabled in `.oxlintrc.json`.
+- After **Reconnect Satellite**, focus moves to the selected squad button in the click handler, not in an effect.
+- The skeleton pulse stops under `prefers-reduced-motion: reduce`.
+
+### Text checks
+
+C6 and C7 are new. C1 to C5 are unchanged from Exercises 1 and 2.
+
+PowerShell:
+
+```powershell
+# C6. No boolean soup, no setInterval, fetch( only in the fetch helper (must print nothing)
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern 'isLoading|isError|setInterval\('
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike 'fetchKraftonPubgTelemetry*' | Select-String -Pattern '\bfetch\('
+# C7. Abort contract present (must print 3 lines)
+Select-String -Path src\components\PubgMatchTelemetry.jsx -Pattern 'new AbortController\(\)|controller\.abort\(\)|AbortError'
+```
+
+Git Bash:
+
+```sh
+# C6. No boolean soup, no setInterval, fetch( only in the fetch helper (must print nothing)
+grep -rnE 'isLoading|isError|setInterval\(' src --include='*.jsx' --include='*.js'
+grep -rn '\bfetch(' src --include='*.jsx' --include='*.js' | grep -v 'fetchKraftonPubgTelemetry'
+# C7. Abort contract present (must print 3 lines)
+grep -nE 'new AbortController\(\)|controller\.abort\(\)|AbortError' src/components/PubgMatchTelemetry.jsx
+```
+
+### How to test in the browser
+
+- In DevTools, set Network throttling to Slow 3G (newer Chrome calls it 3G).
+- Click CES, TE and GE quickly. The earlier requests are marked (canceled) in the Network tab, and no error banner appears.
+- To force the error state, right-click a telemetry request in the Network tab and choose Block request URL. Then unblock it in Network request blocking and press **Reconnect Satellite**.
+
+### Known limits
+
+- The component takes initialSquadId instead of the slide's squadId prop, because the selector lives inside the component (slides 22 and 23 require clicking squads).
+- In development, StrictMode runs the effect twice on mount, so one request is cancelled right after page load. This is expected and proves the cleanup works.
+- The success article uses aria-live as in slide 23; a live region inserted together with its content may not be announced by every screen reader.
+- Packet loss is random (35%), so a page load can end in the error state.
+- oxlint reports one warning, react(set-state-in-effect), for setView(loadingView()) inside the effect. The line is kept on purpose: it is the slide 23 reference pattern, and moving LOADING into the event handlers would make the IDLE state unreachable.
