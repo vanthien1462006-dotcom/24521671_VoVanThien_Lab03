@@ -46,4 +46,11 @@
   --color-focus-ring: var(--color-accent);
   --color-control-bg: var(--color-card-bg);
   --color-control-text: var(--color-text);
+
+  /* Telemetry (Exercise 3) */
+  --telemetry-panel-min-height: 220px;
+  --color-skeleton: var(--color-tier-core-bg);
+  --color-skeleton-text: var(--color-tier-core-text);
+  --color-alert-border: var(--color-accent);
+  --skeleton-pulse-duration: 1.5s;
 }
