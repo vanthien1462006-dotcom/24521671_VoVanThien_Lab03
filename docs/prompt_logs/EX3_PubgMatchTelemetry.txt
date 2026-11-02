@@ -1,0 +1,2510 @@
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\lab3-react19\AI_FAILURE_AUDIT.md in the
+  IDE. This may or may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md. Nhiệm vụ DUY NHẤT:
+  thêm Part 4 (Exercise 3) vào CUỐI TASK_DECOMPOSITION.md. Không sửa Part 1, 2,
+  3. Không sửa file khác. Chưa viết code.
+
+  Thêm ĐÚNG nội dung nằm giữa hai dòng BEGIN và END dưới đây (tiếng Anh, giữ
+  nguyên từng chữ, không thêm không bớt; hai dòng BEGIN/END không chép vào
+  file):
+
+  ===== BEGIN =====
+  ## Part 4. Exercise 3: KRAFTON PUBG VN Live Match Telemetry
+
+  ### 4.1 Overview
+  `PubgMatchTelemetry` (src/components/PubgMatchTelemetry.jsx) shows live PVS
+  telemetry for three Vietnamese squads (CES, TE, GE). A selector inside the
+  component switches squads. A four-state machine (IDLE, LOADING, SUCCESS,
+  ERROR) drives the view. Each squad switch or retry starts a real fetch of a
+  local JSON file with an AbortController; the previous request is aborted in
+  the effect cleanup. 35% simulated packet loss leads to an accessible error
+  alert with a Reconnect Satellite button. Source: slides 20 to 23.
+
+  ### 4.2 Contract
+  ```js
+  /**
+   * @typedef {Object} PubgSquad
+   * @property {string} id        Stable id: 'ces', 'te' or 'ge'. React key and
+  payload file name.
+   * @property {string} name
+   * @property {string} map
+   * @property {string} phase
+   * @property {number} alive
+   * @property {number} kills
+   * @property {string} wwcdProb  Display string from the slide, for example
+  '68%'.
+   * @property {string} status
+   */
+
+  /**
+   * @typedef {'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'} TelemetryStatus
+   */
+
+  /**
+   * @typedef {Object} TelemetryView
+   * @property {TelemetryStatus} status
+   * @property {PubgSquad | null} data  Not null only when status is 'SUCCESS'.
+   * @property {string | null} error    Not null only when status is 'ERROR'.
+   */
+
+  /**
+   * @typedef {Object} FetchTelemetryOptions
+   * @property {AbortSignal} [signal]
+   * @property {typeof fetch} [fetchImpl]  Defaults to the global fetch.
+  Injected in tests.
+   * @property {() => number} [random]     Defaults to Math.random. Injected in
+  tests.
+   */
+
+  /**
+   * @typedef {Object} PubgMatchTelemetryProps
+   * @property {string} [initialSquadId]  Defaults to 'te'. An unknown id falls
+  back to 'te'.
+   */
+
+  export {};
+  ```
+
+  ### 4.3 Invariants
+  1. The component is one `<section aria-labelledby>` with `<h2>KRAFTON PUBG VN
+  Live Telemetry</h2>`. The squad name is an `<h3>` inside the success
+  `<article>`.
+  2. The view is always one of four shapes: `IDLE {data: null, error: null}`,
+  `LOADING {null, null}`, `SUCCESS {data, null}`, `ERROR {null, message}`.
+  Built only through `src/utils/telemetryView.js`. No `isLoa
+  ──── (50 lines hidden) ──────────────────────────────────────────────────────
+  Squad buttons wrap, targets at least 24px (44px used). Tokens only, no
+  nowrap. JSX untouched. User confirms no horizontal scroll at 375px and 320px.
+  | `style(ex3): add responsive 375px telemetry layout` |
+  | E3-T17 | Fix Lighthouse findings (conditional) | Files named by the finding
+  | Only if Lighthouse reports an Accessibility finding. One fix, no refactor.
+  No commit if there is no finding. | `fix(a11y): <finding>` |
+  | E3-T18 | Document Exercise 3 in the README | `README.md` | New "Exercise 3"
+  section after Exercise 2: features, source layout, constraints, C6/C7
+  commands, Known limits (D7 prop name, StrictMode cancel on load, aria-live
+  note, randomness). Earlier sections unchanged. No scores or measured numbers.
+  | `docs(readme): document ex3 usage and checks` |
+  | E3-T19 | Record AI failures (conditional) | `AI_FAILURE_AUDIT.md` | Only
+  real Exercise 3 defects pasted by the user are appended after the existing
+  entry, numbered from #02. Each has Prompt, AI Code, Bug, DevTools Proof,
+  Engineering Fix with commit hash. No commit if none was logged. |
+  `docs(audit): record ex3 ai failures` |
+  | E3-T20 | Sync the commits metric again | `src/components/DeveloperCard.jsx`
+  | Only `metrics.commits` changes, to `git rev-list --count HEAD` plus 2
+  (this commit and the E3-T22 evidence commit), supplied by the author. Build,
+  lint, test pass. | `fix(ex1): sync commits metric after ex3` |
+  | E3-T21 | Final audit | No file changes | build, lint, test, C1 to C7 pass;
+  `git log` matches Parts 1 to 4 row by row. No commit. | (no commit) |
+  | E3-T22 | Archive Exercise 3 evidence |
+  `docs/evidence/EX3_PubgMatchTelemetry/*.png`,
+  `docs/prompt_logs/EX3_PubgMatchTelemetry.txt` | Screenshots and the prompt
+  log copied from the author's folders, names unchanged. After the commit `git
+  rev-list --count HEAD` equals the card value. | `docs(evidence): archive ex3
+  screenshots and prompt log` |
+
+  ### 4.7 Verification gate
+  Before every commit: npm run build, npm run lint, npm test (when tests
+  exist), C1 to C6 print nothing, C7 prints its three lines from E3-T09 on.
+  Browser checks are done by the user with Network throttling Slow 3G.
+  ===== END =====
+
+  Kiểm tra: npm run build thành công. git diff chỉ có dòng thêm ở cuối file (0
+  dòng xóa). Đếm: Part 4 có đúng 22 hàng E3-T01..E3-T22; mọi commit message
+  khớp từng chữ với bảng trên.
+
+  Commit:
+  git add TASK_DECOMPOSITION.md
+  git commit -m "docs(spec): add ex3 task decomposition"
+
+  Không push. Báo cáo bằng tiếng Việt: số hàng Part 4, số dòng thêm/xóa, commit
+  hash.
+
+  Made 1 scratchpad edit +108, ran 2 shell commands (ctrl+o to expand)
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && sed -n 146,150p
+      TASK_DECOMPOSITION.md | cat -A | cut -c1-60 &&
+      S="C:/Users/USER/AppData/Local/Temp/clau…)
+  ⎿  Updated TASK_DECOMPOSITION.md (+108 -0)
+      305  - Device toolbar at 375px and 320px: no horizontal scroll.
+      306  - Console: no warning or error.
+      307  - Lighthouse on the preview build (`npm run preview`, port 417
+           3), mobile and desktop.
+      308 +                                                              
+      309 +## Part 4. Exercise 3: KRAFTON PUBG VN Live Match Telemetry   
+      310 +                                                              
+      311 +### 4.1 Overview                                              
+      312 +`PubgMatchTelemetry` (src/components/PubgMatchTelemetry.jsx) s
+          +hows live PVS telemetry for three Vietnamese squads (CES, TE, 
+          +GE). A selector inside the component switches squads. A four-s
+          +tate machine (IDLE, LOADING, SUCCESS, ERROR) drives the view. 
+          +Each squad switch or retry starts a real fetch of a local JSON
+          + file with an AbortController; the previous request is aborted
+          + in the effect cleanup. 35% simulated packet loss leads to an 
+          +accessible error alert with a Reconnect Satellite button. Sour
+          +ce: slides 20 to 23.                                          
+      313 +                                                              
+      314 +### 4.2 Contract                                              
+      315 +```js                                                         
+      316 +/**                                                           
+      317 + * @typedef {Object} PubgSquad                                
+      318 + * @property {string} id        Stable id: 'ces', 'te' or 'ge'
+          +. React key and payload file name.                            
+      319 + * @property {string} name                                    
+      320 + * @property {string} map                                     
+      321 + * @property {string} phase                                   
+      322 + * @property {number} alive                                   
+      323 + * @property {number} kills                                   
+      324 + * @property {string} wwcdProb  Display string from the slide,
+          + for example '68%'.                                           
+      325 + * @property {string} status                                  
+      326 + */                                                           
+      327 +                                                              
+      328 +/**                                                           
+      329 + * @typedef {'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'} Telemet
+          +ryStatus                                                      
+      330 + */                                                           
+      331 +                                                              
+      332 +/**                                                           
+      333 + * @typedef {Object} TelemetryView                            
+      334 + * @property {TelemetryStatus} status                         
+      335 + * @property {PubgSquad | null} data  Not null only when statu
+          +s is 'SUCCESS'.                                               
+      336 + * @property {string | null} error    Not null only when statu
+          +s is 'ERROR'.                                                 
+      337 + */                                                           
+      338 +                                                              
+      339 +/**                                                           
+      340 + * @typedef {Object} FetchTelemetryOptions                    
+      341 + * @property {AbortSignal} [signal]                           
+      342 + * @property {typeof fetch} [fetchImpl]  Defaults to the globa
+          +l fetch. Injected in tests.                                   
+      343 + * @property {() => number} [random]     Defaults to Math.rand
+          +om. Injected in tests.                                        
+      344 + */                                                           
+     … 71 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã thêm Part 4 và build thành công; giờ commit.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã thêm Part 4 vào cuối TASK_DECOMPOSITION.md và commit xong, chưa push.
+
+  - Số hàng Part 4: đúng 22 hàng, từ E3-T01 đến E3-T22. 22 commit message khớp
+    từng chữ với bảng anh/chị gửi.
+  - Số dòng thêm/xóa: thêm 108, xóa 0. Trong đó 107 dòng là nội dung giữa BEGIN
+    và END, dòng còn lại là một dòng trống để tách Part 4 khỏi Part 3, giống
+    cách các Part trước được ngăn cách. Part 1, 2, 3 không bị sửa.
+  - Commit hash: 51c8cdd, message docs(spec): add ex3 task decomposition. Commit
+    chỉ có một file là TASK_DECOMPOSITION.md.
+
+  Kiểm tra đã chạy:
+  - npm run build thành công.
+  - git diff --numstat cho kết quả 108 0 TASK_DECOMPOSITION.md.
+  - Đã đếm các hàng | E3-T và xem lại cột commit message.
+
+  Chưa kiểm tra:
+  - Không chạy npm run lint và npm test, vì yêu cầu chỉ nêu build.
+  - Không so sánh tự động từng byte với đoạn anh/chị dán. Tôi chép nguyên văn
+    nhưng chỉ đối chiếu bằng số hàng và commit message.
+
+  Git có cảnh báo LF sẽ đổi thành CRLF trong thư mục làm việc. Đây chỉ là thiết
+  lập line ending của Git và không ảnh hưởng đến nội dung commit.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, E3-T02). Chỉ
+  làm E3-T02. Tôi cho phép sửa .oxlintrc.json trong task này.
+
+  Phạm vi file: .oxlintrc.json. Thêm đúng một mục vào "rules":
+  "react/exhaustive-deps": "error". Không đổi gì khác.
+
+  Kiểm tra: npm run lint thành công trên code hiện tại (báo nguyên dòng "Found
+  ... warnings and ... errors"). npm run build thành công.
+
+  Commit:
+  git add .oxlintrc.json
+  git commit -m "chore(lint): enable exhaustive-deps rule"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+● Update(.oxlintrc.json)
+  ⎿  Added 2 lines, removed 1 line
+      3    "plugins": ["react", "oxc"],
+      4    "rules": {
+      5      "react/rules-of-hooks": "error",
+      6 -    "react/only-export-components": ["warn", { "allowConstantExp
+        -ort": true }]                                                   
+      6 +    "react/only-export-components": ["warn", { "allowConstantExp
+        +ort": true }],                                                  
+      7 +    "react/exhaustive-deps": "error"                            
+      8    }
+      9  }
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lint chạy thành công nhưng không thấy dòng "Found ...". Tôi chạy lại để xem
+  toàn bộ output.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● oxlint 1.90.0 không in gì khi không có lỗi. Tôi kiểm tra rule đã được nạp và
+  thực sự bắt lỗi.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Rule đã được nạp và bắt đúng lỗi. Giờ commit.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● E3-T02 đã xong và commit, nhưng npm run lint không in dòng "Found ... warnings
+  and ... errors" nên tôi không chép lại được. Lint vẫn chạy thành công (exit
+  code 0). oxlint bản 1.90.0 ở đây không in gì khi không có lỗi; chạy thẳng npx
+  oxlint cũng vậy.
+
+  Thay đổi: .oxlintrc.json có thêm "react/exhaustive-deps": "error" trong rules.
+  Diff là +2/−1, vì dòng only-export-components phía trên phải thêm dấu phẩy để
+  JSON hợp lệ. Ngoài ra không đổi gì.
+
+  Kiểm tra đã chạy:
+  - npm run lint: thành công trên code hiện tại.
+  - Kiểm tra thêm để chắc rule có tác dụng: npx oxlint --print-config có
+    "react/exhaustive-deps": "deny". Tôi cũng tạo một file thử trong scratchpad
+    (ngoài repo) cố tình thiếu dependency, và lint báo lỗi
+    react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency:
+    'a'.
+  - npm run build: thành công.
+
+  Commit: 084e19f với message chore(lint): enable exhaustive-deps rule. Commit
+  chỉ có .oxlintrc.json, chưa push.
+
+  Chưa kiểm tra: không chạy npm test, vì task không yêu cầu.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, E3-T03). Chỉ
+  làm E3-T03. Tôi cho phép sửa project-rules.md trong task này. KHÔNG sửa mục
+  1 đến 15, không sửa file khác.
+
+  Thêm vào CUỐI file mục "## 16. Exercise 3 rules: async state, abort and
+  retry" với đúng các gạch đầu dòng sau (tiếng Anh, giữ nguyên chữ, bỏ dấu
+  ngoặc kép bao ngoài mỗi câu), chia bằng các tiêu đề ### như dưới:
+
+  State machine
+
+  - "Async UI state is one object { status, data, error } with status 'IDLE' |
+  'LOADING' | 'SUCCESS' | 'ERROR', built only through the helpers in
+  src/utils/telemetryView.js. Never use separate isLoading / isError booleans."
+  - "data is not null only in SUCCESS and error is not null only in ERROR."
+
+  Fetch and abort
+
+  - "Network access lives in one helper in src/utils/. Components never call
+  fetch directly."
+  - "Every effect that fetches creates a new AbortController, passes { signal }
+  to the helper and returns () => controller.abort()."
+  - "A rejection whose name is 'AbortError' is a normal outcome: return without
+  changing state. It never shows an error banner."
+  - "Build request URLs only from a whitelist of known ids. Validate the
+  response (status and payload id) before using it."
+  - "Randomness (simulated packet loss) and fetch are injected parameters so
+  unit tests are deterministic and never use the real network."
+
+  Effects and dependencies
+
+  - "react/exhaustive-deps is enabled. Never silence it with a disable comment
+  or by removing a dependency; restructure the code instead."
+  - "Retry is a counter in state (retryTick) listed in the effect dependencies.
+  Never call the fetch helper from the click handler."
+  - "No setInterval in committed code unless a task asks for it; any interval
+  is cleared in the effect cleanup."
+
+  Loading, errors and focus
+
+  - "Loading uses a skeleton with aria-busy='true' and the same minimum block
+  size as the loaded content, so the layout never shifts (CLS 0.00)."
+  - "Errors render in an element with role='alert' and a type='button' retry
+  control. Never window.alert()."
+  - "When the control that has focus disappears (for example a retry button),
+  move focus to a stable control in the same click handler. Never with
+  useEffect."
+  - "Every animation stops under prefers-reduced-motion: reduce."
+
+  Kiểm tra: git diff project-rules.md chỉ có dòng thêm ở cuối file (0 dòng
+  xóa). npm run build thành công, npm run lint exit 0.
+
+  Commit:
+  git add project-rules.md
+  git commit -m "docs(rules): add ex3 async, abort and retry rules"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && sed -n 118,128p
+      project-rules.md && cat >> project-rules.md <<'EOF'…)
+  ⎿  Updated project-rules.md (+24 -0)
+      140  - When an action removes the element that has focus (for examp
+           le a Delete button), move focus to a logical target in the sam
+           e event handler: the next item, else the previous item, else t
+           he main input of the widget.
+      141  - Do this with flushSync from react-dom followed by a ref (a r
+           ef callback that stores the node in a Map and returns a cleanu
+           p that deletes it). Never use useEffect for focus management a
+           fter a user action.
+      142  - Never move focus on page load or on every render.
+      143 +                                                              
+      144 +## 16. Exercise 3 rules: async state, abort and retry         
+      145 +                                                              
+      146 +### State machine                                             
+      147 +- Async UI state is one object { status, data, error } with st
+          +atus 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR', built only thro
+          +ugh the helpers in src/utils/telemetryView.js. Never use separ
+          +ate isLoading / isError booleans.                             
+      148 +- data is not null only in SUCCESS and error is not null only 
+          +in ERROR.                                                     
+      149 +                                                              
+      150 +### Fetch and abort                                           
+      151 +- Network access lives in one helper in src/utils/. Components
+          + never call fetch directly.                                   
+      152 +- Every effect that fetches creates a new AbortController, pas
+          +ses { signal } to the helper and returns () => controller.abor
+          +t().                                                          
+      153 +- A rejection whose name is 'AbortError' is a normal outcome: 
+          +return without changing state. It never shows an error banner.
+      154 +- Build request URLs only from a whitelist of known ids. Valid
+          +ate the response (status and payload id) before using it.     
+      155 +- Randomness (simulated packet loss) and fetch are injected pa
+          +rameters so unit tests are deterministic and never use the rea
+          +l network.                                                    
+      156 +                                                              
+      157 +### Effects and dependencies                                  
+      158 +- react/exhaustive-deps is enabled. Never silence it with a di
+          +sable comment or by removing a dependency; restructure the cod
+          +e instead.                                                    
+      159 +- Retry is a counter in state (retryTick) listed in the effect
+          + dependencies. Never call the fetch helper from the click hand
+          +ler.                                                          
+      160 +- No setInterval in committed code unless a task asks for it; 
+          +any interval is cleared in the effect cleanup.                
+      161 +                                                              
+      162 +### Loading, errors and focus                                 
+      163 +- Loading uses a skeleton with aria-busy='true' and the same m
+          +inimum block size as the loaded content, so the layout never s
+          +hifts (CLS 0.00).                                             
+      164 +- Errors render in an element with role='alert' and a type='bu
+          +tton' retry control. Never window.alert().                    
+      165 +- When the control that has focus disappears (for example a re
+          +try button), move focus to a stable control in the same click 
+          +handler. Never with useEffect.                                
+      166 +- Every animation stops under prefers-reduced-motion: reduce. 
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● E3-T03 đã xong và commit, chưa push.
+
+  Thay đổi: thêm mục 16 vào cuối project-rules.md, tiêu đề "## 16. Exercise 3
+  rules: async state, abort and retry". Mục này có 4 tiêu đề ### (State machine,
+  Fetch and abort, Effects and dependencies, Loading, errors and focus) với đủ
+  14 gạch đầu dòng, giữ nguyên chữ và bỏ dấu ngoặc kép bao ngoài. Mục 1 đến 15
+  không đổi.
+
+  Kiểm tra đã chạy:
+  - git diff --numstat project-rules.md: thêm 24 dòng, xóa 0, tất cả ở cuối
+    file. 24 dòng gồm 1 dòng trống ngăn với mục 15, tiêu đề mục 16, 4 tiêu đề
+    con, 14 gạch đầu dòng và 4 dòng trống giữa các nhóm.
+  - npm run lint: exit 0.
+  - npm run build: thành công.
+
+  Commit: b03b669 với message docs(rules): add ex3 async, abort and retry rules.
+  Commit chỉ có project-rules.md.
+
+  Chưa kiểm tra: không chạy npm test, vì task không yêu cầu.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, mục 4.2
+  Contract). Chỉ làm E3-T04: chỉ có JSDoc typedef, không hàm, không logic,
+  không import.
+
+  Phạm vi file: tạo src/contracts/pubg-match-telemetry.contract.js với nội dung
+  giống hệt khối code js ở mục 4.2 của TASK_DECOMPOSITION.md (đúng 5 typedef
+  PubgSquad, TelemetryStatus, TelemetryView, FetchTelemetryOptions,
+  PubgMatchTelemetryProps, kết thúc bằng export {};). Không thêm, không bớt,
+  không đổi chữ. Không viết chuỗi '<div' hay 'http://'.
+
+  Kiểm tra: npm run build thành công, npm run lint exit 0, npm test thành công.
+  So sánh nội dung file với khối code ở mục 4.2 và báo có khớp từng dòng
+  không.
+
+  Commit:
+  git add src/contracts/pubg-match-telemetry.contract.js
+  git commit -m "docs(ex3): add PubgMatchTelemetry JSDoc contract"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && ls src/contracts
+      && F=src/contracts/pubg-match-telemetry.contract.js && awk '/^### 4.2
+      Contract/{s=1;ne…)
+  ⎿  Created src\contracts\pubg-match-telemetry.contract.js (+36 -0)
+       1 +/**                                                            
+       2 + * @typedef {Object} PubgSquad                                 
+       3 + * @property {string} id        Stable id: 'ces', 'te' or 'ge'.
+         + React key and payload file name.                              
+       4 + * @property {string} name                                     
+       5 + * @property {string} map                                      
+       6 + * @property {string} phase                                    
+       7 + * @property {number} alive                                    
+       8 + * @property {number} kills                                    
+       9 + * @property {string} wwcdProb  Display string from the slide, 
+         +for example '68%'.                                             
+      10 + * @property {string} status                                   
+      11 + */                                                            
+      12 +                                                               
+      13 +/**                                                            
+      14 + * @typedef {'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'} Telemetr
+         +yStatus                                                        
+      15 + */                                                            
+      16 +                                                               
+      17 +/**                                                            
+      18 + * @typedef {Object} TelemetryView                             
+      19 + * @property {TelemetryStatus} status                          
+      20 + * @property {PubgSquad | null} data  Not null only when status
+         + is 'SUCCESS'.                                                 
+      21 + * @property {string | null} error    Not null only when status
+         + is 'ERROR'.                                                   
+      22 + */                                                            
+      23 +                                                               
+      24 +/**                                                            
+      25 + * @typedef {Object} FetchTelemetryOptions                     
+      26 + * @property {AbortSignal} [signal]                            
+      27 + * @property {typeof fetch} [fetchImpl]  Defaults to the global
+         + fetch. Injected in tests.                                     
+      28 + * @property {() => number} [random]     Defaults to Math.rando
+         +m. Injected in tests.                                          
+      29 + */                                                            
+      30 +                                                               
+      31 +/**                                                            
+      32 + * @typedef {Object} PubgMatchTelemetryProps                   
+      33 + * @property {string} [initialSquadId]  Defaults to 'te'. An un
+         +known id falls back to 'te'.                                   
+      34 + */                                                            
+      35 +                                                               
+      36 +export {};                                                     
+
+● File đã tạo từ khối code của mục 4.2. Dòng 28 có => nhưng đó là kiểu () =>
+  number nằm trong JSDoc, không phải code. Giờ so sánh từng dòng và chạy kiểm
+  tra.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Test exit 0 nhưng chưa bắt được dòng tóm tắt; tôi lấy lại số liệu test.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T04 đã xong và commit, chưa push.
+
+  Thay đổi: tạo src/contracts/pubg-match-telemetry.contract.js, dài 36 dòng. Nội
+  dung được tách thẳng từ khối js ở mục 4.2 của TASK_DECOMPOSITION.md, không gõ
+  lại tay.
+
+  So sánh với mục 4.2: khớp từng dòng. diff giữa khối code trong spec và file
+  không ra khác biệt nào.
+  - Có đúng 5 typedef: PubgSquad, TelemetryStatus, TelemetryView,
+    FetchTelemetryOptions, PubgMatchTelemetryProps.
+  - File kết thúc bằng export {};.
+  - Không có hàm, logic hay import, và không có chuỗi <div hay http://.
+
+  Kiểm tra đã chạy:
+  - npm run build: thành công.
+  - npm run lint: exit 0.
+  - npm test: 26/26 pass, 0 fail. Đây đều là các test có sẵn, vì task này không
+    thêm test.
+
+  Commit: 5d5f0f8 với message docs(ex3): add PubgMatchTelemetry JSDoc contract.
+  Commit chỉ có file contract.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, mục 4.4
+  Data, E3-T05). Chỉ làm E3-T05. Test trước, code sau; báo cáo lần chạy test
+  thất bại đầu tiên.
+
+  Phạm vi file: src/data/pubgVnSquads.test.js rồi src/data/pubgVnSquads.js.
+  Không sửa file khác.
+
+  Yêu cầu:
+  - Viết test trước (node:test, node:assert/strict), import { PUBG_VN_SQUADS }
+  from './pubgVnSquads.js':
+    1. Đúng 3 phần tử.
+    2. id lần lượt là 'ces', 'te', 'ge' và không trùng.
+    3. name, map, phase, wwcdProb, status là chuỗi khác rỗng; alive và kills là
+  số nguyên >= 0.
+    4. wwcdProb khớp /^\d{1,3}%$/.
+    5. Object.isFrozen đúng cho mảng và cho từng phần tử.
+    6. Cả 3 phần tử deepEqual đúng 3 object theo bảng mục 4.4 (viết object mong
+  đợi ngay trong test).
+  - Chạy npm test, xác nhận thất bại vì thiếu module, báo lại thông báo lỗi.
+  - Sau đó tạo src/data/pubgVnSquads.js:
+    /** @typedef
+  {import('../contracts/pubg-match-telemetry.contract.js').PubgSquad} PubgSquad
+  /
+    /* @type {readonly PubgSquad[]} */
+    export const PUBG_VN_SQUADS = Object.freeze([ ...3 object, mỗi object bọc
+  Object.freeze... ])
+    Thứ tự trường trong mỗi object: id, name, map, phase, alive, kills,
+  wwcdProb, status. Giá trị đúng từng chữ như bảng mục 4.4 (wwcdProb là chuỗi,
+  ví dụ '68%').
+
+  Kiểm tra: npm test (báo số test pass/fail), npm run build thành công, npm run
+  lint exit 0. Không có chuỗi '<div' hay 'http://' trong 2 file mới.
+
+  Commit:
+  git add src/data/pubgVnSquads.js src/data/pubgVnSquads.test.js
+  git commit -m "feat(ex3): add PUBG VN squad data with stable IDs"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Viết test trước, theo phong cách của smartPeople.test.js.
+● Write(src\data\pubgVnSquads.test.js)
+  ⎿  Wrote 72 lines to src\data\pubgVnSquads.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { PUBG_VN_SQUADS } from './pubgVnSquads.js'
+       4
+       5 test('has exactly three entries', () => {
+       6   assert.equal(PUBG_VN_SQUADS.length, 3)
+       7 })
+       8
+       9 test('ids are ces, te, ge in order and unique', () => {
+      10   const ids = PUBG_VN_SQUADS.map((s) => s.id)
+     … +62 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Test thất bại đúng như mong đợi vì thiếu module. Giờ tạo file dữ liệu.
+
+● Write(src\data\pubgVnSquads.js)
+  ⎿  Wrote 35 lines to src\data\pubgVnSquads.js
+       1 /** @typedef {import('../contracts/pubg-match-telemetry.contract
+         .js').PubgSquad} PubgSquad */
+       2
+       3 /** @type {readonly PubgSquad[]} */
+       4 export const PUBG_VN_SQUADS = Object.freeze([
+       5   Object.freeze({
+       6     id: 'ces',
+       7     name: 'Cerberus Esports',
+       8     map: 'Erangel',
+       9     phase: 'Phase 6',
+     … +26 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T05 đã xong và commit, chưa push. Tôi viết test trước, rồi mới viết code.
+
+  Lần chạy test đầu (chưa có module): thất bại đúng lý do, với thông báo:
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+  '...\src\data\pubgVnSquads.js' imported from ...\src\data\pubgVnSquads.test.js
+  ✖ src\data\pubgVnSquads.test.js
+  ℹ tests 27  ℹ pass 26  ℹ fail 1
+
+  File mới:
+  - src/data/pubgVnSquads.test.js có 6 test theo đúng 6 yêu cầu:
+    - có đúng 3 phần tử;
+    - id lần lượt là ces, te, ge và không trùng;
+    - kiểu dữ liệu của các trường;
+    - wwcdProb khớp /^\d{1,3}%$/;
+    - mảng và từng phần tử đều bị freeze;
+    - deepEqual với 3 object mong đợi viết ngay trong test.
+  - src/data/pubgVnSquads.js export PUBG_VN_SQUADS. Mảng và từng object đều được
+    bọc Object.freeze, trường theo thứ tự id, name, map, phase, alive, kills,
+    wwcdProb, status. Giá trị đúng như bảng mục 4.4.
+
+  Kiểm tra sau khi có code:
+  - npm test: 32 test, 32 pass, 0 fail (26 test cũ và 6 test mới).
+  - npm run build: thành công.
+  - npm run lint: exit 0.
+  - Không có <div hay http:// trong 2 file mới.
+
+  Commit: 4a64342 với message feat(ex3): add PUBG VN squad data with stable IDs.
+  Commit chỉ có 2 file trên, thêm 107 dòng.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, mục 4.4
+  Data, E3-T06). Chỉ làm E3-T06. Test trước, code sau; báo cáo lần chạy test
+  thất bại đầu tiên.
+
+  Phạm vi file: src/data/telemetryPayloads.test.js, rồi
+  public/telemetry/ces.json, public/telemetry/te.json,
+  public/telemetry/ge.json. Không sửa file khác (không sửa
+  src/data/pubgVnSquads.js).
+
+  Yêu cầu:
+  - Test trước (node:test, node:assert/strict): với mỗi phần tử của
+  PUBG_VN_SQUADS (import từ './pubgVnSquads.js'), đọc file bằng readFile từ
+  'node:fs/promises' với new URL(../../public/telemetry/${squad.id}.json,
+  import.meta.url), JSON.parse, rồi assert.deepEqual với phần tử đó. Mỗi squad
+  một test có tên chứa id.
+  - Chạy npm test, xác nhận thất bại vì thiếu file (ENOENT), báo lại.
+  - Sau đó tạo 3 file JSON, mỗi file đúng một object giống hệt phần tử tương
+  ứng: cùng 8 trường theo thứ tự id, name, map, phase, alive, kills, wwcdProb,
+  status; cùng giá trị, cùng kiểu (alive, kills là số; wwcdProb là chuỗi). Định
+  dạng thụt 2 dấu cách, có một dòng trống cuối file.
+
+  Kiểm tra: npm test (báo số test pass/fail), npm run build thành công, npm run
+  lint exit 0. Sau build, liệt kê dist/telemetry/ phải có đúng 3 file (Vite
+  copy từ public/). Không có 'http://' trong các file mới.
+
+  Commit:
+  git add public/telemetry/ces.json public/telemetry/te.json
+  public/telemetry/ge.json src/data/telemetryPayloads.test.js
+  git commit -m "feat(ex3): add static squad telemetry payloads"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\data\telemetryPayloads.test.js)
+  ⎿  Wrote 12 lines to src\data\telemetryPayloads.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { readFile } from 'node:fs/promises'
+       4 import { PUBG_VN_SQUADS } from './pubgVnSquads.js'
+       5
+       6 for (const squad of PUBG_VN_SQUADS) {
+       7   test(`public/telemetry/${squad.id}.json matches the ${squad.id
+         } squad entry`, async () => {
+       8     const url = new URL(`../../public/telemetry/${squad.id}.json
+         `, import.meta.url)
+     … +4 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Cả 3 test thất bại với lỗi ENOENT như mong đợi. Giờ tạo 3 file JSON.
+
+● Write(public\telemetry\ces.json)
+  ⎿  Wrote 10 lines to public\telemetry\ces.json
+       1 {
+       2   "id": "ces",
+       3   "name": "Cerberus Esports",
+       4   "map": "Erangel",
+       5   "phase": "Phase 6",
+       6   "alive": 4,
+       7   "kills": 14,
+       8   "wwcdProb": "68%",
+       9   "status": "In Safe Zone"
+      10 }
+
+● Write(public\telemetry\te.json)
+  ⎿  Wrote 10 lines to public\telemetry\te.json
+       1 {
+       2   "id": "te",
+       3   "name": "The Expendables",
+       4   "map": "Miramar",
+       5   "phase": "Phase 7",
+       6   "alive": 4,
+       7   "kills": 18,
+       8   "wwcdProb": "82%",
+       9   "status": "Holding High Ground"
+      10 }
+
+● Write(public\telemetry\ge.json)
+  ⎿  Wrote 10 lines to public\telemetry\ge.json
+       1 {
+       2   "id": "ge",
+       3   "name": "Genius Esports",
+       4   "map": "Taego",
+       5   "phase": "Phase 5",
+       6   "alive": 3,
+       7   "kills": 9,
+       8   "wwcdProb": "41%",
+       9   "status": "Rotating Blue Zone"
+      10 }
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T06 đã xong và commit, chưa push. Tôi viết test trước, rồi mới tạo file
+  JSON.
+
+  Lần chạy test đầu (chưa có file JSON): cả 3 test thất bại vì ENOENT, đúng như
+  mong đợi:
+  ✖ public/telemetry/ces.json matches the ces squad entry
+    Error: ENOENT: no such file or directory, open
+  '...\public\telemetry\ces.json'
+  ✖ public/telemetry/te.json matches the te squad entry
+  ✖ public/telemetry/ge.json matches the ge squad entry
+  ℹ tests 35  ℹ pass 32  ℹ fail 3
+
+  File mới:
+  - src/data/telemetryPayloads.test.js: mỗi squad một test, tên có chứa id. Test
+    đọc file bằng readFile với new URL(..., import.meta.url), JSON.parse, rồi
+    assert.deepEqual với phần tử tương ứng.
+  - public/telemetry/ces.json, te.json (public/telemetry/te.json), ge.json
+    (public/telemetry/ge.json): mỗi file là một object có 8 trường đúng thứ tự,
+    thụt 2 dấu cách và có ký tự xuống dòng ở cuối. Tôi so thêm từng byte với
+    JSON.stringify(squad, null, 2) + '\n' và cả 3 file đều khớp.
+
+  Kiểm tra sau khi có code:
+  - npm test: 35 test, 35 pass, 0 fail.
+  - npm run build: thành công.
+  - dist/telemetry/ có đúng 3 file: ces.json, ge.json, te.json.
+  - npm run lint: exit 0.
+  - Không có http:// trong các file mới.
+
+  Commit: 1d03bb2 với message feat(ex3): add static squad telemetry payloads.
+  Commit chỉ có 4 file trên, thêm 42 dòng. src/data/pubgVnSquads.js không bị
+  sửa.
+
+> Đọc Agent.md, project-rules.md (mục 16) và TASK_DECOMPOSITION.md (Part 4,
+  Invariant 2, E3-T07). Chỉ làm E3-T07. Test trước, code sau; báo cáo lần chạy
+  test thất bại đầu tiên.
+
+  Phạm vi file: src/utils/telemetryView.test.js rồi src/utils/telemetryView.js.
+  Không sửa file khác.
+
+  Yêu cầu:
+  - Named exports: IDLE_VIEW (hằng số), loadingView(), successView(data),
+  errorView(message).
+  - Kết quả luôn Object.freeze, có đúng 3 khóa status, data, error:
+    IDLE_VIEW = { status: 'IDLE', data: null, error: null }
+    loadingView() -> { status: 'LOADING', data: null, error: null }
+    successView(data) -> { status: 'SUCCESS', data, error: null }
+    errorView(message) -> { status: 'ERROR', data: null, error: String(message)
+  }
+  - JSDoc: /** @typedef
+  {import('../contracts/pubg-match-telemetry.contract.js').TelemetryView}
+  TelemetryView */ và @returns {TelemetryView} cho mỗi hàm, @type
+  {TelemetryView} cho IDLE_VIEW.
+  - Không import React, không side effect.
+  - Test (node:test, node:assert/strict):
+    1. Mỗi hàm/hằng cho đúng hình dạng (deepEqual).
+    2. Object.keys của mỗi kết quả đúng ['status', 'data', 'error'].
+    3. Object.isFrozen đúng cho mỗi kết quả.
+    4. successView giữ nguyên tham chiếu data (assert.equal(view.data,
+  payload)).
+    5. errorView('Satellite packet lost') cho error là đúng chuỗi đó.
+    6. Hai lần gọi loadingView() trả về hai object riêng (notEqual tham chiếu)
+  nhưng deepEqual nhau.
+  - Chạy npm test, xác nhận thất bại vì thiếu module, báo lại.
+
+  Kiểm tra: npm test (báo số test pass/fail), npm run build thành công, npm run
+  lint exit 0. Không có chuỗi isLoading, isError, setInterval trong 2 file
+  mới.
+
+  Commit:
+  git add src/utils/telemetryView.js src/utils/telemetryView.test.js
+  git commit -m "feat(ex3): add telemetry view state helpers with unit tests"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\utils\telemetryView.test.js)
+  ⎿  Wrote 42 lines to src\utils\telemetryView.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { IDLE_VIEW, loadingView, successView, errorView } from '
+         ./telemetryView.js'
+       4
+       5 const payload = { id: 'te', name: 'The Expendables' }
+       6
+       7 const cases = [
+       8   ['IDLE_VIEW', () => IDLE_VIEW, { status: 'IDLE', data: null, e
+         rror: null }],
+     … +34 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Test thất bại đúng như mong đợi vì thiếu module. Giờ viết code.
+
+● Write(src\utils\telemetryView.js)
+  ⎿  Wrote 28 lines to src\utils\telemetryView.js
+       1 /** @typedef {import('../contracts/pubg-match-telemetry.contract
+         .js').TelemetryView} TelemetryView */
+       2 /** @typedef {import('../contracts/pubg-match-telemetry.contract
+         .js').PubgSquad} PubgSquad */
+       3
+       4 /** @type {TelemetryView} */
+       5 export const IDLE_VIEW = Object.freeze({ status: 'IDLE', data: n
+         ull, error: null })
+       6
+       7 /**
+     … +21 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T07 đã xong và commit, chưa push. Tôi viết test trước, rồi mới viết code.
+
+  Lần chạy test đầu (chưa có module): thất bại đúng lý do, với thông báo:
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+  '...\src\utils\telemetryView.js' imported from
+  ...\src\utils\telemetryView.test.js
+  ✖ src\utils\telemetryView.test.js
+  ℹ tests 36  ℹ pass 35  ℹ fail 1
+
+  File mới:
+  - src/utils/telemetryView.test.js có 15 test:
+    - Với mỗi export trong 4 export: kiểm tra hình dạng bằng deepEqual,
+      Object.keys đúng ['status', 'data', 'error'], và Object.isFrozen. Tổng 12
+      test.
+    - successView giữ nguyên tham chiếu data.
+    - errorView('Satellite packet lost') cho error đúng chuỗi đó.
+    - Hai lần gọi loadingView() trả về hai object khác nhau nhưng deepEqual
+      nhau.
+  - src/utils/telemetryView.js có các export IDLE_VIEW, loadingView(),
+    successView(data), errorView(message). Mọi kết quả đều qua Object.freeze và
+    errorView dùng String(message). Không import React, không có side effect.
+
+  Thêm ngoài yêu cầu (chỉ là JSDoc, không đổi hành vi): tôi thêm typedef
+  PubgSquad và @param cho successView/errorView. Nếu anh/chị muốn đúng tuyệt đối
+  theo đề, tôi có thể bỏ hai phần này.
+
+  Kiểm tra sau khi có code:
+  - npm test: 50 test, 50 pass, 0 fail.
+  - npm run build: thành công.
+  - npm run lint: exit 0.
+  - Không có isLoading, isError, setInterval trong 2 file mới.
+
+  Commit: eec6fdd với message feat(ex3): add telemetry view state helpers with
+  unit tests. Commit chỉ có 2 file trên.
+
+> Đọc Agent.md, project-rules.md (mục 16) và TASK_DECOMPOSITION.md (Part 4,
+  Invariants 6 và 7, mục 4.5 Expected results). Chỉ làm E3-T08. Test trước,
+  code sau; báo cáo lần chạy test thất bại đầu tiên.
+
+  Phạm vi file: src/utils/fetchKraftonPubgTelemetry.test.js rồi
+  src/utils/fetchKraftonPubgTelemetry.js. Không sửa file khác.
+
+  Hàm cần viết (named exports), có JSDoc dùng typedef PubgSquad và
+  FetchTelemetryOptions từ file contract:
+  - export const PACKET_LOSS_RATE = 0.35
+  - export function isKnownSquadId(id): true chỉ khi typeof id === 'string' và
+  có squad trong PUBG_VN_SQUADS (import từ '../data/pubgVnSquads.js') với id
+  đó.
+  - export async function fetchKraftonPubgTelemetry(squadId, { signal,
+  fetchImpl = globalThis.fetch, random = Math.random } = {}):
+    1. Nếu !isKnownSquadId(squadId): throw new Error(Unknown squad: ${squadId})
+  và KHÔNG gọi fetchImpl.
+    2. const response = await fetchImpl(/telemetry/${squadId}.json, { signal })
+    3. Nếu !response.ok: throw new Error(Telemetry HTTP ${response.status})
+    4. const payload = await response.json()
+    5. Nếu random() < PACKET_LOSS_RATE: throw new Error('Satellite packet lost
+  (35% loss simulation)')
+    6. Nếu payload?.id !== squadId: throw new Error('Telemetry payload does not
+  match the squad')
+    7. return payload
+       Không try/catch trong hàm này: AbortError phải tự rơi ra cho component
+  xử lý. Không setTimeout, không setInterval, không console.log.
+
+  Test (node:test, node:assert/strict), KHÔNG dùng mạng thật. Tự viết một hàm
+  tạo fakeFetch ghi lại các lần gọi (url, options) và trả về { ok, status,
+  json: async () => payload }; nếu options.signal đã aborted thì fakeFetch
+  reject bằng new DOMException('Aborted', 'AbortError'). Đủ 7 trường hợp của
+  mục 4.5, mỗi trường hợp một test:
+  1. 'te', random () => 0.9 -> resolve đúng object te (deepEqual
+  PUBG_VN_SQUADS[1]); fakeFetch được gọi đúng 1 lần với url
+  '/telemetry/te.json' và options.signal đúng là signal đã truyền
+  (assert.equal).
+  2. 'ces', random () => 0.1 -> reject; err instanceof Error, err.message chứa
+  'packet lost', err.name khác 'AbortError'.
+  3. 'ge', random () => 0.35 -> resolve (biên: đúng 0.35 thì qua).
+  4. 'xyz' -> reject với message chứa 'Unknown squad'; fakeFetch không được gọi
+  lần nào.
+  5. fakeFetch trả ok false, status 503 -> reject, message chứa '503'.
+  6. fakeFetch trả payload có id 'ces' khi yêu cầu 'te' (random 0.9) -> reject,
+  message chứa 'does not match'.
+  7. const c = new AbortController(); c.abort(); gọi với signal c.signal ->
+  reject với err.name === 'AbortError'.
+     Thêm 1 test cho isKnownSquadId: true với 'ces', 'te', 'ge'; false với
+  'xyz', '', undefined, 42.
+
+  Chạy npm test, xác nhận thất bại vì thiếu module, báo lại.
+
+  Kiểm tra: npm test (báo số test pass/fail), npm run build thành công, npm run
+  lint exit 0. Không có 'http://', 'setInterval', 'setTimeout', 'console.log'
+  trong 2 file mới.
+
+  Commit:
+  git add src/utils/fetchKraftonPubgTelemetry.js
+  src/utils/fetchKraftonPubgTelemetry.test.js
+  git commit -m "feat(ex3): add abortable telemetry fetch with packet loss"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\utils\fetchKraftonPubgTelemetry.test.js)
+  ⎿  Wrote 101 lines to src\utils\fetchKraftonPubgTelemetry.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { PUBG_VN_SQUADS } from '../data/pubgVnSquads.js'
+       4 import { fetchKraftonPubgTelemetry, isKnownSquadId } from './fet
+         chKraftonPubgTelemetry.js'
+       5
+       6 function createFakeFetch({ ok = true, status = 200, payload = nu
+         ll } = {}) {
+       7   const calls = []
+       8   async function fakeFetch(url, options) {
+     … +93 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Test thất bại đúng như mong đợi vì thiếu module. Giờ viết helper.
+
+● Write(src\utils\fetchKraftonPubgTelemetry.js)
+  ⎿  Wrote 42 lines to src\utils\fetchKraftonPubgTelemetry.js
+       1 import { PUBG_VN_SQUADS } from '../data/pubgVnSquads.js'
+       2
+       3 /** @typedef {import('../contracts/pubg-match-telemetry.contract
+         .js').PubgSquad} PubgSquad */
+       4 /** @typedef {import('../contracts/pubg-match-telemetry.contract
+         .js').FetchTelemetryOptions} FetchTelemetryOptions */
+       5
+       6 export const PACKET_LOSS_RATE = 0.35
+       7
+       8 /**
+     … +34 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lần grep vừa rồi có kết quả chỉ vì mẫu try trùng với chữ "Telemetry". Tôi chạy
+  lại với mẫu chính xác.
+  Ran 1 shell command (ctrl+o to expand)
+
+● E3-T08 đã xong và commit, chưa push. Tôi viết test trước, rồi mới viết code.
+
+  Lần chạy test đầu (chưa có module): thất bại đúng lý do, với thông báo:
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+  '...\src\utils\fetchKraftonPubgTelemetry.js' imported from
+  ...\src\utils\fetchKraftonPubgTelemetry.test.js
+  ✖ src\utils\fetchKraftonPubgTelemetry.test.js
+  ℹ tests 51  ℹ pass 50  ℹ fail 1
+
+  File mới:
+  - src/utils/fetchKraftonPubgTelemetry.test.js có 8 test, không dùng mạng thật.
+    - Hàm createFakeFetch ghi lại { url, options } của mỗi lần gọi. Nếu signal
+      đã bị abort, nó reject bằng new DOMException('Aborted', 'AbortError').
+    - 7 test ứng với 7 trường hợp của mục 4.5 (te hợp lệ, packet loss, biên
+      0.35, id lạ, 503, payload sai id, signal đã abort).
+    - 1 test cho isKnownSquadId.
+  - src/utils/fetchKraftonPubgTelemetry.js export PACKET_LOSS_RATE = 0.35,
+    isKnownSquadId và fetchKraftonPubgTelemetry.
+    - Hàm làm đúng 7 bước theo thứ tự đã cho.
+    - Không có try/catch, nên AbortError tự rơi ra cho component xử lý.
+    - JSDoc dùng typedef PubgSquad và FetchTelemetryOptions từ file contract.
+
+  Kiểm tra sau khi có code:
+  - npm test: 58 test, 58 pass, 0 fail.
+  - npm run build: thành công.
+  - npm run lint: exit 0.
+  - Không có http://, setInterval, setTimeout, console.log, try hay catch trong
+    2 file mới. Lần grep đầu báo trùng chỉ vì mẫu try khớp với chữ "Telemetry";
+    chạy lại với \btry\b thì không có kết quả nào.
+
+  Commit: ac0dbd5 với message feat(ex3): add abortable telemetry fetch with
+  packet loss. Commit chỉ có 2 file trên.
+
+> Đọc Agent.md, project-rules.md (mục 3, 6, 15, 16) và TASK_DECOMPOSITION.md
+  (Part 4, Invariants 1 đến 6, 10, 12, E3-T09). Chỉ làm E3-T09. CHƯA làm
+  skeleton, role="alert", nút Reconnect hay retryTick (đó là E3-T12). Chưa sửa
+  App.jsx (E3-T10).
+
+  Phạm vi file: tạo src/components/PubgMatchTelemetry.jsx và
+  src/components/PubgMatchTelemetry.module.css.
+
+  Yêu cầu cho PubgMatchTelemetry.jsx:
+  - Import: Fragment, useEffect, useId, useState từ 'react'; PUBG_VN_SQUADS từ
+  '../data/pubgVnSquads.js'; fetchKraftonPubgTelemetry, isKnownSquadId từ
+  '../utils/fetchKraftonPubgTelemetry.js'; IDLE_VIEW, loadingView, successView,
+  errorView từ '../utils/telemetryView.js'; styles từ
+  './PubgMatchTelemetry.module.css'.
+  - /** @param {import('../contracts/pubg-match-telemetry.contract.js').PubgMat
+  chTelemetryProps} props */
+    export function PubgMatchTelemetry({ initialSquadId = 'te' }) { ... }
+  (named export, không default export).
+  - const headingId = useId()
+  - const [squadId, setSquadId] = useState(() =>
+  (isKnownSquadId(initialSquadId) ? initialSquadId : 'te'))
+  - const [view, setView] = useState(IDLE_VIEW)
+  - Đúng MỘT useEffect, viết đúng như sau:
+    useEffect(() => {
+      const controller = new AbortController()
+      setView(loadingView())
+      fetchKraftonPubgTelemetry(squadId, { signal: controller.signal })
+    .then((payload) => setView(successView(payload)))
+    .catch((err) => {
+      if (err.name === 'AbortError') return
+      setView(errorView(err.message))
+    })
+      return () => controller.abort()
+    }, [squadId])
+  - JSX:
+    <section className={styles.telemetry} aria-labelledby={headingId}>
+      <h2 id={headingId}>KRAFTON PUBG VN Live Telemetry</h2>
+      <ul className={styles.squads} aria-label="Squads">
+        {PUBG_VN_SQUADS.map((s) => (
+          <li key={s.id}>
+            <button type="button" aria-pressed={s.id === squadId} onClick={()
+  => setSquadId(s.id)}>{s.name}</button>
+          </li>
+        ))}
+      </ul>
+      rồi theo view.status:
+      - 'SUCCESS': <article className={styles.result}
+  aria-live="polite"><h3>{view.data.name}</h3><dl>{Object.entries({ Map:
+  view.data.map, Phase: view.data.phase, Alive: view.data.alive, Kills:
+  view.data.kills, 'WWCD chance': view.data.wwcdProb, Status: view.data.status
+  }).map(([label, value]) => (<Fragment
+  key={label}><dt>{label}</dt><dd>{value}</dd></Fragment>))}</dl></article>
+      - 'ERROR': <p className={styles.panel}>Blue-Zone Link Lost:
+  {view.error}</p>
+      - còn lại (IDLE, LOADING): <p className={styles.panel}>Syncing KRAFTON
+  Radar...</p>
+    </section>
+  - Không '<div' (kể cả trong comment), không style=, không fetch( trong
+  component, không setInterval, không isLoading/isError, không window.alert,
+  không key là index.
+
+  Yêu cầu cho PubgMatchTelemetry.module.css (tối thiểu, chỉ token có sẵn trong
+  src/styles/tokens.css, không mã màu): .telemetry, .squads, .panel, .result,
+  mỗi class đúng một khai báo thật (ví dụ display: grid; list-style: none;
+  ...).
+
+  Kiểm tra:
+  - npm run build thành công, npm run lint exit 0 (react/exhaustive-deps đang
+  bật), npm test thành công.
+  - Chạy C1 đến C6 trong README/guide (bản PowerShell hoặc Git Bash) và báo:
+  C1–C6 không có kết quả.
+  - C7: Select-String -Path src\components\PubgMatchTelemetry.jsx -Pattern 'new
+  AbortController\(\)|controller\.abort\(\)|AbortError' phải in đúng 3 dòng;
+  dán 3 dòng đó vào báo cáo.
+
+  Commit:
+  git add src/components/PubgMatchTelemetry.jsx
+  src/components/PubgMatchTelemetry.module.css
+  git commit -m "feat(ex3): implement PUBG VN 4-state telemetry &
+  AbortController"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● C6 chưa được định nghĩa ở đâu trong repo; README hiện chỉ có C1 đến C5. Tôi sẽ
+  chạy C1 đến C5 cùng C7 và báo rõ điều này. Giờ viết component.
+
+● Write(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Wrote 63 lines to src\components\PubgMatchTelemetry.jsx
+       1 import { Fragment, useEffect, useId, useState } from 'react'
+       2 import { PUBG_VN_SQUADS } from '../data/pubgVnSquads.js'
+       3 import { fetchKraftonPubgTelemetry, isKnownSquadId } from '../ut
+         ils/fetchKraftonPubgTelemetry.js'
+       4 import { IDLE_VIEW, loadingView, successView, errorView } from '
+         ../utils/telemetryView.js'
+       5 import styles from './PubgMatchTelemetry.module.css'
+       6
+       7 /** @param {import('../contracts/pubg-match-telemetry.contract.j
+         s').PubgMatchTelemetryProps} props */
+     … +56 lines (ctrl+o to expand)
+
+● Write(src\components\PubgMatchTelemetry.module.css)
+  ⎿  Wrote 15 lines to src\components\PubgMatchTelemetry.module.css
+       1 .telemetry {
+       2   display: grid;
+       3 }
+       4
+       5 .squads {
+       6   list-style: none;
+       7 }
+       8
+       9 .panel {
+      10   padding: var(--space-4);
+     … +5 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lint thoát với mã 0 nhưng báo 1 cảnh báo react(set-state-in-effect) ở dòng 15,
+  tại đúng câu setView(loadingView()) mà đề yêu cầu giữ nguyên, nên tôi để
+  nguyên code. Tiếp theo tôi chạy C7 bằng PowerShell.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T09 đã xong và commit, chưa push. Có 2 điểm anh/chị cần biết: C6 chưa có
+  trong repo nên tôi không chạy được, và lint có 1 warning.
+
+  C6 chưa được định nghĩa: README chỉ có C1 đến C5. Theo bảng WBS, C6 và C7 sẽ
+  được ghi vào README ở E3-T18. Tôi đã chạy C1 đến C5 (bản Git Bash) và C7. Nếu
+  anh/chị cho tôi lệnh C6, tôi sẽ chạy lại.
+
+  Lint có 1 warning, không có lỗi (exit 0):
+  src/components/PubgMatchTelemetry.jsx:15:5: warning
+  react(set-state-in-effect): Calling setState synchronously within an effect
+  can trigger cascading renders
+  - Dòng 15 là setView(loadingView()), đúng câu đề yêu cầu viết nguyên văn, nên
+    tôi không sửa.
+  - Rule này đang ở mức warn, không làm lint thất bại.
+  - Muốn hết warning thì phải thay đổi cách đặt trạng thái LOADING. Việc đó lệch
+    khỏi spec, nên cần anh/chị quyết định.
+  - react/exhaustive-deps không báo gì.
+
+  File mới:
+  - src/components/PubgMatchTelemetry.jsx: viết theo đúng đặc tả.
+    - Named export, initialSquadId = 'te', id lạ thì quay về 'te'.
+    - Có useId cho heading.
+    - Hai state là squadId và view.
+    - Đúng một useEffect với deps [squadId].
+    - Nút squad có type="button", aria-pressed, key theo id.
+    - Kết quả SUCCESS hiện trong article có h3 và một dl dựng bằng
+      Object.entries với Fragment key.
+    - ERROR và IDLE/LOADING hiện bằng <p>.
+    - Chưa có skeleton, role="alert", Reconnect hay retryTick.
+  - src/components/PubgMatchTelemetry.module.css: 4 class .telemetry, .squads,
+    .panel, .result, mỗi class một khai báo. Chỉ dùng token, không mã màu.
+
+  Kiểm tra đã chạy:
+  - npm run build: thành công.
+  - npm test: 58 test, 58 pass, 0 fail.
+  - C1 đến C5: không có kết quả.
+  - Thêm: component không có fetch(, setInterval, isLoading, isError,
+    window.alert hay style=.
+  - C7 in đúng 3 dòng:
+  src\components\PubgMatchTelemetry.jsx:14:    const controller = new
+  AbortController()
+  src\components\PubgMatchTelemetry.jsx:19:        if (err.name ===
+  'AbortError') return
+  src\components\PubgMatchTelemetry.jsx:22:    return () => controller.abort()
+
+  Commit: 7df9c2b với message feat(ex3): implement PUBG VN 4-state telemetry &
+  AbortController. Commit chỉ có 2 file trên.
+
+  Chưa kiểm tra: component chưa được render vì App.jsx để dành cho E3-T10. Vì
+  vậy chưa chạy được trên trình duyệt.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, E3-T10). Chỉ
+  làm E3-T10.
+
+  Phạm vi file: src/App.jsx. Thêm dòng import { PubgMatchTelemetry } from
+  './components/PubgMatchTelemetry.jsx' (sau import ScientistDirectory) và
+  <PubgMatchTelemetry /> ngay sau <ScientistDirectory />. Không đổi gì khác.
+
+  Kiểm tra: npm run build thành công; npm test thành công; npm run lint exit 0
+  và chỉ có đúng 1 warning đã biết react(set-state-in-effect) ở
+  PubgMatchTelemetry.jsx (nếu có warning khác thì dừng và báo). Không có '<div'
+  trong src/components và src/App.jsx.
+
+  Commit:
+  git add src/App.jsx
+  git commit -m "feat(ex3): render PubgMatchTelemetry inside main landmark"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src\App.jsx)
+  ⎿  Added 1 line
+      1  import { DeveloperCard } from './components/DeveloperCard.jsx'
+      2  import { ScientistDirectory } from './components/ScientistDirect
+         ory.jsx'
+      3 +import { PubgMatchTelemetry } from './components/PubgMatchTeleme
+        +try.jsx'                                                        
+      4  
+      5  export function App() {
+      6    return (
+
+● Update(src\App.jsx)
+  ⎿  Added 1 line
+       8        <h1>Lab 3: React 19 Exercises</h1>
+       9        <DeveloperCard />
+      10        <ScientistDirectory />
+      11 +      <PubgMatchTelemetry />                                   
+      12      </main>
+      13    )
+      14  }
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T10 đã xong và commit, chưa push.
+
+  Thay đổi: src/App.jsx thêm đúng 2 dòng, không xóa dòng nào.
+  - Dòng import PubgMatchTelemetry nằm ngay sau import ScientistDirectory.
+  - <PubgMatchTelemetry /> nằm ngay sau <ScientistDirectory />, bên trong
+    <main>, với props mặc định.
+
+  Kiểm tra đã chạy:
+  - npm run build: thành công.
+  - npm test: 58 test, 58 pass, 0 fail.
+  - npm run lint: exit 0, chỉ có đúng 1 warning đã biết là
+    react(set-state-in-effect) ở PubgMatchTelemetry.jsx:15:5. Không có warning
+    mới.
+  - Không có <div trong src/components/*.jsx và src/App.jsx.
+
+  Commit: 6ade884 với message feat(ex3): render PubgMatchTelemetry inside main
+  landmark. Commit chỉ có src/App.jsx.
+
+  Chưa kiểm tra: chưa xem trên trình duyệt (fetch thật, abort khi đổi squad,
+  Console). Phần này anh/chị kiểm tra với npm run dev.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, E3-T11). Chỉ
+  làm E3-T11.
+
+  Phạm vi file: index.html. Chỉ đổi giá trị content của <meta
+  name="description"> thành đúng chuỗi: Lab 3 React 19 exercises: semantic
+  developer profile card, interactive pioneer directory and KRAFTON PUBG VN
+  live match telemetry.
+  Không đổi <title> hay dòng nào khác.
+
+  Kiểm tra: npm run build thành công; git diff index.html chỉ đổi đúng 1 dòng.
+
+  Commit:
+  git add index.html
+  git commit -m "chore(page): describe exercise 3 in page metadata"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+● Update(index.html)
+  ⎿  Added 1 line, removed 1 line
+       4      <meta charset="UTF-8" />
+       5      <link rel="icon" type="image/svg+xml" href="/favicon.svg" /
+          >
+       6      <meta name="viewport" content="width=device-width, initial-
+          scale=1.0" />
+       7 -    <meta name="description" content="Lab 3 React 19 exercises:
+         - semantic developer profile card and interactive pioneer direct
+         -ory." />                                                       
+       7 +    <meta name="description" content="Lab 3 React 19 exercises:
+         + semantic developer profile card, interactive pioneer directory
+         + and KRAFTON PUBG VN live match telemetry." />                 
+       8      <title>Lab 3: React 19 Exercises</title>
+       9    </head>
+      10    <body>
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● E3-T11 đã xong và commit, chưa push.
+
+  Thay đổi: trong index.html, dòng 7 có content của <meta name="description">
+  đổi thành đúng chuỗi được yêu cầu:
+  Lab 3 React 19 exercises: semantic developer profile card, interactive pioneer
+  directory and KRAFTON PUBG VN live match telemetry.
+  <title> và các dòng khác không đổi.
+
+  Kiểm tra đã chạy:
+  - git diff index.html: chỉ đổi đúng 1 dòng (+1/−1).
+  - npm run build: thành công.
+
+  Commit: a6844e3 với message chore(page): describe exercise 3 in page metadata.
+  Commit chỉ có index.html.
+
+> Đọc Agent.md, project-rules.md (mục 16) và TASK_DECOMPOSITION.md (Part 4,
+  Invariants 3, 4, 8, 9, E3-T12). Chỉ làm E3-T12. CHƯA làm chuyển focus sau
+  Reconnect (E3-T13), chưa style hoàn chỉnh (E3-T14 đến T16).
+
+  Phạm vi file: src/components/PubgMatchTelemetry.jsx; được THÊM class mới tối
+  thiểu vào src/components/PubgMatchTelemetry.module.css (mỗi class đúng một
+  khai báo, chỉ token có sẵn, không mã màu), không sửa class cũ.
+
+  Yêu cầu:
+  - Thêm const [retryTick, setRetryTick] = useState(0). Deps của useEffect đổi
+  thành đúng [squadId, retryTick]. Thân effect giữ nguyên. Không thêm useEffect
+  mới.
+  - Phần hiển thị theo view.status (thay khối điều kiện hiện tại):
+    - 'IDLE': <p className={styles.panel}>Radar idle.</p>
+    - 'LOADING': <section className={styles.skeleton} aria-busy="true">Syncing
+  KRAFTON Radar...</section>
+    - 'ERROR': <section className={styles.alert} role="alert"><p>Blue-Zone Link
+  Lost: {view.error}</p><button type="button" onClick={() => setRetryTick((t)
+  => t + 1)}>Reconnect Satellite</button></section>
+    - 'SUCCESS': giữ nguyên article hiện có.
+      Viết rõ ràng, dễ đọc (ví dụ một hàm nhỏ trong file hoặc các nhánh if trả
+  JSX); không lồng ternary 3 tầng.
+  - CSS mới: .skeleton và .alert, mỗi class một khai báo.
+  - Không window.alert, không setInterval, không isLoading/isError, không
+  '<div', không fetch( trong component.
+
+  Kiểm tra:
+  - npm run build thành công; npm test thành công; npm run lint exit 0 và chỉ
+  có đúng 1 warning đã biết react(set-state-in-effect) (warning khác thì dừng
+  và báo).
+  - C6 (Git Bash):
+    grep -rnE 'isLoading|isError|setInterval\(' src --include='.jsx'
+  --include='.js'
+    grep -rn '\bfetch(' src --include='.jsx' --include='.js' | grep -v
+  'fetchKraftonPubgTelemetry'
+    cả hai không in gì.
+  - C7 (Git Bash): grep -nE 'new
+  AbortController\(\)|controller\.abort\(\)|AbortError'
+  src/components/PubgMatchTelemetry.jsx in đúng 3 dòng; dán vào báo cáo.
+  - Báo dòng deps của useEffect.
+
+  Commit:
+  git add src/components/PubgMatchTelemetry.jsx
+  src/components/PubgMatchTelemetry.module.css
+  git commit -m "feat(ex3): add skeleton UI & retry alert"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 1 line
+       9    const headingId = useId()
+      10    const [squadId, setSquadId] = useState(() => (isKnownSquadId(
+          initialSquadId) ? initialSquadId : 'te'))
+      11    const [view, setView] = useState(IDLE_VIEW)
+      12 +  const [retryTick, setRetryTick] = useState(0)                
+      13  
+      14    useEffect(() => {
+      15      const controller = new AbortController()
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 1 line, removed 1 line
+      21          setView(errorView(err.message))
+      22        })
+      23      return () => controller.abort()
+      24 -  }, [squadId])                                                
+      24 +  }, [squadId, retryTick])                                     
+      25  
+      26    return (
+      27      <section className={styles.telemetry} aria-labelledby={head
+          ingId}>
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 48 lines, removed 24 lines
+      35            </li>
+      36          ))}
+      37        </ul>
+      38 -      {view.status === 'SUCCESS' ? (                           
+      39 -        <article className={styles.result} aria-live="polite"> 
+      40 -          <h3>{view.data.name}</h3>                            
+      41 -          <dl>                                                 
+      42 -            {Object.entries({                                  
+      43 -              Map: view.data.map,                              
+      44 -              Phase: view.data.phase,                          
+      45 -              Alive: view.data.alive,                          
+      46 -              Kills: view.data.kills,                          
+      47 -              'WWCD chance': view.data.wwcdProb,               
+      48 -              Status: view.data.status,                        
+      49 -            }).map(([label, value]) => (                       
+      50 -              <Fragment key={label}>                           
+      51 -                <dt>{label}</dt>                               
+      52 -                <dd>{value}</dd>                               
+      53 -              </Fragment>                                      
+      54 -            ))}                                                
+      55 -          </dl>                                                
+      56 -        </article>                                             
+      57 -      ) : view.status === 'ERROR' ? (                          
+      58 -        <p className={styles.panel}>Blue-Zone Link Lost: {view.
+         -error}</p>                                                     
+      59 -      ) : (                                                    
+      60 -        <p className={styles.panel}>Syncing KRAFTON Radar...</p
+         ->                                                              
+      61 -      )}                                                       
+      38 +      {renderTelemetryView(view, () => setRetryTick((t) => t + 
+         +1))}                                                           
+      39      </section>
+      40    )
+      41  }
+      42 +                                                               
+      43 +/**                                                            
+      44 + * @param {import('../contracts/pubg-match-telemetry.contract.j
+         +s').TelemetryView} view                                        
+      45 + * @param {() => void} onRetry                                 
+      46 + */                                                            
+      47 +function renderTelemetryView(view, onRetry) {                  
+      48 +  if (view.status === 'LOADING') {                             
+      49 +    return (                                                   
+      50 +      <section className={styles.skeleton} aria-busy="true">   
+      51 +        Syncing KRAFTON Radar...                               
+      52 +      </section>                                               
+      53 +    )                                                          
+      54 +  }                                                            
+      55 +  if (view.status === 'ERROR') {                               
+      56 +    return (                                                   
+      57 +      <section className={styles.alert} role="alert">          
+      58 +        <p>Blue-Zone Link Lost: {view.error}</p>               
+      59 +        <button type="button" onClick={onRetry}>               
+      60 +          Reconnect Satellite                                  
+      61 +        </button>                                              
+      62 +      </section>                                               
+      63 +    )                                                          
+      64 +  }                                                            
+      65 +  if (view.status === 'SUCCESS') {                             
+      66 +    return (                                                   
+      67 +      <article className={styles.result} aria-live="polite">   
+      68 +        <h3>{view.data.name}</h3>                              
+      69 +        <dl>                                                   
+      70 +          {Object.entries({                                    
+      71 +            Map: view.data.map,                                
+      72 +            Phase: view.data.phase,                            
+      73 +            Alive: view.data.alive,                            
+      74 +            Kills: view.data.kills,                            
+      75 +            'WWCD chance': view.data.wwcdProb,                 
+      76 +            Status: view.data.status,                          
+      77 +          }).map(([label, value]) => (                         
+      78 +            <Fragment key={label}>                             
+      79 +              <dt>{label}</dt>                                 
+      80 +              <dd>{value}</dd>                                 
+      81 +            </Fragment>                                        
+      82 +          ))}                                                  
+      83 +        </dl>                                                  
+      84 +      </article>                                               
+      85 +    )                                                          
+      86 +  }                                                            
+      87 +  return <p className={styles.panel}>Radar idle.</p>           
+      88 +}                                                              
+
+● Update(src\components\PubgMatchTelemetry.module.css)
+  ⎿  Added 8 lines
+      13  .result {
+      14    display: grid;
+      15  }
+      16 +                                                               
+      17 +.skeleton {                                                    
+      18 +  padding: var(--space-4);                                     
+      19 +}                                                              
+      20 +                                                               
+      21 +.alert {                                                       
+      22 +  display: grid;                                               
+      23 +}                                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lint chỉ còn đúng warning đã biết. Nó chuyển từ dòng 15 xuống dòng 16 vì phía
+  trên có thêm dòng retryTick. Giờ commit.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● E3-T12 đã xong và commit, chưa push.
+
+  Thay đổi trong src/components/PubgMatchTelemetry.jsx:
+  - Thêm const [retryTick, setRetryTick] = useState(0).
+  - Dòng deps của useEffect là dòng 24: }, [squadId, retryTick]). Thân effect
+    giữ nguyên, file vẫn chỉ có 1 lời gọi useEffect(.
+  - Phần hiển thị nằm trong hàm nhỏ renderTelemetryView(view, onRetry) ở cuối
+    file. Hàm dùng các nhánh if thay cho ternary lồng nhau:
+    - LOADING: <section className={styles.skeleton} aria-busy="true">Syncing
+      KRAFTON Radar...</section>
+    - ERROR: <section className={styles.alert} role="alert"> chứa đoạn
+      "Blue-Zone Link Lost: {view.error}" và <button type="button">Reconnect
+      Satellite</button>. Nút gọi setRetryTick((t) => t + 1).
+    - SUCCESS: giữ nguyên article như trước.
+    - IDLE: <p className={styles.panel}>Radar idle.</p>
+  - Chưa chuyển focus sau Reconnect; việc này để dành cho E3-T13.
+
+  Thay đổi trong PubgMatchTelemetry.module.css
+  (src/components/PubgMatchTelemetry.module.css): thêm .skeleton (padding:
+  var(--space-4)) và .alert (display: grid), không sửa class cũ.
+
+  Kiểm tra đã chạy:
+  - npm run build: thành công.
+  - npm test: 58 test, 58 pass, 0 fail.
+  - npm run lint: exit 0, chỉ có 1 warning đã biết react(set-state-in-effect).
+    Warning chuyển từ dòng 15 sang dòng 16 vì phía trên thêm 1 dòng.
+  - C1 đến C6: không in gì.
+  - C7 in đúng 3 dòng:
+  15:    const controller = new AbortController()
+  20:        if (err.name === 'AbortError') return
+  23:    return () => controller.abort()
+
+  Commit: 6c593eb với message feat(ex3): add skeleton UI & retry alert. Commit
+  chỉ có 2 file trên.
+
+  Chưa kiểm tra: chưa xem trên trình duyệt (skeleton khi Slow 3G, alert khi mất
+  gói, nút Reconnect). Phần này anh/chị kiểm tra.
+> Đọc Agent.md, project-rules.md (mục 15 Focus after delete, mục 16) và
+  TASK_DECOMPOSITION.md (Part 4, Invariant 9, E3-T13). Chỉ làm E3-T13.
+
+  Phạm vi file: src/components/PubgMatchTelemetry.jsx. Không sửa file khác.
+
+  Vấn đề: nút Reconnect Satellite nằm trong <section role="alert"> và biến mất
+  khi bấm (status chuyển sang LOADING), nên focus bàn phím rơi về <body>.
+
+  Yêu cầu:
+  - Thêm useRef vào import từ 'react'. const selectedSquadRef = useRef(null).
+  - Nút squad: thêm ref={s.id === squadId ? selectedSquadRef : undefined}.
+  Không đổi gì khác ở nút.
+  - Trong component định nghĩa:
+    function handleReconnect() {
+      setRetryTick((t) => t + 1)
+      selectedSquadRef.current?.focus()
+    }
+    và truyền handleReconnect cho renderTelemetryView thay cho lambda hiện tại.
+  - Nút squad luôn hiển thị nên không cần flushSync. KHÔNG thêm useEffect (file
+  vẫn đúng 1 lời gọi useEffect(). Không đổi deps, không đổi
+  renderTelemetryView ngoài tham số nhận vào.
+
+  Kiểm tra:
+  - npm run build thành công; npm test thành công; npm run lint exit 0 và chỉ
+  có đúng 1 warning đã biết react(set-state-in-effect) (warning khác thì dừng
+  và báo).
+  - grep -c 'useEffect(' src/components/PubgMatchTelemetry.jsx phải là 1.
+  - C6 không in gì; C7 in đúng 3 dòng.
+
+  Commit:
+  git add src/components/PubgMatchTelemetry.jsx
+  git commit -m "feat(a11y): return focus to selected squad after retry"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 1 line, removed 1 line
+      1 -import { Fragment, useEffect, useId, useState } from 'react'    
+      1 +import { Fragment, useEffect, useId, useRef, useState } from 're
+        +act'                                                            
+      2  import { PUBG_VN_SQUADS } from '../data/pubgVnSquads.js'
+      3  import { fetchKraftonPubgTelemetry, isKnownSquadId } from '../ut
+         ils/fetchKraftonPubgTelemetry.js'
+      4  import { IDLE_VIEW, loadingView, successView, errorView } from '
+         ../utils/telemetryView.js'
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 1 line
+      10    const [squadId, setSquadId] = useState(() => (isKnownSquadId(
+          initialSquadId) ? initialSquadId : 'te'))
+      11    const [view, setView] = useState(IDLE_VIEW)
+      12    const [retryTick, setRetryTick] = useState(0)
+      13 +  const selectedSquadRef = useRef(null)                        
+      14  
+      15    useEffect(() => {
+      16      const controller = new AbortController()
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 5 lines
+      24      return () => controller.abort()
+      25    }, [squadId, retryTick])
+      26  
+      27 +  function handleReconnect() {                                 
+      28 +    setRetryTick((t) => t + 1)                                 
+      29 +    selectedSquadRef.current?.focus()                          
+      30 +  }                                                            
+      31 +                                                               
+      32    return (
+      33      <section className={styles.telemetry} aria-labelledby={head
+          ingId}>
+      34        <h2 id={headingId}>KRAFTON PUBG VN Live Telemetry</h2>
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 6 lines, removed 1 line
+      35        <ul className={styles.squads} aria-label="Squads">
+      36          {PUBG_VN_SQUADS.map((s) => (
+      37            <li key={s.id}>
+      38 -            <button type="button" aria-pressed={s.id === squadI
+         -d} onClick={() => setSquadId(s.id)}>                           
+      38 +            <button                                            
+      39 +              type="button"                                    
+      40 +              aria-pressed={s.id === squadId}                  
+      41 +              ref={s.id === squadId ? selectedSquadRef : undefi
+         +ned}                                                           
+      42 +              onClick={() => setSquadId(s.id)}                 
+      43 +            >                                                  
+      44                {s.name}
+      45              </button>
+      46            </li>
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 1 line, removed 1 line
+      46            </li>
+      47          ))}
+      48        </ul>
+      49 -      {renderTelemetryView(view, () => setRetryTick((t) => t + 
+         -1))}                                                           
+      49 +      {renderTelemetryView(view, handleReconnect)}             
+      50      </section>
+      51    )
+      52  }
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lint báo thêm một warning mới. Theo yêu cầu, tôi dừng và chưa commit. Tôi xem
+  toàn văn warning để báo cho rõ.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● E3-T13 chưa được commit: lint báo thêm 1 warning mới, nên tôi dừng theo yêu
+  cầu. Phần sửa vẫn nằm trong working tree, chưa stage.
+
+  Warning mới:
+  src/components/PubgMatchTelemetry.jsx:49:34: warning react(refs): Cannot
+  access refs during render ... Accessing a ref value (the `current` property)
+  during render can cause your component not to update as expected
+  Dòng 49 là {renderTelemetryView(view, handleReconnect)}.
+
+  Nguyên nhân: renderTelemetryView là một hàm thường được gọi ngay trong lúc
+  render. handleReconnect có đọc selectedSquadRef.current lại được truyền vào
+  hàm đó, nên linter cho rằng ref bị đọc trong lúc render. Thực ra
+  handleReconnect chỉ chạy khi bấm nút, tức là trong event handler, nên về hành
+  vi đây là báo nhầm. Dù vậy nó vẫn là warning mới, nên tôi không commit.
+
+  Kết quả các kiểm tra khác (code đang sửa dở):
+  - npm run build: thành công.
+  - npm test: 58 test, 58 pass, 0 fail.
+  - npm run lint: exit 0, có 2 warning (warning mới ở trên và warning đã biết
+    set-state-in-effect).
+  - grep -c 'useEffect(' cho kết quả 1.
+  - C6 không in gì.
+  - C7 in đúng 3 dòng (16, 21, 24).
+
+  Cách sửa có thể chọn (cần anh/chị quyết định, vì đề cấm đổi
+  renderTelemetryView ngoài tham số):
+  1. Đổi renderTelemetryView thành một component nhỏ trong cùng file, ví dụ
+     <TelemetryPanel view={view} onReconnect={handleReconnect} />. Truyền
+     handler qua prop JSX là cách linter chấp nhận. Hành vi giữ nguyên nhưng
+     phần render phải đổi từ gọi hàm sang component.
+  2. Giữ nguyên code và chấp nhận 2 warning (cả hai đều ở mức warn, lint vẫn
+     exit 0). Khi đó các task sau cần cập nhật câu kiểm tra "chỉ 1 warning đã
+     biết".
+  3. Đưa nhánh ERROR trở lại inline trong JSX của component để nút Reconnect gọi
+     handleReconnect trực tiếp. Cách này phải đổi cấu trúc renderTelemetryView.
+
+  Tôi đề xuất cách 1 vì thay đổi ít nhất và không cần chấp nhận warning. Anh/chị
+  cho biết chọn cách nào, hoặc bảo tôi hoàn tác phần sửa này.
+
+> Chọn cách 1. Tiếp tục E3-T13 trên phần sửa đang có trong working tree của
+  src/components/PubgMatchTelemetry.jsx (giữ nguyên useRef, ref trên nút squad
+  đang chọn và handleReconnect). Tôi cho phép đổi renderTelemetryView trong
+  task này, chỉ trong file này.
+
+  Yêu cầu:
+  - Đổi hàm renderTelemetryView(view, onRetry) thành component không export ở
+  cuối file:
+    /**
+    - @param {{ view:
+  import('../contracts/pubg-match-telemetry.contract.js').TelemetryView,
+  onReconnect: () => void }} props
+       */
+      function TelemetryPanel({ view, onReconnect }) { ...giữ nguyên 4 nhánh if
+  và JSX hiện có, nút Reconnect Satellite dùng onClick={onReconnect}... }
+  - Trong PubgMatchTelemetry thay {renderTelemetryView(view, handleReconnect)}
+  bằng <TelemetryPanel view={view} onReconnect={handleReconnect} />.
+  - Không đổi gì khác: không đổi useEffect, deps, state, JSX của 4 trạng thái,
+  CSS.
+
+  Kiểm tra:
+  - npm run build thành công; npm test thành công; npm run lint exit 0 và chỉ
+  có đúng 1 warning đã biết react(set-state-in-effect); warning react(refs)
+  phải hết (nếu còn warning khác thì dừng và báo).
+  - grep -c 'useEffect(' src/components/PubgMatchTelemetry.jsx = 1; không còn
+  chuỗi renderTelemetryView trong file.
+  - C6 không in gì; C7 in đúng 3 dòng.
+  - git diff --stat chỉ có src/components/PubgMatchTelemetry.jsx.
+
+  Commit:
+  git add src/components/PubgMatchTelemetry.jsx
+  git commit -m "feat(a11y): return focus to selected squad after retry"
+
+  Không push. Báo cáo bằng tiếng Việt, kèm danh sách warning lint.
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 1 line, removed 1 line
+      46            </li>
+      47          ))}
+      48        </ul>
+      49 -      {renderTelemetryView(view, handleReconnect)}             
+      49 +      <TelemetryPanel view={view} onReconnect={handleReconnect}
+         + />                                                            
+      50      </section>
+      51    )
+      52  }
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 2 lines, removed 3 lines
+      52  }
+      53  
+      54  /**
+      55 - * @param {import('../contracts/pubg-match-telemetry.contract.j
+         -s').TelemetryView} view                                        
+      56 - * @param {() => void} onRetry                                 
+      55 + * @param {{ view: import('../contracts/pubg-match-telemetry.co
+         +ntract.js').TelemetryView, onReconnect: () => void }} props    
+      56   */
+      58 -function renderTelemetryView(view, onRetry) {                  
+      57 +function TelemetryPanel({ view, onReconnect }) {               
+      58    if (view.status === 'LOADING') {
+      59      return (
+      60        <section className={styles.skeleton} aria-busy="true">
+
+● Update(src\components\PubgMatchTelemetry.jsx)
+  ⎿  Added 1 line, removed 1 line
+      66      return (
+      67        <section className={styles.alert} role="alert">
+      68          <p>Blue-Zone Link Lost: {view.error}</p>
+      69 -        <button type="button" onClick={onRetry}>               
+      69 +        <button type="button" onClick={onReconnect}>           
+      70            Reconnect Satellite
+      71          </button>
+      72        </section>
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Warning react(refs) đã hết và chỉ còn warning đã biết. Giờ commit.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● E3-T13 đã xong theo cách 1 và commit, chưa push. Warning react(refs) đã hết.
+
+  Thay đổi trong src/components/PubgMatchTelemetry.jsx:
+  - Giữ phần đã sửa trước: useRef, selectedSquadRef, ref gắn trên nút squad đang
+    chọn, và handleReconnect. Hàm này tăng retryTick rồi gọi
+    selectedSquadRef.current?.focus().
+  - renderTelemetryView(view, onRetry) đổi thành component không export
+    TelemetryPanel({ view, onReconnect }) ở cuối file, có JSDoc như yêu cầu. 4
+    nhánh if và JSX giữ nguyên; nút Reconnect Satellite dùng
+    onClick={onReconnect}.
+  - Trong component chính, lời gọi hàm được thay bằng <TelemetryPanel
+    view={view} onReconnect={handleReconnect} />.
+  - useEffect, deps, state và CSS không đổi.
+
+  Kiểm tra đã chạy:
+  - npm run build: thành công.
+  - npm test: 58 test, 58 pass, 0 fail.
+  - npm run lint: exit 0.
+  - grep -c 'useEffect(' cho kết quả 1.
+  - Chuỗi renderTelemetryView còn lại 0 lần trong file.
+  - C6 không in gì.
+  - C7 in đúng 3 dòng:
+  16:    const controller = new AbortController()
+  21:        if (err.name === 'AbortError') return
+  24:    return () => controller.abort()
+  - git diff --stat chỉ có src/components/PubgMatchTelemetry.jsx (+17/−7).
+
+  Danh sách warning lint (chỉ 1, là warning đã biết):
+  src/components/PubgMatchTelemetry.jsx:17:5: warning
+  react(set-state-in-effect): Calling setState synchronously within an effect
+  can trigger cascading renders
+
+  Commit: ba38263 với message feat(a11y): return focus to selected squad after
+  retry. Commit chỉ có file trên.
+
+  Chưa kiểm tra: chưa thử trên trình duyệt việc focus về đúng nút squad đang
+  chọn sau khi bấm Reconnect Satellite. Phần này anh/chị kiểm tra bằng bàn phím.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 4,
+  E3-T14). Chỉ làm E3-T14.
+
+  Phạm vi file: src/styles/tokens.css. Chỉ THÊM vào :root một nhóm có comment
+  "/* Telemetry (Exercise 3) */", không sửa hay xóa token có sẵn, không thêm mã
+  màu mới (chỉ var(...) trỏ tới token màu có sẵn):
+    --telemetry-panel-min-height: 220px;
+    --color-skeleton: var(--color-tier-core-bg);
+    --color-skeleton-text: var(--color-tier-core-text);
+    --color-alert-border: var(--color-accent);
+    --skeleton-pulse-duration: 1.5s;
+
+  Tính tương phản (từ giá trị màu thật của các token gốc trong tokens.css), báo
+  con số:
+  - --color-skeleton-text trên --color-skeleton: phải >= 4.5:1
+  - --color-alert-border trên --color-card-bg: phải >= 3:1
+    Nếu một cặp không đạt thì DỪNG, không commit, báo lại.
+
+  Kiểm tra:
+  - git diff src/styles/tokens.css chỉ có dòng thêm (0 dòng xóa).
+  - npm run build thành công; npm run lint exit 0 và chỉ có đúng 1 warning đã
+  biết react(set-state-in-effect).
+  - C4 (Git Bash): grep -rnE '#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(' src
+  --include='*.css' | grep -v 'tokens.css' không in gì.
+
+  Commit:
+  git add src/styles/tokens.css
+  git commit -m "style(ex3): add telemetry panel tokens"
+
+  Không push. Báo cáo bằng tiếng Việt, kèm 2 tỉ lệ tương phản.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Cả hai cặp màu đều đạt (8.49:1 và 6.70:1). Giờ thêm token.
+
+● Update(src\styles\tokens.css)
+  ⎿  Added 7 lines
+      46    --color-focus-ring: var(--color-accent);
+      47    --color-control-bg: var(--color-card-bg);
+      48    --color-control-text: var(--color-text);
+      49 +                                                               
+      50 +  /* Telemetry (Exercise 3) */                                 
+      51 +  --telemetry-panel-min-height: 220px;                         
+      52 +  --color-skeleton: var(--color-tier-core-bg);                 
+      53 +  --color-skeleton-text: var(--color-tier-core-text);          
+      54 +  --color-alert-border: var(--color-accent);                   
+      55 +  --skeleton-pulse-duration: 1.5s;                             
+      56  }
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T14 đã xong và commit, chưa push. Cả hai cặp màu đều đạt ngưỡng tương phản.
+
+  Tương phản (tính theo công thức WCAG 2.x, dùng giá trị hex thật của các token
+  gốc):
+
+  ┌────────────────────────────────┬──────────────┬────────┬────────┬──────┐
+  │              Cặp               │     Màu      │ Tỉ lệ  │ Ngưỡng │ Kết  │
+  │                                │              │        │        │ quả  │
+  ├────────────────────────────────┼──────────────┼────────┼────────┼──────┤
+  │ --color-skeleton-text trên     │ #1e3a8a trên │ 8.49:1 │ ≥      │ Đạt  │
+  │ --color-skeleton               │  #dbeafe     │        │ 4.5:1  │      │
+  ├────────────────────────────────┼──────────────┼────────┼────────┼──────┤
+  │ --color-alert-border trên      │ #1d4ed8 trên │ 6.70:1 │ ≥ 3:1  │ Đạt  │
+  │ --color-card-bg                │  #ffffff     │        │        │      │
+  └────────────────────────────────┴──────────────┴────────┴────────┴──────┘
+
+  Thay đổi: thêm nhóm /* Telemetry (Exercise 3) */ vào cuối :root trong
+  src/styles/tokens.css, gồm 5 token đúng như đề. Các token màu chỉ là var(...)
+  trỏ tới token có sẵn, không có mã màu mới.
+
+  Kiểm tra đã chạy:
+  - git diff: thêm 7 dòng, xóa 0 (1 dòng trống, 1 comment, 5 token).
+  - npm run build: thành công.
+  - npm run lint: exit 0, chỉ có 1 warning đã biết react(set-state-in-effect) ở
+    PubgMatchTelemetry.jsx:17:5.
+  - C4 không in gì.
+
+  Commit: b99c43b với message style(ex3): add telemetry panel tokens. Commit chỉ
+  có src/styles/tokens.css.
+
+  Chưa kiểm tra: các tỉ lệ trên được tính bằng script trong phiên này, chưa đo
+  trên trình duyệt. Token cũng chưa được dùng trong CSS nào; việc đó để dành cho
+  E3-T15 và E3-T16.
+
+> Đọc Agent.md, project-rules.md (mục 7, 16) và TASK_DECOMPOSITION.md (Part 4,
+  Invariants 8, 11, E3-T15). Chỉ làm E3-T15.
+
+  Phạm vi file: src/components/PubgMatchTelemetry.module.css. Chỉ sửa class
+  .skeleton và thêm @keyframes pulse cùng một khối @media
+  (prefers-reduced-motion: reduce); không sửa jsx, không sửa class khác.
+
+  Yêu cầu:
+  - .skeleton:
+    min-block-size: var(--telemetry-panel-min-height);
+    display: grid; place-items: center;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background-color: var(--color-skeleton);
+    color: var(--color-skeleton-text);
+    animation: pulse var(--skeleton-pulse-duration) ease-in-out infinite;
+  - @keyframes pulse: chỉ đổi background-color (0% và 100%:
+  var(--color-skeleton); 50%: var(--color-card-bg)). KHÔNG đổi opacity hay màu
+  chữ (opacity làm chữ tụt tương phản xuống 2.74:1 ở 0.55).
+  - @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+  - Chỉ token, không mã màu.
+
+  Tương phản: báo tỉ lệ --color-skeleton-text trên --color-skeleton và trên
+  --color-card-bg (cả hai phải >= 4.5:1, vì nền chuyển giữa hai màu này).
+
+  Kiểm tra:
+  Đọc Agent.md, project-rules.md (mục 7, 16) và TASK_DECOMPOSITION.md (Part 4,
+  Invariants 8, 11, E3-T15). Chỉ làm E3-T15.
+
+  Phạm vi file: src/components/PubgMatchTelemetry.module.css. Chỉ sửa class
+  .skeleton và thêm @keyframes pulse cùng một khối @media
+  (prefers-reduced-motion: reduce); không sửa jsx, không sửa class khác.
+
+  Yêu cầu:
+  - .skeleton:
+    min-block-size: var(--telemetry-panel-min-height);
+    display: grid; place-items: center;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background-color: var(--color-skeleton);
+    color: var(--color-skeleton-text);
+    animation: pulse var(--skeleton-pulse-duration) ease-in-out infinite;
+  - @keyframes pulse: chỉ đổi background-color (0% và 100%:
+  var(--color-skeleton); 50%: var(--color-card-bg)). KHÔNG đổi opacity hay màu
+  chữ (opacity làm chữ tụt tương phản xuống 2.74:1 ở 0.55).
+  - @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+  - Chỉ token, không mã màu.
+
+  Tương phản: báo tỉ lệ --color-skeleton-text trên --color-skeleton và trên
+  --color-card-bg (cả hai phải >= 4.5:1, vì nền chuyển giữa hai màu này).
+
+  Kiểm tra:
+  - npm run build thành công; npm run lint exit 0 và chỉ có đúng 1 warning đã
+  biết react(set-state-in-effect).
+  - C4 (Git Bash): grep -rnE '#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(' src
+  --include='*.css' | grep -v 'tokens.css' không in gì.
+  - git diff --stat chỉ có PubgMatchTelemetry.module.css.
+
+  Commit:
+  git add src/components/PubgMatchTelemetry.module.css
+  git commit -m "style(ex3): add blue-zone skeleton pulse"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Đoạn yêu cầu bị dán lặp hai lần nhưng nội dung giống nhau, nên tôi làm một
+  lần. Trước hết tính tương phản.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(src\components\PubgMatchTelemetry.module.css)
+  ⎿  Added 23 lines
+      15  }
+      16  
+      17  .skeleton {
+      18 +  min-block-size: var(--telemetry-panel-min-height);           
+      19 +  display: grid;                                               
+      20 +  place-items: center;                                         
+      21    padding: var(--space-4);
+      22 +  border-radius: var(--radius-md);                             
+      23 +  background-color: var(--color-skeleton);                     
+      24 +  color: var(--color-skeleton-text);                           
+      25 +  animation: pulse var(--skeleton-pulse-duration) ease-in-out i
+         +nfinite;                                                       
+      26  }
+      27  
+      28  .alert {
+      29    display: grid;
+      30  }
+      31 +                                                               
+      32 +@keyframes pulse {                                             
+      33 +  0%,                                                          
+      34 +  100% {                                                       
+      35 +    background-color: var(--color-skeleton);                   
+      36 +  }                                                            
+      37 +  50% {                                                        
+      38 +    background-color: var(--color-card-bg);                    
+      39 +  }                                                            
+      40 +}                                                              
+      41 +                                                               
+      42 +@media (prefers-reduced-motion: reduce) {                      
+      43 +  .skeleton {                                                  
+      44 +    animation: none;                                           
+      45 +  }                                                            
+      46 +}                                                              
+  Ran 1 shell command (ctrl+o to expand)
+
+● CSS Modules đổi tên keyframes thành _pulse_k0bhz_1. Tôi kiểm tra xem thuộc
+  tính animation có trỏ đúng tên mới không.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T15 đã xong và commit, chưa push. Đoạn yêu cầu bị dán lặp hai lần nhưng nội
+  dung giống nhau, nên tôi chỉ làm một lần.
+
+  Tương phản (tính bằng công thức WCAG 2.x từ giá trị hex thật):
+
+  ┌──────────────────────────────────────────┬─────────┬─────────┬─────────┐
+  │ Chữ --color-skeleton-text (#1e3a8a) trên │  Tỉ lệ  │ Ngưỡng  │ Kết quả │
+  ├──────────────────────────────────────────┼─────────┼─────────┼─────────┤
+  │ --color-skeleton (#dbeafe)               │ 8.49:1  │ ≥ 4.5:1 │ Đạt     │
+  ├──────────────────────────────────────────┼─────────┼─────────┼─────────┤
+  │ --color-card-bg (#ffffff)                │ 10.36:1 │ ≥ 4.5:1 │ Đạt     │
+  └──────────────────────────────────────────┴─────────┴─────────┴─────────┘
+
+  Nền chỉ chuyển giữa hai màu này, nên chữ luôn đạt ít nhất 8.49:1. Con số
+  2.74:1 khi dùng opacity 0.55 trong đề là của anh/chị đưa; tôi không tính lại.
+
+  Thay đổi trong PubgMatchTelemetry.module.css
+  (src/components/PubgMatchTelemetry.module.css):
+  - .skeleton có đủ 8 khai báo theo đề: min-block-size:
+    var(--telemetry-panel-min-height), grid căn giữa, padding, bo góc, nền và
+    chữ skeleton, và animation: pulse ....
+  - @keyframes pulse chỉ đổi background-color: 0% và 100% là --color-skeleton,
+    50% là --color-card-bg. Không có opacity, không đổi màu chữ.
+  - @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }.
+  - JSX và các class khác không đổi.
+
+  Kiểm tra đã chạy:
+  - npm run build: thành công. Trong CSS sau build, keyframes được CSS Modules
+    đổi tên thành _pulse_k0bhz_1 và animation trỏ đúng tên đó, nên animation
+    không bị mất tham chiếu. Dòng animation:none cũng có mặt.
+  - npm run lint: exit 0, chỉ có 1 warning đã biết react(set-state-in-effect) ở
+    PubgMatchTelemetry.jsx:17:5.
+  - C4 không in gì.
+  - git diff --stat chỉ có PubgMatchTelemetry.module.css (+23).
+
+  Commit: 0d7a696 với message style(ex3): add blue-zone skeleton pulse. Commit
+  chỉ có file trên.
+
+  Chưa kiểm tra: chưa xem trên trình duyệt hiệu ứng pulse khi Slow 3G, việc tắt
+  animation khi bật "Emulate prefers-reduced-motion: reduce" trong DevTools
+  Rendering, và CLS khi chuyển trạng thái. Phần này anh/chị kiểm tra.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 4,
+  Invariants 8, 10, E3-T16). Chỉ làm E3-T16.
+
+  Phạm vi file: src/components/PubgMatchTelemetry.module.css. Hoàn thiện
+  .telemetry, .squads, .panel, .result, .alert và các phần tử con; KHÔNG sửa
+  .skeleton, @keyframes pulse và khối @media prefers-reduced-motion đã làm ở
+  E3-T15; không sửa jsx.
+
+  Tham khảo src/components/ScientistDirectory.module.css để dùng cùng kiểu thẻ
+  và kiểu nút (đọc, không sửa file đó).
+
+  Yêu cầu (mobile-first, chỉ token, không mã màu, không white-space: nowrap,
+  không thêm media query):
+  - .telemetry: giống .directory của Exercise 2 (display grid;
+  grid-template-columns minmax(0, 1fr); gap var(--space-3); width 100%;
+  max-width var(--card-max-width); padding var(--space-4); viền 1px
+  var(--color-border); bo var(--radius-lg); nền var(--color-card-bg); chữ
+  var(--color-text)).
+  - .telemetry h2: như .directory h2 (font-size var(--font-size-lg);
+  line-height 1.2; overflow-wrap anywhere).
+  - .squads: display flex; flex-wrap wrap; gap var(--space-2); padding 0;
+  margin 0; list-style none.
+  - .squads button và nút trong .alert: như .delete của Exercise 2 (min-height
+  var(--control-min-height); padding var(--control-padding); viền
+  var(--control-border-width) solid var(--color-border); bo var(--radius-sm);
+  nền var(--color-control-bg); chữ var(--color-control-text); font inherit).
+  Nút trong .alert không cần margin-inline-start auto.
+  - .squads button[aria-pressed='true']: border-color var(--color-accent);
+  box-shadow inset 0 0 0 1px var(--color-accent) (viền trông dày gấp đôi mà
+  không đổi kích thước); font-weight 700. Phân biệt bằng độ dày viền VÀ chữ
+  đậm, không chỉ bằng màu.
+  - .panel, .result, .alert: min-block-size var(--telemetry-panel-min-height)
+  để 4 trạng thái cao bằng nhau (CLS 0).
+  - .panel: display grid; place-items center; padding var(--space-4).
+  - .result: display grid; align-content start; gap var(--space-2). h3:
+  font-size var(--font-size-md).
+  - .result dl: display grid; grid-template-columns auto minmax(0, 1fr); gap
+  var(--space-1) var(--space-3); margin 0. dt: font-weight 600. dd: margin 0;
+  overflow-wrap anywhere.
+  - .alert: display grid; align-content center; justify-items start; gap
+  var(--space-3); padding var(--space-4); viền var(--control-border-width)
+  solid var(--color-alert-border); bo var(--radius-md).
+
+  Kiểm tra:
+  - npm run build thành công; npm test thành công; npm run lint exit 0 và chỉ
+  có đúng 1 warning đã biết react(set-state-in-effect).
+  - C4 (Git Bash): grep -rnE '#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(' src
+  --include='*.css' | grep -v 'tokens.css' không in gì.
+  - grep -n 'nowrap' src/components/PubgMatchTelemetry.module.css không in gì.
+  - git diff --stat chỉ có PubgMatchTelemetry.module.css; .skeleton, @keyframes
+  pulse và @media reduce không đổi.
+
+  Commit:
+  git add src/components/PubgMatchTelemetry.module.css
+  git commit -m "style(ex3): add responsive 375px telemetry layout"
+
+  Không push. Báo cáo bằng tiếng Việt: nêu rõ chưa kiểm tra trên trình duyệt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(src\components\PubgMatchTelemetry.module.css)
+  ⎿  Added 67 lines
+       1  .telemetry {
+       2    display: grid;
+       3 +  grid-template-columns: minmax(0, 1fr);                       
+       4 +  gap: var(--space-3);                                         
+       5 +  width: 100%;                                                 
+       6 +  max-width: var(--card-max-width);                            
+       7 +  padding: var(--space-4);                                     
+       8 +  border: 1px solid var(--color-border);                       
+       9 +  border-radius: var(--radius-lg);                             
+      10 +  background-color: var(--color-card-bg);                      
+      11 +  color: var(--color-text);                                    
+      12  }
+      13  
+      14 +.telemetry h2 {                                                
+      15 +  font-size: var(--font-size-lg);                              
+      16 +  line-height: 1.2;                                            
+      17 +  overflow-wrap: anywhere;                                     
+      18 +}                                                              
+      19 +                                                               
+      20  .squads {
+      21 +  display: flex;                                               
+      22 +  flex-wrap: wrap;                                             
+      23 +  gap: var(--space-2);                                         
+      24 +  padding: 0;                                                  
+      25 +  margin: 0;                                                   
+      26    list-style: none;
+      27  }
+      28  
+      29 +.squads button,                                                
+      30 +.alert button {                                                
+      31 +  min-height: var(--control-min-height);                       
+      32 +  padding: var(--control-padding);                             
+      33 +  border: var(--control-border-width) solid var(--color-border)
+         +;                                                              
+      34 +  border-radius: var(--radius-sm);                             
+      35 +  background-color: var(--color-control-bg);                   
+      36 +  color: var(--color-control-text);                            
+      37 +  font: inherit;                                               
+      38 +}                                                              
+      39 +                                                               
+      40 +.squads button[aria-pressed='true'] {                          
+      41 +  border-color: var(--color-accent);                           
+      42 +  box-shadow: inset 0 0 0 1px var(--color-accent);             
+      43 +  font-weight: 700;                                            
+      44 +}                                                              
+      45 +                                                               
+      46 +.panel,                                                        
+      47 +.result,                                                       
+      48 +.alert {                                                       
+      49 +  min-block-size: var(--telemetry-panel-min-height);           
+      50 +}                                                              
+      51 +                                                               
+      52  .panel {
+      53 +  display: grid;                                               
+      54 +  place-items: center;                                         
+      55    padding: var(--space-4);
+      56  }
+      57  
+      58  .result {
+      59    display: grid;
+      60 +  align-content: start;                                        
+      61 +  gap: var(--space-2);                                         
+      62  }
+      63  
+      64 +.result h3 {                                                   
+      65 +  font-size: var(--font-size-md);                              
+      66 +}                                                              
+      67 +                                                               
+      68 +.result dl {                                                   
+      69 +  display: grid;                                               
+      70 +  grid-template-columns: auto minmax(0, 1fr);                  
+      71 +  gap: var(--space-1) var(--space-3);                          
+      72 +  margin: 0;                                                   
+      73 +}                                                              
+      74 +                                                               
+      75 +.result dt {                                                   
+      76 +  font-weight: 600;                                            
+      77 +}                                                              
+      78 +                                                               
+      79 +.result dd {                                                   
+      80 +  margin: 0;                                                   
+      81 +  overflow-wrap: anywhere;                                     
+      82 +}                                                              
+      83 +                                                               
+      84  .skeleton {
+      85    min-block-size: var(--telemetry-panel-min-height);
+      86    display: grid;
+
+● Update(src\components\PubgMatchTelemetry.module.css)
+  ⎿  Added 6 lines
+       94  
+       95  .alert {
+       96    display: grid;
+       97 +  align-content: center;                                      
+       98 +  justify-items: start;                                       
+       99 +  gap: var(--space-3);                                        
+      100 +  padding: var(--space-4);                                    
+      101 +  border: var(--control-border-width) solid var(--color-alert-
+          +border);                                                      
+      102 +  border-radius: var(--radius-md);                            
+      103  }
+      104  
+      105  @keyframes pulse {
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T16 đã xong và commit, chưa push. Tôi chưa kiểm tra trên trình duyệt, nên
+  chưa biết giao diện có bị cuộn ngang ở 375px và 320px hay không.
+
+  Thay đổi trong PubgMatchTelemetry.module.css
+  (src/components/PubgMatchTelemetry.module.css): mobile-first, chỉ dùng token,
+  không mã màu, không nowrap, không thêm media query.
+  - .telemetry và .telemetry h2 giống hệt .directory và .directory h2 của
+    Exercise 2.
+  - .squads là hàng flex xuống dòng được, có gap, không padding, margin hay
+    list-style.
+  - .squads button và .alert button dùng chung một khối giống .delete của
+    Exercise 2, nhưng bỏ margin-inline-start: auto.
+  - Nút đang chọn ([aria-pressed='true']) có viền màu accent cộng box-shadow:
+    inset 0 0 0 1px, nên viền trông dày gấp đôi mà kích thước không đổi, và chữ
+    đậm 700. Vậy là không chỉ phân biệt bằng màu.
+  - .panel, .result, .alert dùng chung min-block-size:
+    var(--telemetry-panel-min-height).
+  - .panel là grid căn giữa. .result có h3, dl hai cột auto minmax(0, 1fr), dt
+    đậm 600, dd có overflow-wrap: anywhere.
+  - .alert là grid căn giữa theo chiều dọc, nội dung dồn trái, viền
+    --color-alert-border, bo --radius-md.
+
+  Kiểm tra đã chạy:
+  - npm run build: thành công.
+  - npm test: 58 test, 58 pass, 0 fail.
+  - npm run lint: exit 0, chỉ có 1 warning đã biết react(set-state-in-effect) ở
+    PubgMatchTelemetry.jsx:17:5.
+  - C4 không in gì; tìm nowrap cũng không có kết quả.
+  - git diff: chỉ có PubgMatchTelemetry.module.css, +73 dòng, 0 dòng xóa.
+  - .skeleton, @keyframes pulse và @media (prefers-reduced-motion: reduce) không
+    đổi: tôi trích ba khối này từ HEAD và từ file mới rồi diff, kết quả giống
+    hệt.
+
+  Chưa kiểm tra (phần anh/chị làm trên trình duyệt):
+  - Có cuộn ngang ở 375px và 320px hay không.
+  - Nút squad có xuống dòng đúng và có đủ 44px chiều cao hay không.
+  - 4 trạng thái có cao bằng nhau và CLS có bằng 0 khi chuyển trạng thái với
+    Slow 3G hay không.
+  - Nút đang chọn có dễ nhận ra hay không.
+  - Console có warning hay lỗi nào không.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, E3-T18). Chỉ
+  làm E3-T18.
+
+  Phạm vi file: README.md. Thêm mục "## Exercise 3: KRAFTON PUBG VN Live Match
+  Telemetry" ngay sau toàn bộ phần Exercise 2 (cuối file nếu Exercise 2 là phần
+  cuối), các mục con dùng ###. Không sửa bất kỳ dòng nào có sẵn (0 dòng xóa).
+  Viết tiếng Anh, theo phong cách các mục Exercise 1 và 2 hiện có.
+
+  Nội dung:
+  1. Đoạn mô tả ngắn: PubgMatchTelemetry shows live telemetry for three
+  Vietnamese squads (CES, TE, GE) with a squad selector; a four-state machine
+  (IDLE, LOADING, SUCCESS, ERROR); every squad switch or retry fetches a local
+  JSON file with an AbortController and aborts the previous request; 35%
+  simulated packet loss shows a role="alert" panel with a Reconnect Satellite
+  button; a 220px Blue-Zone skeleton keeps the layout stable.
+  2. ### Source layout: liệt kê đúng các file mới của Exercise 3:
+     src/contracts/pubg-match-telemetry.contract.js
+     src/data/pubgVnSquads.js (+ .test.js)
+     src/data/telemetryPayloads.test.js
+     public/telemetry/ces.json, te.json, ge.json
+     src/utils/telemetryView.js (+ .test.js)
+     src/utils/fetchKraftonPubgTelemetry.js (+ .test.js)
+     src/components/PubgMatchTelemetry.jsx, PubgMatchTelemetry.module.css
+     (tokens mới nằm trong src/styles/tokens.css, nhóm "Telemetry (Exercise
+  3)")
+  3. ### Constraints (gạch đầu dòng): one view object built by telemetryView
+  helpers, no isLoading/isError; exactly one useEffect with dependencies
+  [squadId, retryTick]; a new AbortController per run and cleanup () =>
+  controller.abort(); AbortError is ignored; fetch is called only in
+  fetchKraftonPubgTelemetry, URLs only from whitelisted ids;
+  react/exhaustive-deps is enabled; after Reconnect Satellite focus moves to
+  the selected squad button in the click handler; the skeleton pulse stops
+  under prefers-reduced-motion.
+  4. ### Text checks: hai khối code, PowerShell và Git Bash, mỗi khối gồm C6 và
+  C7 với comment "# C6 ..." "# C7 ..." như sau:
+     PowerShell:
+     # C6. No boolean soup, no setInterval, fetch( only in the fetch helper
+  (must print nothing)
+     Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern
+  'isLoading|isError|setInterval\('
+     Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name
+  -notlike 'fetchKraftonPubgTelemetry*' | Select-String -Pattern '\bfetch\('
+     # C7. Abort contract present (must print 3 lines)
+     Select-String -Path src\components\PubgMatchTelemetry.jsx -Pattern 'new
+  AbortController\(\)|controller\.abort\(\)|AbortError'
+     Git Bash:
+     # C6. No boolean soup, no setInterval, fetch( only in the fetch helper
+  (must print nothing)
+     grep -rnE 'isLoading|isError|setInterval\(' src --include='*.jsx'
+  --include='*.js'
+     grep -rn '\bfetch(' src --include='*.jsx' --include='*.js' | grep -v
+  'fetchKraftonPubgTelemetry'
+     # C7. Abort contract present (must print 3 lines)
+     grep -nE 'new AbortController\(\)|controller\.abort\(\)|AbortError'
+  src/components/PubgMatchTelemetry.jsx
+  5. ### How to test in the browser (gạch đầu dòng): set Network throttling to
+  Slow 3G (newer Chrome calls it 3G); click CES, TE, GE quickly and see earlier
+  requests marked (canceled) with no error banner; to force the error state,
+  right-click a telemetry request in the Network tab and choose Block request
+  URL, then unblock it in Network request blocking and press Reconnect
+  Satellite.
+  6. ### Known limits (gạch đầu dòng, giữ nguyên chữ):
+     - The component takes initialSquadId instead of the slide's squadId prop,
+  because the selector lives inside the component (slides 22 and 23 require
+  clicking squads).
+     - In development, StrictMode runs the effect twice on mount, so one
+  request is cancelled right after page load. This is expected and proves the
+  cleanup works.
+     - The success article uses aria-live as in slide 23; a live region
+  inserted together with its content may not be announced by every screen
+  reader.
+     - Packet loss is random (35%), so a page load can end in the error state.
+     - oxlint reports one warning, react(set-state-in-effect), for
+  setView(loadingView()) inside the effect. The line is kept on purpose: it is
+  the slide 23 reference pattern, and moving LOADING into the event handlers
+  would make the IDLE state unreachable.
+     Không ghi điểm Lighthouse, số commit, số test hay số đo nào; nếu cần nói
+  tới kết quả thì ghi "see the lab report".
+
+  Kiểm tra: npm run build thành công; npm run lint exit 0 với đúng 1 warning đã
+  biết; git diff --numstat README.md có 0 dòng xóa. Chạy thử C6 và C7 bản Git
+  Bash vừa ghi vào README: C6 không in gì, C7 in đúng 3 dòng.
+
+  Commit:
+  git add README.md
+  git commit -m "docs(readme): document ex3 usage and checks"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && cat >> README.md
+      <<'EOF'…)
+  ⎿  Updated README.md (+78 -0)
+      178  - Reset restores the list only, not the filters. The search te
+           xt, Min IQ and sort order stay as they are.
+      179  - Render counts, focus behaviour and Lighthouse results are ch
+           ecked by the author in the browser, not written by the AI. For
+            the numbers, see report.
+      180  - WBS deviation: commits ef3dd95 (E2-T08) and a28386e (E2-T09)
+            also add minimal layout rules to ScientistDirectory.module.cs
+           s (.controls, .status, .reset, .delete) that their WBS rows do
+            not list. The task prompts allowed minimal CSS; the WBS was n
+           ot edited afterwards (project-rules section 14).
+      181 +                                                              
+      182 +## Exercise 3: KRAFTON PUBG VN Live Match Telemetry           
+      183 +                                                              
+      184 +`PubgMatchTelemetry` renders a `<section>` titled "KRAFTON PUB
+          +G VN Live Telemetry" below the directory, inside the same `<ma
+          +in>`. It shows live telemetry for three Vietnamese squads (CES
+          +, TE, GE) with a squad selector. A four-state machine (`IDLE`,
+          + `LOADING`, `SUCCESS`, `ERROR`) drives the view. Every squad s
+          +witch or retry fetches a local JSON file with an `AbortControl
+          +ler` and aborts the previous request. 35% simulated packet los
+          +s shows a `role="alert"` panel with a **Reconnect Satellite** 
+          +button. A 220px Blue-Zone skeleton keeps the layout stable whi
+          +le the data loads.                                            
+      185 +                                                              
+      186 +### Source layout                                             
+      187 +                                                              
+      188 +New files only. The Exercise 1 and 2 files are listed above.  
+      189 +                                                              
+      190 +```                                                           
+      191 +public/                                                       
+      192 +  telemetry/                                                  
+      193 +    ces.json, te.json, ge.json        static squad payloads se
+          +rved by Vite                                                  
+      194 +src/                                                          
+      195 +  App.jsx                  <main> with the page <h1>, <Develop
+          +erCard />, <ScientistDirectory /> and <PubgMatchTelemetry />  
+      196 +  contracts/                                                  
+      197 +    pubg-match-telemetry.contract.js  JSDoc typedefs only (Pub
+          +gSquad, TelemetryStatus, TelemetryView, FetchTelemetryOptions,
+          + PubgMatchTelemetryProps)                                     
+      198 +  data/                                                       
+      199 +    pubgVnSquads.js / .test.js        frozen PUBG_VN_SQUADS da
+          +ta and its tests                                              
+      200 +    telemetryPayloads.test.js         proves public/telemetry/
+          +*.json match PUBG_VN_SQUADS                                   
+      201 +  components/                                                 
+      202 +    PubgMatchTelemetry.jsx / .module.css                      
+      203 +  utils/                                                      
+      204 +    telemetryView.js / .test.js       frozen view state helper
+          +s and their tests                                             
+      205 +    fetchKraftonPubgTelemetry.js / .test.js   abortable fetch 
+          +with simulated packet loss and its tests                      
+      206 +```                                                           
+      207 +                                                              
+      208 +The new design tokens are in `src/styles/tokens.css`, in the "
+          +Telemetry (Exercise 3)" group.                                
+      209 +                                                              
+      210 +### Constraints                                               
+      211 +                                                              
+      212 +- The async UI state is one `view` object `{ status, data, err
+          +or }`, built only by the `telemetryView` helpers. No `isLoadin
+          +g` / `isError` booleans.                                      
+      213 +- Exactly one `useEffect`, with dependencies `[squadId, retryT
+          +ick]`.                                                        
+      214 +- Each effect run creates a new `AbortController` and returns 
+          +the cleanup `() => controller.abort()`.                       
+      215 +- A rejection whose name is `AbortError` is ignored: it never 
+          +changes the view and never shows the error panel.             
+      216 +- `fetch` is called only in `fetchKraftonPubgTelemetry`. Reque
+          +st URLs are built only from whitelisted squad ids.            
+      217 +- `react/exhaustive-deps` is enabled in `.oxlintrc.json`.     
+     … 41 more lines (ctrl+o to expand)
+
+● Tôi đã thêm nhầm một gạch đầu dòng thứ 6 về Lighthouse vào Known limits, nên
+  bỏ đi để giữ danh sách 5 dòng như đề yêu cầu. Tiếp theo tôi sẽ chạy thử C6/C7
+  bản PowerShell.
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && sed -i '/^-
+      Lighthouse results and browser checks are done by the author; see the lab
+      report\.$/d' READ…)
+  ⎿  Updated README.md (+0 -1)
+      255  - The success article uses aria-live as in slide 23; a live re
+           gion inserted together with its content may not be announced b
+           y every screen reader.
+      256  - Packet loss is random (35%), so a page load can end in the e
+           rror state.
+      257  - oxlint reports one warning, react(set-state-in-effect), for 
+           setView(loadingView()) inside the effect. The line is kept on 
+           purpose: it is the slide 23 reference pattern, and moving LOAD
+           ING into the event handlers would make the IDLE state unreacha
+           ble.
+      258 -- Lighthouse results and browser checks are done by the author
+          -; see the lab report.                                         
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T18 đã xong và commit, chưa push.
+
+  Thay đổi: thêm mục "## Exercise 3: KRAFTON PUBG VN Live Match Telemetry" vào
+  cuối README.md, ngay sau phần Exercise 2. Viết theo phong cách các mục
+  Exercise 1 và 2 hiện có:
+  - Đoạn mô tả: đủ các ý được yêu cầu (3 squad, máy 4 trạng thái,
+    AbortController, packet loss 35% với role="alert" và nút Reconnect
+    Satellite, skeleton 220px).
+  - Source layout: cây thư mục chỉ có các file mới của Exercise 3, cộng một câu
+    nói rằng token mới nằm trong nhóm "Telemetry (Exercise 3)" của tokens.css.
+    - Tôi có ghi thêm dòng App.jsx vào cây, giống cách Exercise 2 làm. Nếu
+      anh/chị muốn chỉ liệt kê file mới, tôi bỏ dòng đó.
+  - Constraints: 8 gạch đầu dòng đúng các ý đã cho.
+  - Text checks: hai khối PowerShell và Git Bash, mỗi khối có C6 và C7 đúng
+    nguyên văn.
+  - How to test in the browser: 3 gạch đầu dòng (Slow 3G, bấm nhanh các squad,
+    chặn request rồi bỏ chặn và bấm Reconnect).
+  - Known limits: đúng 5 dòng nguyên văn. Lúc đầu tôi tự thêm một dòng thứ 6 nói
+    về Lighthouse, nhưng đã bỏ trước khi commit để giữ đúng danh sách.
+  - Không có điểm số, số commit, số test hay số đo nào.
+
+  Kiểm tra đã chạy:
+  - git diff --numstat README.md: thêm 77 dòng, xóa 0.
+  - npm run build: thành công.
+  - npm run lint: exit 0, chỉ có 1 warning đã biết react(set-state-in-effect) ở
+    PubgMatchTelemetry.jsx:17:5.
+  - C6 và C7 bản Git Bash chép từ README: C6 không in gì, C7 in đúng 3 dòng:
+  16:    const controller = new AbortController()
+  21:        if (err.name === 'AbortError') return
+  24:    return () => controller.abort()
+  - Tôi chạy thêm C6 và C7 bản PowerShell: C6 không in gì, C7 in đúng 3 dòng đó.
+
+  Commit: efd53f6 với message docs(readme): document ex3 usage and checks.
+  Commit chỉ có README.md.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 4, E3-T20). Chỉ
+  làm E3-T20.
+
+  Phạm vi file: src/components/DeveloperCard.jsx, chỉ giá trị commits trong giá
+  trị mặc định của metrics. Đổi commits: 41 thành commits: 60 (số do tôi cung
+  cấp: 58 commit hiện tại + commit này + commit E3-T22). Không tự tính lại số,
+  không đổi gì khác.
+
+  Kiểm tra: git diff chỉ đổi đúng 1 dòng (+1/−1); npm run build thành công; npm
+  test thành công; npm run lint exit 0 với đúng 1 warning đã biết
+  react(set-state-in-effect).
+
+  Commit:
+  git add src/components/DeveloperCard.jsx
+  git commit -m "fix(ex1): sync commits metric after ex3"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● git rev-list --count HEAD đang là 58, khớp với số anh/chị đưa. Giờ sửa.
+
+● Update(src\components\DeveloperCard.jsx)
+  ⎿  Added 1 line, removed 1 line
+      11    fullName = 'Võ Văn Thiện',
+      12    role = 'Student at the University of Information Technology –
+           VNU-HCM',
+      13    avatarUrl = 'https://images.unsplash.com/photo-1534528741775-
+          53994a69daeb?w=240',
+      14 -  metrics = { commits: 41, vdomNodes: 0, a11yScore: 100 },     
+      14 +  metrics = { commits: 60, vdomNodes: 0, a11yScore: 100 },     
+      15    skills = [
+      16      { id: 'sk-1', name: 'React 19 createRoot + StrictMode', tie
+          r: 'Core' },
+      17      { id: 'sk-2', name: 'Hooks: useState, useEffect, useId', ti
+          er: 'Core' },
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● E3-T20 đã xong và commit, chưa push.
+
+  Thay đổi: trong src/components/DeveloperCard.jsx:14
+  (src/components/DeveloperCard.jsx#L14), giá trị mặc định của metrics đổi từ
+  commits: 41 thành commits: 60, đúng số anh/chị đưa. vdomNodes và a11yScore giữ
+  nguyên.
+
+  Kiểm tra đã chạy:
+  - git diff: chỉ đổi đúng 1 dòng (+1/−1).
+  - npm run build: thành công.
+  - npm test: 58 test, 58 pass, 0 fail.
+  - npm run lint: exit 0, chỉ có 1 warning đã biết react(set-state-in-effect) ở
+    PubgMatchTelemetry.jsx:17:5.
+
+  Đối chiếu số commit (chỉ để tham khảo, tôi không đổi số): trước commit này git
+  rev-list --count HEAD là 58, đúng như anh/chị nói. Sau commit này là 59. Nếu
+  E3-T22 đúng là commit tiếp theo và duy nhất, số commit sẽ thành 60, khớp với
+  giá trị trên thẻ.
+
+  Commit: bf30aa6 với message fix(ex1): sync commits metric after ex3. Commit
+  chỉ có src/components/DeveloperCard.jsx.
