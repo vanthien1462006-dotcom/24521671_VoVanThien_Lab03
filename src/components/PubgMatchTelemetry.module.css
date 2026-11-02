@@ -1,0 +1,15 @@
+.telemetry {
+  display: grid;
+}
+
+.squads {
+  list-style: none;
+}
+
+.panel {
+  padding: var(--space-4);
+}
+
+.result {
+  display: grid;
+}
