@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useId, useState } from 'react'
+import { Fragment, useEffect, useId, useRef, useState } from 'react'
 import { PUBG_VN_SQUADS } from '../data/pubgVnSquads.js'
 import { fetchKraftonPubgTelemetry, isKnownSquadId } from '../utils/fetchKraftonPubgTelemetry.js'
 import { IDLE_VIEW, loadingView, successView, errorView } from '../utils/telemetryView.js'
@@ -10,6 +10,7 @@ export function PubgMatchTelemetry({ initialSquadId = 'te' }) {
   const [squadId, setSquadId] = useState(() => (isKnownSquadId(initialSquadId) ? initialSquadId : 'te'))
   const [view, setView] = useState(IDLE_VIEW)
   const [retryTick, setRetryTick] = useState(0)
+  const selectedSquadRef = useRef(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -23,28 +24,37 @@ export function PubgMatchTelemetry({ initialSquadId = 'te' }) {
     return () => controller.abort()
   }, [squadId, retryTick])
 
+  function handleReconnect() {
+    setRetryTick((t) => t + 1)
+    selectedSquadRef.current?.focus()
+  }
+
   return (
     <section className={styles.telemetry} aria-labelledby={headingId}>
       <h2 id={headingId}>KRAFTON PUBG VN Live Telemetry</h2>
       <ul className={styles.squads} aria-label="Squads">
         {PUBG_VN_SQUADS.map((s) => (
           <li key={s.id}>
-            <button type="button" aria-pressed={s.id === squadId} onClick={() => setSquadId(s.id)}>
+            <button
+              type="button"
+              aria-pressed={s.id === squadId}
+              ref={s.id === squadId ? selectedSquadRef : undefined}
+              onClick={() => setSquadId(s.id)}
+            >
               {s.name}
             </button>
           </li>
         ))}
       </ul>
-      {renderTelemetryView(view, () => setRetryTick((t) => t + 1))}
+      <TelemetryPanel view={view} onReconnect={handleReconnect} />
     </section>
   )
 }
 
 /**
- * @param {import('../contracts/pubg-match-telemetry.contract.js').TelemetryView} view
- * @param {() => void} onRetry
+ * @param {{ view: import('../contracts/pubg-match-telemetry.contract.js').TelemetryView, onReconnect: () => void }} props
  */
-function renderTelemetryView(view, onRetry) {
+function TelemetryPanel({ view, onReconnect }) {
   if (view.status === 'LOADING') {
     return (
       <section className={styles.skeleton} aria-busy="true">
@@ -56,7 +66,7 @@ function renderTelemetryView(view, onRetry) {
     return (
       <section className={styles.alert} role="alert">
         <p>Blue-Zone Link Lost: {view.error}</p>
-        <button type="button" onClick={onRetry}>
+        <button type="button" onClick={onReconnect}>
           Reconnect Satellite
         </button>
       </section>
