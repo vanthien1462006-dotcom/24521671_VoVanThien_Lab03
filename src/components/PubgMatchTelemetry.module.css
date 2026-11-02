@@ -15,9 +15,32 @@
 }
 
 .skeleton {
+  min-block-size: var(--telemetry-panel-min-height);
+  display: grid;
+  place-items: center;
   padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-skeleton);
+  color: var(--color-skeleton-text);
+  animation: pulse var(--skeleton-pulse-duration) ease-in-out infinite;
 }
 
 .alert {
   display: grid;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    background-color: var(--color-skeleton);
+  }
+  50% {
+    background-color: var(--color-card-bg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
 }
