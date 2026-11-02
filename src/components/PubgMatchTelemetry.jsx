@@ -9,6 +9,7 @@ export function PubgMatchTelemetry({ initialSquadId = 'te' }) {
   const headingId = useId()
   const [squadId, setSquadId] = useState(() => (isKnownSquadId(initialSquadId) ? initialSquadId : 'te'))
   const [view, setView] = useState(IDLE_VIEW)
+  const [retryTick, setRetryTick] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -20,7 +21,7 @@ export function PubgMatchTelemetry({ initialSquadId = 'te' }) {
         setView(errorView(err.message))
       })
     return () => controller.abort()
-  }, [squadId])
+  }, [squadId, retryTick])
 
   return (
     <section className={styles.telemetry} aria-labelledby={headingId}>
@@ -34,30 +35,54 @@ export function PubgMatchTelemetry({ initialSquadId = 'te' }) {
           </li>
         ))}
       </ul>
-      {view.status === 'SUCCESS' ? (
-        <article className={styles.result} aria-live="polite">
-          <h3>{view.data.name}</h3>
-          <dl>
-            {Object.entries({
-              Map: view.data.map,
-              Phase: view.data.phase,
-              Alive: view.data.alive,
-              Kills: view.data.kills,
-              'WWCD chance': view.data.wwcdProb,
-              Status: view.data.status,
-            }).map(([label, value]) => (
-              <Fragment key={label}>
-                <dt>{label}</dt>
-                <dd>{value}</dd>
-              </Fragment>
-            ))}
-          </dl>
-        </article>
-      ) : view.status === 'ERROR' ? (
-        <p className={styles.panel}>Blue-Zone Link Lost: {view.error}</p>
-      ) : (
-        <p className={styles.panel}>Syncing KRAFTON Radar...</p>
-      )}
+      {renderTelemetryView(view, () => setRetryTick((t) => t + 1))}
     </section>
   )
+}
+
+/**
+ * @param {import('../contracts/pubg-match-telemetry.contract.js').TelemetryView} view
+ * @param {() => void} onRetry
+ */
+function renderTelemetryView(view, onRetry) {
+  if (view.status === 'LOADING') {
+    return (
+      <section className={styles.skeleton} aria-busy="true">
+        Syncing KRAFTON Radar...
+      </section>
+    )
+  }
+  if (view.status === 'ERROR') {
+    return (
+      <section className={styles.alert} role="alert">
+        <p>Blue-Zone Link Lost: {view.error}</p>
+        <button type="button" onClick={onRetry}>
+          Reconnect Satellite
+        </button>
+      </section>
+    )
+  }
+  if (view.status === 'SUCCESS') {
+    return (
+      <article className={styles.result} aria-live="polite">
+        <h3>{view.data.name}</h3>
+        <dl>
+          {Object.entries({
+            Map: view.data.map,
+            Phase: view.data.phase,
+            Alive: view.data.alive,
+            Kills: view.data.kills,
+            'WWCD chance': view.data.wwcdProb,
+            Status: view.data.status,
+          }).map(([label, value]) => (
+            <Fragment key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </Fragment>
+          ))}
+        </dl>
+      </article>
+    )
+  }
+  return <p className={styles.panel}>Radar idle.</p>
 }

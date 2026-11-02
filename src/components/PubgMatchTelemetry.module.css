@@ -13,3 +13,11 @@
 .result {
   display: grid;
 }
+
+.skeleton {
+  padding: var(--space-4);
+}
+
+.alert {
+  display: grid;
+}
