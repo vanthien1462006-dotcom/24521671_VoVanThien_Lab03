@@ -97,6 +97,27 @@
   outline-offset: var(--focus-ring-offset);
 }
 
+.feedScroll {
+  max-block-size: 20rem;
+  overflow-y: auto;
+}
+
+.feedScroll:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.feed {
+  margin: 0;
+  padding: 0 0 0 var(--space-5);
+}
+
+.feedRow {
+  padding: var(--space-1) 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--control-min-height);
+}
+
 .crates {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

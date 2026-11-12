@@ -7,9 +7,11 @@ import {
   buildServerStock,
 } from './arenaData.js'
 import { arenaReducer, createArenaState } from './arenaReducer.js'
+import { SAMPLE_KILL_FEED, filterKillFeed } from './killFeed.js'
 import { createMockArenaServer } from './mockArenaServer.js'
 import { SORT_OPTIONS, selectStandings } from './standings.js'
 import { CrateCard } from './CrateCard.jsx'
+import { KillFeed } from './KillFeed.jsx'
 import { Leaderboard } from './Leaderboard.jsx'
 import styles from './KraftonPubgVnArena.module.css'
 
@@ -82,6 +84,7 @@ export function KraftonPubgVnArena() {
   }
 
   const rows = selectStandings(SQUAD_STANDINGS, { squadId: squadFilter, sortBy })
+  const events = filterKillFeed(SAMPLE_KILL_FEED, squadFilter)
 
   return (
     <section className={styles.arena} aria-labelledby={headingId}>
@@ -139,6 +142,7 @@ export function KraftonPubgVnArena() {
         </p>
       </form>
       <Leaderboard rows={rows} sortBy={sortBy} />
+      <KillFeed events={events} total={SAMPLE_KILL_FEED.length} />
     </section>
   )
 }
