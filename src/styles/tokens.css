@@ -73,4 +73,12 @@
   --color-piano-pressed: var(--color-tier-core-bg);
   --color-piano-pressed-text: var(--color-tier-core-text);
   --color-piano-pressed-border: var(--color-accent);
+
+  /* Arena (Homework 3) */
+  --feed-row-height: 2.75rem;
+  --crate-min-width: 15rem;
+  --color-notice-bg: var(--color-tier-awareness-bg);
+  --color-notice-text: var(--color-tier-awareness-text);
+  --color-claim-bg: var(--color-accent);
+  --color-claim-text: var(--color-card-bg);
 }
