@@ -29,7 +29,7 @@ test('SQUAD_STANDINGS holds the four approved squads in order', () => {
 
 test('squad ids are exactly te, ces, ge, agg with no duplicates', () => {
   const ids = SQUAD_STANDINGS.map((row) => row.squadId)
-  assert.deepEqual([...ids].sort(), ['agg', 'ces', 'ge', 'te'])
+  assert.deepEqual(ids.toSorted(), ['agg', 'ces', 'ge', 'te'])
   assert.equal(new Set(ids).size, ids.length)
 })
 
