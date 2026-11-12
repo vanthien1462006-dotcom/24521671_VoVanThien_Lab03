@@ -23,3 +23,19 @@ export function formatCountdown(ms) {
   const ss = String(seconds).padStart(2, '0')
   return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`
 }
+
+/** @typedef {import('./pubg-vn-arena.contract.js').DropPhase} DropPhase */
+
+export const DROP_PHASES = Object.freeze(['WARMUP', 'AIRDROP_LIVE', 'LOOTED_OUT', 'EXPIRED'])
+
+/**
+ * Phase of a crate drop, derived from the clock and the displayed stock.
+ * @param {{ nowMs: number, dropEpochMs: number, remainingStock: number, windowMs: number }} input
+ * @returns {DropPhase}
+ */
+export function getDropPhase({ nowMs, dropEpochMs, remainingStock, windowMs }) {
+  if (nowMs < dropEpochMs) return 'WARMUP'
+  if (nowMs >= dropEpochMs + windowMs) return 'EXPIRED'
+  if (remainingStock <= 0) return 'LOOTED_OUT'
+  return 'AIRDROP_LIVE'
+}
