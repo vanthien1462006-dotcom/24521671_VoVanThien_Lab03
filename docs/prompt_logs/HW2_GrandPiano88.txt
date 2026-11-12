@@ -1,0 +1,3253 @@
+
+> /clear
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\HW1_PromptAI.txt in the IDE. This may or
+  may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md. Nhiệm vụ DUY NHẤT:
+  thêm Part 6 (Homework 2) vào CUỐI TASK_DECOMPOSITION.md. Không sửa Part 1 đến
+  5, không sửa file khác, chưa viết code.
+
+  Thêm ĐÚNG nội dung giữa BEGIN và END (giữ nguyên từng chữ, không chép hai
+  dòng BEGIN/END):
+
+  ===== BEGIN =====
+  ## Part 6. Homework 2: Polyphonic 88-Key Piano & FIFO Sequencer
+
+  ### 6.1 Overview
+  `GrandPiano88` (src/homeworks/GrandPiano88/) generates an 88-key piano (A0,
+  midi 21, to C8, midi 108) from the formula f = 440 × 2^((midi − 69) / 12). A
+  Web Audio synth plays up to 8 voices and steals the oldest voice first (FIFO,
+  ES6 Map). Each key is a `React.memo` component, so pressing one key
+  re-renders only that key. A recorder stores `{ midi, freqHz, durationMs,
+  deltaMs }` events and replays them at 0.5x, 1x or 2x; Stop Sequence and
+  unmount cancel the replay with an AbortController. Source: slides 27 and 28.
+
+  ### 6.2 Contract
+  ```js
+  /**
+   * @typedef {Object} PianoKeyData
+   * @property {number} midi       21 to 108.
+   * @property {string} noteName   Sharp names, for example 'A0', 'C#4'.
+   * @property {boolean} isBlack
+   * @property {number} freqHz     440 × 2^((midi − 69) / 12).
+   */
+
+  /**
+   * @typedef {Object} KeySlot
+   * @property {PianoKeyData} white
+   * @property {PianoKeyData | null} black   The black key that follows the
+  white key, if any.
+   */
+
+  /**
+   * @typedef {Object} RecordedNote
+   * @property {number} midi
+   * @property {number} freqHz
+   * @property {number} durationMs  Time the note was held.
+   * @property {number} deltaMs     Time since the previous note started (0 for
+  the first).
+   */
+
+  /**
+   * @typedef {Object} ScheduledNote
+   * @property {number} midi
+   * @property {number} freqHz
+   * @property {number} startMs     From the start of the replay, already
+  divided by the speed.
+   * @property {number} durationMs  Already divided by the speed.
+   */
+
+  /**
+   * @typedef {0.5 | 1 | 2} ReplaySpeed
+   */
+
+  /**
+   * @typedef {'idle' | 'recording' | 'playing'} PianoMode
+   */
+
+  /**
+   * @typedef {Object} PianoKeyProps
+   * @property {number} midi
+   * @property {string} noteName
+   * @property {boolean} isBlack
+   * @property {boolean} isPressed
+   * @property {(midi: number) => void} onNoteOn
+   * @property {(midi: number) => void} onNoteOff
+   */
+
+  export {};
+  ```
+
+  ### 6.3 Invariants
+  1. GrandPiano88 is one `<section aria-labelledby>` with `<h2>HW2 Polyphonic
+  88-Key Piano</h2>`, rendered only in the `hw2` view.
+  2. The 88 keys come only from `buildPianoKeys()`; no note name or frequency
+  is typed by hand outside tests.
+  3.
+  ──── (91 lines hidden) ──────────────────────────────────────────────────────
+  so one key re-renders` |
+  | H2-T15 | Add the sequencer controls |
+  `src/homeworks/GrandPiano88/GrandPiano88.jsx`,
+  `src/homeworks/GrandPiano88/GrandPiano88.module.css` | Invariants 8 and 9.
+  Record / Stop recording, Play take, Stop Sequence buttons, speed radio group
+  in a fieldset with legend. | `feat(hw2): add record, replay speed and stop
+  sequence controls` |
+  | H2-T16 | Add the status output |
+  `src/homeworks/GrandPiano88/GrandPiano88.jsx` | Invariant 10, text includes
+  "Voices: n of 8". | `feat(hw2): announce voices and sequence status` |
+  | H2-T17 | Add the computer keyboard |
+  `src/homeworks/GrandPiano88/GrandPiano88.jsx`,
+  `src/homeworks/GrandPiano88/GrandPiano88.module.css` | One effect with
+  keydown, keyup, blur on window, guard `shouldHandleKey` from DrumMachine,
+  octave select (useId label), shortcuts checkbox; cleanup removes all three. |
+  `feat(hw2): add computer keyboard octave select and toggle` |
+  | H2-T18 | Add the piano tokens | `src/styles/tokens.css` | Only additions,
+  colors as var() of existing tokens. C4 empty. | `style(hw2): add piano
+  tokens` |
+  | H2-T19 | Add the responsive layout |
+  `src/homeworks/GrandPiano88/GrandPiano88.module.css` | Invariant 11. Black
+  keys absolutely positioned in their slot. Pressed keys differ by more than
+  color. JSX untouched. | `style(hw2): add responsive piano layout with inner
+  scroll` |
+  | H2-T20 | Fix Lighthouse findings (conditional) | Files named by the finding
+  | Only if Lighthouse on `#hw2` reports an Accessibility finding. |
+  `fix(a11y): <finding>` |
+  | H2-T21 | Document Homework 2 | `README.md` | New section after Homework 1.
+  No scores. | `docs(readme): document hw2` |
+  | H2-T22 | Record AI failures (conditional) | `AI_FAILURE_AUDIT.md` | Only
+  real Homework 2 defects from the author. | `docs(audit): record hw2 ai
+  failures` |
+  | H2-T23 | Sync the commits metric | `src/components/DeveloperCard.jsx` |
+  Only `metrics.commits`, value from the author. | `fix(ex1): sync commits
+  metric after hw2` |
+  | H2-T24 | Final audit | No file changes | Checks pass; log matches Parts 1
+  to 6. | (no commit) |
+  | H2-T25 | Archive Homework 2 evidence |
+  `docs/evidence/HW2_GrandPiano88/*.png`,
+  `docs/prompt_logs/HW2_GrandPiano88.txt` | Copied with names unchanged. |
+  `docs(evidence): archive hw2 screenshots and prompt log` |
+  ===== END =====
+
+  Kiểm tra: npm run build; git diff chỉ thêm ở cuối file; Part 6 có đúng 25
+  hàng.
+
+  Commit:
+  git add TASK_DECOMPOSITION.md
+  git commit -m "docs(spec): add hw2 task decomposition"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Made 1 scratchpad edit +165, searched for 2 patterns, read 2 files, ran 1 shell command (ctrl+o to expand)
+
+● Bash({ echo; cat "/c/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/dd6
+      ffbbf-876e-412a-bf7e-31909c664064/scratchpad/part6.md"; } >>
+      TASK_DECOMPOSITION.md && g…)
+  ⎿  Updated TASK_DECOMPOSITION.md (+165 -0)
+      589  
+      590  ### 5.10 Verification gate
+      591  Before every commit: npm run build, npm run lint (exactly the 
+           one known warning), npm test, C1' to C7 and C8a to C8c as desc
+           ribed in the guide. Browser and audio checks are done by the u
+           ser.
+      592 +                                                              
+      593 +## Part 6. Homework 2: Polyphonic 88-Key Piano & FIFO Sequence
+          +r                                                             
+      594 +                                                              
+      595 +### 6.1 Overview                                              
+      596 +`GrandPiano88` (src/homeworks/GrandPiano88/) generates an 88-k
+          +ey piano (A0, midi 21, to C8, midi 108) from the formula f = 4
+          +40 × 2^((midi − 69) / 12). A Web Audio synth plays up to 8 voi
+          +ces and steals the oldest voice first (FIFO, ES6 Map). Each ke
+          +y is a `React.memo` component, so pressing one key re-renders 
+          +only that key. A recorder stores `{ midi, freqHz, durationMs, 
+          +deltaMs }` events and replays them at 0.5x, 1x or 2x; Stop Seq
+          +uence and unmount cancel the replay with an AbortController. S
+          +ource: slides 27 and 28.                                      
+      597 +                                                              
+      598 +### 6.2 Contract                                              
+      599 +```js                                                         
+      600 +/**                                                           
+      601 + * @typedef {Object} PianoKeyData                             
+      602 + * @property {number} midi       21 to 108.                   
+      603 + * @property {string} noteName   Sharp names, for example 'A0'
+          +, 'C#4'.                                                      
+      604 + * @property {boolean} isBlack                                
+      605 + * @property {number} freqHz     440 × 2^((midi − 69) / 12).  
+      606 + */                                                           
+      607 +                                                              
+      608 +/**                                                           
+      609 + * @typedef {Object} KeySlot                                  
+      610 + * @property {PianoKeyData} white                             
+      611 + * @property {PianoKeyData | null} black   The black key that 
+          +follows the white key, if any.                                
+      612 + */                                                           
+      613 +                                                              
+      614 +/**                                                           
+      615 + * @typedef {Object} RecordedNote                             
+      616 + * @property {number} midi                                    
+      617 + * @property {number} freqHz                                  
+      618 + * @property {number} durationMs  Time the note was held.     
+      619 + * @property {number} deltaMs     Time since the previous note
+          + started (0 for the first).                                   
+      620 + */                                                           
+      621 +                                                              
+      622 +/**                                                           
+      623 + * @typedef {Object} ScheduledNote                            
+      624 + * @property {number} midi                                    
+      625 + * @property {number} freqHz                                  
+      626 + * @property {number} startMs     From the start of the replay
+          +, already divided by the speed.                               
+      627 + * @property {number} durationMs  Already divided by the speed
+          +.                                                             
+      628 + */                                                           
+     … 128 more lines (ctrl+o to expand)
+
+● Đã thêm Part 6 xong, build đạt. Giờ tôi commit đúng file này.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Part 6 (Homework 2) đã nằm ở cuối TASK_DECOMPOSITION.md, và commit docs(spec):
+  add hw2 task decomposition đã tạo xong. Tôi không push.
+
+  Đã kiểm tra trong phiên này:
+  - npm run build đạt.
+  - git diff chỉ có 1 hunk, 165 dòng thêm và 0 dòng xóa, nên Part 1 đến 5 không
+    bị sửa.
+  - Part 6 có đúng 25 hàng, từ H2-T01 đến H2-T25.
+  - Hai dòng BEGIN và END không bị chép vào file.
+  - git show --stat HEAD chỉ liệt kê TASK_DECOMPOSITION.md, và git status sạch
+    sau commit.
+
+  Chưa chạy: npm run lint và npm test, vì prompt chỉ yêu cầu build và việc này
+  chỉ sửa tài liệu.
+
+  Lưu ý: Git báo "LF will be replaced by CRLF". File gốc dùng LF, nên có thể đã
+  có cấu hình autocrlf. Nội dung commit không bị ảnh hưởng.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 6, H2-T02). Chỉ
+  làm H2-T02. Tôi cho phép sửa project-rules.md; KHÔNG sửa mục 1 đến 17.
+
+  Thêm vào CUỐI "## 18. Homework 2 rules: polyphony, memo and sequencer" với
+  các ### và gạch đầu dòng sau (giữ nguyên chữ):
+
+  Generated keys
+
+  - Piano keys are generated from midi numbers with f = 440 × 2^((midi − 69)
+  / 12). Never hard-code key lists, note names or frequencies outside tests.
+
+  Voices
+
+  - Active voices live in a Map in insertion order. At the voice limit, release
+  voices.keys().next().value first (FIFO stealing).
+  - Every voice ramps its gain with exponentialRampToValueAtTime to 0.0001
+  before oscillator.stop. Never stop a voice at full gain.
+
+  Memo
+
+  - Each piano key is a React.memo component. Callbacks passed to it are stable
+  (useCallback) and its pressed prop is a boolean, so one press re-renders one
+  key. Verify with the React DevTools Profiler.
+
+  Sequencer
+
+  - The UI mode is one state value: 'idle' | 'recording' | 'playing'.
+  - Recording stores { midi, freqHz, durationMs, deltaMs } in order. Replay is
+  computed by a pure schedule function and awaited with an abortable delay.
+  - Stop and unmount abort the replay's AbortController, stop all voices and
+  release every pressed key. AbortError is a normal outcome.
+
+  Kiểm tra: git diff chỉ thêm ở cuối; npm run build.
+
+  Commit:
+  git add project-rules.md
+  git commit -m "docs(rules): add hw2 polyphony, memo and sequencer rules"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(cat >> project-rules.md <<'EOF'…)
+  ⎿  Updated project-rules.md (+17 -0)
+      185  ### Live feedback
+      186  - Hits are announced in one output with aria-live='polite'. Li
+           sts are capped and keyed by stable ids.
+      187  - Animation-frame loops live in the smallest component that ne
+           eds them and are cancelled in the effect cleanup.
+      188 +                                                              
+      189 +## 18. Homework 2 rules: polyphony, memo and sequencer        
+      190 +                                                              
+      191 +### Generated keys                                            
+      192 +- Piano keys are generated from midi numbers with f = 440 × 2^
+          +((midi − 69) / 12). Never hard-code key lists, note names or f
+          +requencies outside tests.                                     
+      193 +                                                              
+      194 +### Voices                                                    
+      195 +- Active voices live in a Map in insertion order. At the voice
+          + limit, release voices.keys().next().value first (FIFO stealin
+          +g).                                                           
+      196 +- Every voice ramps its gain with exponentialRampToValueAtTime
+          + to 0.0001 before oscillator.stop. Never stop a voice at full 
+          +gain.                                                         
+      197 +                                                              
+      198 +### Memo                                                      
+      199 +- Each piano key is a React.memo component. Callbacks passed t
+          +o it are stable (useCallback) and its pressed prop is a boolea
+          +n, so one press re-renders one key. Verify with the React DevT
+          +ools Profiler.                                                
+      200 +                                                              
+      201 +### Sequencer                                                 
+      202 +- The UI mode is one state value: 'idle' | 'recording' | 'play
+          +ing'.                                                         
+      203 +- Recording stores { midi, freqHz, durationMs, deltaMs } in or
+          +der. Replay is computed by a pure schedule function and awaite
+          +d with an abortable delay.                                    
+      204 +- Stop and unmount abort the replay's AbortController, stop al
+          +l voices and release every pressed key. AbortError is a normal
+          + outcome.                                                     
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T02 đã xong. Mục 18 đã thêm vào cuối project-rules.md và commit
+  docs(rules): add hw2 polyphony, memo and sequencer rules đã tạo. Tôi không
+  push.
+
+  Đã kiểm tra trong phiên này:
+  - git diff chỉ có 1 hunk, 17 dòng thêm và 0 dòng xóa, nên mục 1 đến 17 không
+    bị sửa.
+  - npm run build đạt.
+  - git show --stat HEAD chỉ liệt kê project-rules.md, và git status sạch sau
+    commit.
+
+  Chưa chạy: npm run lint và npm test, vì prompt chỉ yêu cầu build và việc này
+  chỉ sửa tài liệu.
+
+  Git vẫn báo "LF will be replaced by CRLF" như lần trước, không ảnh hưởng nội
+  dung commit.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 6, mục 6.2).
+  Chỉ làm H2-T03.
+  Tạo src/homeworks/GrandPiano88/grand-piano.contract.js GIỐNG HỆT khối code
+  mục 6.2 (trích từ file, không gõ lại).
+  Kiểm tra: diff khối 6.2 với file rỗng; npm run build; npm run lint exit 0 với
+  đúng 1 warning đã biết.
+  Commit:
+  git add src/homeworks/GrandPiano88/grand-piano.contract.js
+  git commit -m "docs(hw2): add GrandPiano88 JSDoc contract"
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(mkdir -p src/homeworks/GrandPiano88 && awk '/^### 6\.2
+      Contract/{s=1;next} s&&/^```js$/{c=1;next} c&&/^```$/{exit} c{print}'
+      TASK_DECOMPOSITION.md > src/homewor…)
+  ⎿  Created src\homeworks\GrandPiano88\grand-piano.contract.js (+49 -0)
+       1 +/**                                                            
+       2 + * @typedef {Object} PianoKeyData                              
+       3 + * @property {number} midi       21 to 108.                    
+       4 + * @property {string} noteName   Sharp names, for example 'A0',
+         + 'C#4'.                                                        
+       5 + * @property {boolean} isBlack                                 
+       6 + * @property {number} freqHz     440 × 2^((midi − 69) / 12).   
+       7 + */                                                            
+       8 +                                                               
+       9 +/**                                                            
+      10 + * @typedef {Object} KeySlot                                   
+      11 + * @property {PianoKeyData} white                              
+      12 + * @property {PianoKeyData | null} black   The black key that f
+         +ollows the white key, if any.                                  
+      13 + */                                                            
+      14 +                                                               
+      15 +/**                                                            
+      16 + * @typedef {Object} RecordedNote                              
+      17 + * @property {number} midi                                     
+      18 + * @property {number} freqHz                                   
+      19 + * @property {number} durationMs  Time the note was held.      
+      20 + * @property {number} deltaMs     Time since the previous note 
+         +started (0 for the first).                                     
+      21 + */                                                            
+      22 +                                                               
+      23 +/**                                                            
+      24 + * @typedef {Object} ScheduledNote                             
+      25 + * @property {number} midi                                     
+      26 + * @property {number} freqHz                                   
+      27 + * @property {number} startMs     From the start of the replay,
+         + already divided by the speed.                                 
+      28 + * @property {number} durationMs  Already divided by the speed.
+      29 + */                                                            
+      30 +                                                               
+      31 +/**                                                            
+      32 + * @typedef {0.5 | 1 | 2} ReplaySpeed                          
+      33 + */                                                            
+      34 +                                                               
+      35 +/**                                                            
+      36 + * @typedef {'idle' | 'recording' | 'playing'} PianoMode       
+      37 + */                                                            
+      38 +                                                               
+      39 +/**                                                            
+      40 + * @typedef {Object} PianoKeyProps                             
+     … 9 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T03 đã xong. File src/homeworks/GrandPiano88/grand-piano.contract.js đã tạo
+  và commit docs(hw2): add GrandPiano88 JSDoc contract đã tạo. Tôi không push.
+
+  Đã kiểm tra trong phiên này:
+  - Tôi trích khối code mục 6.2 từ TASK_DECOMPOSITION.md bằng awk rồi ghi thẳng
+    ra file, không gõ lại. diff giữa khối đó và file rỗng, tức là giống hệt (49
+    dòng, kết thúc bằng export {};).
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết:
+    react(set-state-in-effect) ở PubgMatchTelemetry.jsx:17.
+  - git show --stat HEAD chỉ liệt kê file contract, và git status sạch sau
+    commit.
+
+  Chưa chạy: npm test, vì prompt không yêu cầu và file chỉ chứa typedef.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 18) và TASK_DECOMPOSITION.md (Part 6, mục
+  6.4, H2-T04). Chỉ làm H2-T04. Test trước; báo lần thất bại đầu tiên.
+
+  Phạm vi file: src/homeworks/GrandPiano88/pianoKeys.test.js rồi pianoKeys.js.
+
+  Yêu cầu:
+  - const PITCH_CLASSES = Object.freeze(['C', 'C#', 'D', 'D#', 'E', 'F', 'F#',
+  'G', 'G#', 'A', 'A#', 'B']) (không export cũng được). Đây là tên lớp cao độ,
+  không phải danh sách phím.
+  - export const FIRST_MIDI = 21; export const LAST_MIDI = 108
+  - export function midiToFrequency(midi) { return 440 * 2 ** ((midi - 69)
+  / 12) }  (không làm tròn)
+  - export function midiToNoteName(midi): PITCH_CLASSES[midi % 12] +
+  (Math.floor(midi / 12) - 1)
+  - export function buildPianoKeys(): vòng for từ FIRST_MIDI đến LAST_MIDI, mỗi
+  phím Object.freeze({ midi, noteName, isBlack: noteName.includes('#'), freqHz
+  }); trả Object.freeze(mảng).
+  - export const PIANO_KEYS = buildPianoKeys()
+  - Test: đủ các dòng bảng 6.4 (tần số so sánh với sai số 0.01).
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C9a không in gì (tên nốt cụ thể chỉ được xuất hiện trong file test).
+
+  Commit:
+  git add src/homeworks/GrandPiano88/pianoKeys.js
+  src/homeworks/GrandPiano88/pianoKeys.test.js
+  git commit -m "feat(hw2): generate 88 piano keys from midi 21 to 108"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Write(src\homeworks\GrandPiano88\pianoKeys.test.js)
+  ⎿  Wrote 116 lines to src\homeworks\GrandPiano88\pianoKeys.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import {
+       4   FIRST_MIDI,
+       5   LAST_MIDI,
+       6   midiToFrequency,
+       7   midiToNoteName,
+       8   buildPianoKeys,
+       9   PIANO_KEYS,
+      10 } from './pianoKeys.js'
+     … +106 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lần chạy đầu thất bại đúng như dự kiến (module chưa tồn tại). Giờ viết
+  implementation.
+
+● Write(src\homeworks\GrandPiano88\pianoKeys.js)
+  ⎿  Wrote 57 lines to src\homeworks\GrandPiano88\pianoKeys.js
+       1 const PITCH_CLASSES = Object.freeze([
+       2   'C',
+       3   'C#',
+       4   'D',
+       5   'D#',
+       6   'E',
+       7   'F',
+       8   'F#',
+       9   'G',
+      10   'G#',
+     … +47 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(src\homeworks\GrandPiano88\pianoKeys.js)
+  ⎿  Added 1 line, removed 1 line
+      17  export const LAST_MIDI = 108
+      18  
+      19  /**
+      20 - * Equal-tempered frequency in Hz, A4 (midi 69) = 440 Hz. Not r
+         -ounded.                                                        
+      20 + * Equal-tempered frequency in Hz, with midi 69 fixed at 440 Hz
+         +. Not rounded.                                                 
+      21   * @param {number} midi
+      22   * @returns {number}
+      23   */
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T04 đã xong. Commit feat(hw2): generate 88 piano keys from midi 21 to 108
+  đã tạo, gồm pianoKeys.test.js và pianoKeys.js. Tôi không push.
+
+  Lần chạy đầu thất bại, như dự kiến: tôi viết test trước, rồi chạy node --test
+  trên file test. Kết quả là ERR_MODULE_NOT_FOUND, vì pianoKeys.js chưa tồn tại.
+
+  Đã kiểm tra sau khi viết implementation:
+  - npm test: 117 test, 117 đạt, 0 thất bại. Test của HW2 phủ mọi dòng bảng 6.4
+    về phím (dung sai tần số 0.01), cộng thêm hằng số, công thức và
+    midiToNoteName. Dòng groupIntoSlots của bảng 6.4 thuộc H2-T05 nên chưa làm.
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết
+    (PubgMatchTelemetry.jsx).
+  - C9a không in gì trên pianoKeys.js. Lần đầu nó bắt được A4 trong một dòng
+    JSDoc của tôi, nên tôi đã sửa comment rồi chạy lại.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Lưu ý về C9a: prompt không định nghĩa C9a ở đâu trong repo, nên tôi tự dùng
+  lệnh grep -nE "\b[A-G]#?[0-8]\b". Nếu bạn có định nghĩa khác, tôi sẽ chạy lại
+  theo định nghĩa đó. Lệnh này vẫn bắt 'A0' và 'C#4' trong comment của
+  grand-piano.contract.js. Tôi không sửa file đó vì H2-T03 yêu cầu nó giống hệt
+  khối 6.2.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 6, mục 6.4
+  groupIntoSlots, H2-T05). Chỉ làm H2-T05. Test trước; báo lần thất bại đầu
+  tiên.
+
+  Phạm vi file: src/homeworks/GrandPiano88/pianoKeys.js, pianoKeys.test.js.
+
+  Yêu cầu:
+  - export function groupIntoSlots(keys): duyệt theo thứ tự; phím trắng mở slot
+  mới { white, black: null }; phím đen gán vào slot cuối (slot của phím trắng
+  đứng ngay trước). Nếu phím đen đứng đầu (không có slot) thì throw RangeError.
+  Mỗi slot Object.freeze, mảng Object.freeze.
+  - export const KEY_SLOTS = groupIntoSlots(PIANO_KEYS)
+  - Test: 52 slot; 36 slot có black; slot 0 A0/A#0; slot 1 B0/null; slot cuối
+  C8/null; tổng white + black = 88; groupIntoSlots([phím đen]) throw
+  RangeError.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C9a không in gì.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/pianoKeys.js
+  src/homeworks/GrandPiano88/pianoKeys.test.js
+  git commit -m "feat(hw2): group piano keys into 52 white-key slots"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/GrandPi
+      ano88 && sed -i 's/^  PIANO_KEYS,$/  PIANO_KEYS,\n  groupIntoSlots,\n
+      KEY_SLOTS,/' pia…)
+  ⎿  Updated src\homeworks\GrandPiano88\pianoKeys.test.js (+66 -0)
+       7    midiToNoteName,
+       8    buildPianoKeys,
+       9    PIANO_KEYS,
+      10 +  groupIntoSlots,                                              
+      11 +  KEY_SLOTS,                                                   
+      12  } from './pianoKeys.js'
+      13  
+      14  const TOLERANCE = 0.01
+     ...
+      116  test('PIANO_KEYS equals a fresh buildPianoKeys()', () => {
+      117    assert.deepEqual(PIANO_KEYS, buildPianoKeys())
+      118  })
+      119 +                                                              
+      120 +test('groupIntoSlots gives 52 slots, 36 with a black key', () 
+          +=> {                                                          
+      121 +  const slots = groupIntoSlots(PIANO_KEYS)                    
+      122 +  assert.equal(slots.length, 52)                              
+      123 +  assert.equal(slots.filter((s) => s.black !== null).length, 3
+          +6)                                                            
+      124 +})                                                            
+      125 +                                                              
+      126 +test('slot 0 is A0 with A#0', () => {                         
+      127 +  const slot = groupIntoSlots(PIANO_KEYS)[0]                  
+      128 +  assert.equal(slot.white.noteName, 'A0')                     
+      129 +  assert.equal(slot.black.noteName, 'A#0')                    
+      130 +})                                                            
+      131 +                                                              
+      132 +test('slot 1 is B0 with no black key', () => {                
+      133 +  const slot = groupIntoSlots(PIANO_KEYS)[1]                  
+      134 +  assert.equal(slot.white.noteName, 'B0')                     
+      135 +  assert.equal(slot.black, null)                              
+      136 +})                                                            
+      137 +                                                              
+      138 +test('last slot is C8 with no black key', () => {             
+      139 +  const slots = groupIntoSlots(PIANO_KEYS)                    
+      140 +  const last = slots[slots.length - 1]                        
+      141 +  assert.equal(last.white.noteName, 'C8')                     
+      142 +  assert.equal(last.black, null)                              
+      143 +})                                                            
+      144 +                                                              
+      145 +test('slots hold all 88 keys, each black key follows its white
+          + key', () => {                                                
+      146 +  const slots = groupIntoSlots(PIANO_KEYS)                    
+      147 +  const whites = slots.length                                 
+     … 35 more lines (ctrl+o to expand)
+
+● Lần chạy đầu thất bại đúng dự kiến (thiếu export KEY_SLOTS/groupIntoSlots).
+  Giờ viết implementation.
+● Bash(cat >> src/homeworks/GrandPiano88/pianoKeys.js <<'EOF'…)
+  ⎿  Updated src\homeworks\GrandPiano88\pianoKeys.js (+22 -0)
+      55  }
+      56  
+      57  export const PIANO_KEYS = buildPianoKeys()
+      58 +                                                               
+      59 +/**                                                            
+      60 + * Groups keys into white-key slots. A black key joins the slot
+         + of the white                                                  
+      61 + * key right before it.                                        
+      62 + * @param {readonly import('./grand-piano.contract.js').PianoKe
+         +yData[]} keys                                                  
+      63 + * @returns {readonly import('./grand-piano.contract.js').KeySl
+         +ot[]}                                                          
+      64 + */                                                            
+      65 +export function groupIntoSlots(keys) {                         
+      66 +  const drafts = []                                            
+      67 +  for (const key of keys) {                                    
+      68 +    if (!key.isBlack) {                                        
+      69 +      drafts.push({ white: key, black: null })                 
+      70 +    } else if (drafts.length === 0) {                          
+      71 +      throw new RangeError('A black key needs a white key befor
+         +e it.')                                                        
+      72 +    } else {                                                   
+      73 +      drafts[drafts.length - 1].black = key                    
+      74 +    }                                                          
+      75 +  }                                                            
+      76 +  return Object.freeze(drafts.map((slot) => Object.freeze(slot)
+         +))                                                             
+      77 +}                                                              
+      78 +                                                               
+      79 +export const KEY_SLOTS = groupIntoSlots(PIANO_KEYS)            
+
+● H2-T05 đã xong. Commit feat(hw2): group piano keys into 52 white-key slots đã
+  tạo, gồm pianoKeys.js và pianoKeys.test.js. Tôi không push.
+
+  Lần chạy đầu thất bại, như dự kiến: tôi thêm test trước rồi chạy node --test.
+  Kết quả là SyntaxError: The requested module './pianoKeys.js' does not provide
+  an export named 'KEY_SLOTS', vì groupIntoSlots và KEY_SLOTS chưa tồn tại.
+
+  Đã kiểm tra sau khi viết implementation:
+  - npm test: 126 test, 126 đạt, 0 thất bại. Test mới phủ các ý sau:
+    - 52 slot, 36 slot có phím đen.
+    - Slot 0 là A0 với A#0, slot 1 là B0 với null, slot cuối là C8 với null.
+    - Tổng phím trắng và đen là 88, và phím đen luôn đứng sau phím trắng của
+      slot (midi + 1).
+    - Mảng và từng slot đều frozen, input frozen không bị sửa.
+    - groupIntoSlots([phím đen]) ném RangeError.
+    - KEY_SLOTS frozen và bằng groupIntoSlots(PIANO_KEYS).
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - C9a không in gì trên pianoKeys.js.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Cách làm: groupIntoSlots gom slot vào mảng tạm, rồi Object.freeze từng slot và
+  cả mảng ở cuối. Cách này tránh sửa một slot đã frozen khi gán phím đen.
+
+  Thông báo "file changed on disk" của hai file là do chính các lệnh ghi của
+  tôi, không có sửa đổi ngoài. Git vẫn báo "LF will be replaced by CRLF", không
+  ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 17 Web Audio, 18) và
+  TASK_DECOMPOSITION.md (Part 6, Invariants 5 đến 7, mục 6.5, H2-T06). Chỉ làm
+  H2-T06. Test trước; báo lần thất bại đầu tiên. CHƯA làm
+  stopAll/close/activeCount (H2-T07).
+
+  Phạm vi file: src/homeworks/GrandPiano88/PolyphonicSynth.test.js rồi
+  PolyphonicSynth.js.
+
+  Giữ đúng khung class của slide 28, chỉ thêm những điểm sau:
+  export class PolyphonicSynth {
+    constructor(maxVoices = 8, { createContext = () => new
+  window.AudioContext() } = {}) {
+      this.ctx = null; this.maxVoices = maxVoices; this.voices = new Map();
+  this.createContext = createContext
+    }
+    noteOn(midi, freqHz) {
+      if (!this.ctx) this.ctx = this.createContext()
+      if (this.ctx.state === 'suspended') this.ctx.resume()
+      if (this.voices.has(midi)) return
+      if (this.voices.size >= this.maxVoices) {
+        const oldestMidi = this.voices.keys().next().value
+        this.noteOff(oldestMidi) // FIFO voice stealing
+      }
+      const t = this.ctx.currentTime
+      const osc = this.ctx.createOscillator(); const gain =
+  this.ctx.createGain()
+      osc.frequency.setValueAtTime(freqHz, t)
+      gain.gain.setValueAtTime(0.0001, t)
+      gain.gain.exponentialRampToValueAtTime(0.2, t + 0.01)
+      osc.connect(gain).connect(this.ctx.destination)
+      osc.start(t)
+      this.voices.set(midi, { osc, gain })
+    }
+    noteOff(midi) {
+      const voice = this.voices.get(midi); if (!voice || !this.ctx) return
+      const t = this.ctx.currentTime
+      voice.gain.gain.cancelScheduledValues(t)
+      voice.gain.gain.setValueAtTime(voice.gain.gain.value, t)
+      voice.gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.04)
+      voice.osc.stop(t + 0.05)
+      this.voices.delete(midi)
+    }
+  }
+  - new window.AudioContext chỉ ở giá trị mặc định. Lưu ý gain.value của fake
+  có thể là 0 → exponentialRamp từ 0 không hợp lệ trên trình duyệt thật: dùng
+  Math.max(voice.gain.gain.value, 0.0001) trong setValueAtTime.
+  - Test với fake AudioContext tự viết (AudioParam giả ghi mọi lời gọi vào một
+  mảng chung theo thứ tự, connect trả đối số): các dòng 1 đến 6 và 9 của bảng
+  6.5.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C8b' in đúng 2 dòng.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/PolyphonicSynth.js
+  src/homeworks/GrandPiano88/PolyphonicSynth.test.js
+  git commit -m "feat(hw2): add 8-voice synth with FIFO voice stealing"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Listed 1 directory, ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\GrandPiano88\PolyphonicSynth.test.js)
+  ⎿  Wrote 250 lines to src\homeworks\GrandPiano88\PolyphonicSynth.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { PolyphonicSynth } from './PolyphonicSynth.js'
+       4 import { midiToFrequency } from './pianoKeys.js'
+       5
+       6 const T0 = 2
+       7
+       8 function near(actual, expected) {
+       9   assert.ok(Math.abs(actual - expected) < 1e-9, `expected ${expe
+         cted}, got ${actual}`)
+     … +241 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lần chạy đầu thất bại đúng dự kiến. Giờ viết implementation.
+
+● Write(src\homeworks\GrandPiano88\PolyphonicSynth.js)
+  ⎿  Wrote 59 lines to src\homeworks\GrandPiano88\PolyphonicSynth.js
+       1 const SILENT_GAIN = 0.0001
+       2 const PEAK_GAIN = 0.2
+       3 const ATTACK_SECONDS = 0.01
+       4 const RELEASE_SECONDS = 0.04
+       5 const STOP_SECONDS = 0.05
+       6
+       7 /**
+       8  * Polyphonic oscillator pool. Voices live in a Map in insertion
+          order, so the
+       9  * oldest voice is always the first key (FIFO voice stealing).
+     … +50 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● H2-T06 đã xong. Commit feat(hw2): add 8-voice synth with FIFO voice stealing
+  đã tạo, gồm PolyphonicSynth.test.js và PolyphonicSynth.js. Tôi không push, và
+  chưa làm stopAll, close, activeCount (thuộc H2-T07).
+
+  Lần chạy đầu thất bại, như dự kiến: tôi viết test trước rồi chạy node --test.
+  Kết quả là ERR_MODULE_NOT_FOUND, vì PolyphonicSynth.js chưa tồn tại.
+
+  Đã kiểm tra sau khi viết implementation:
+  - npm test: 139 test, 139 đạt, 0 thất bại.
+  - Test dùng một fake AudioContext tự viết. AudioParam giả ghi mọi lời gọi vào
+    một mảng chung theo thứ tự, và connect trả lại đối số.
+  - Test phủ các dòng 1 đến 6 và 9 của bảng 6.5:
+    - Khởi tạo chưa có context, voices.size bằng 0.
+    - noteOn tạo một context, nối osc → gain → destination, đặt tần số, gain
+      0.0001 rồi ramp lên 0.2 tại t + 0.01.
+    - noteOn trùng midi bị bỏ qua.
+    - 9 nốt khác nhau còn 8 voice, nốt đầu được release (ramp 0.0001 tại t +
+      0.04 ghi trước stop tại t + 0.05).
+    - Thứ tự Map sau khi cướp voice là các nốt 2 đến 9.
+    - noteOff với midi lạ không ném lỗi.
+    - Context ở trạng thái suspended thì resume() được gọi.
+  - Tôi thêm vài test ngoài bảng: voice bị cướp được release trước khi voice mới
+    start, gain giữ ở mức tối thiểu 0.0001 (fake có gain.value bằng 0), và
+    context chỉ tạo một lần.
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - C8b in đúng 2 dòng: drumSynth.js:14 và PolyphonicSynth.js:16.
+  - C8a và C9a không in gì.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Chi tiết triển khai: tôi giữ nguyên khung class của slide 28 như bạn yêu cầu.
+  noteOff dùng Math.max(voice.gain.gain.value, 0.0001) trong setValueAtTime, và
+  các hằng số thời gian được đặt tên (ATTACK_SECONDS và các hằng khác) thay cho
+  số chữ.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 18) và TASK_DECOMPOSITION.md (Part 6, mục
+  6.5 dòng 7 và 8, H2-T07). Chỉ làm H2-T07. Test trước.
+
+  Phạm vi file: src/homeworks/GrandPiano88/PolyphonicSynth.js,
+  PolyphonicSynth.test.js.
+
+  Thêm:
+  - get activeCount() { return this.voices.size }
+  - stopAll(): for (const midi of [...this.voices.keys()]) this.noteOff(midi)
+  - close(): stopAll(); nếu có ctx thì ctx.close(); this.ctx = null
+    Test: stopAll (size 0, mỗi voice có ramp trước stop); close rồi noteOn tạo
+  context mới, context cũ close đúng 1 lần; activeCount.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/PolyphonicSynth.js
+  src/homeworks/GrandPiano88/PolyphonicSynth.test.js
+  git commit -m "feat(hw2): add click-free note-off envelope and stopAll"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Update(src\homeworks\GrandPiano88\PolyphonicSynth.test.js)
+  ⎿  Added 5 lines
+      50      destination: { id: 'destination', kind: 'destination' },
+      51      oscillators,
+      52      resumeCalls: 0,
+      53 +    closeCalls: 0,                                             
+      54 +    close() {                                                  
+      55 +      ctx.closeCalls += 1                                      
+      56 +      return Promise.resolve()                                 
+      57 +    },                                                         
+      58      createOscillator() {
+      59        const osc = makeNode('osc')
+      60        osc.frequency = makeParam(osc.id, 'frequency')
+
+● Bash(cat >> src/homeworks/GrandPiano88/PolyphonicSynth.test.js <<'EOF'…)
+  ⎿  Updated src\homeworks\GrandPiano88\PolyphonicSynth.test.js (+80 -0)
+      253    synth.noteOn(61, midiToFrequency(61))
+      254    assert.equal(contexts.length, 1)
+      255  })
+      256 +                                                              
+      257 +test('activeCount follows the number of sounding voices', () =
+          +> {                                                           
+      258 +  const { synth } = setup()                                   
+      259 +  assert.equal(synth.activeCount, 0)                          
+      260 +  synth.noteOn(60, midiToFrequency(60))                       
+      261 +  synth.noteOn(64, midiToFrequency(64))                       
+      262 +  assert.equal(synth.activeCount, 2)                          
+      263 +  synth.noteOff(60)                                           
+      264 +  assert.equal(synth.activeCount, 1)                          
+      265 +})                                                            
+      266 +                                                              
+      267 +test('stopAll releases every voice, each ramp recorded before 
+          +its stop', () => {                                            
+      268 +  const { synth, log, contexts } = setup()                    
+      269 +  const midis = [60, 64, 67]                                  
+      270 +  for (const midi of midis) synth.noteOn(midi, midiToFrequency
+          +(midi))                                                       
+      271 +  const before = log.length                                   
+      272 +  synth.stopAll()                                             
+      273 +                                                              
+      274 +  assert.equal(synth.voices.size, 0)                          
+      275 +  assert.equal(synth.activeCount, 0)                          
+      276 +  const released = log.slice(before)                          
+      277 +  for (const osc of contexts[0].oscillators) {                
+      278 +    const gainId = log.find((e) => e.op === 'connect' && e.fro
+          +m === osc.id).to                                              
+      279 +    const ramp = released.findIndex(                          
+      280 +      (e) =>                                                  
+      281 +        e.op === 'exponentialRampToValueAtTime' &&            
+      282 +        e.owner === gainId &&                                 
+      283 +        e.value === 0.0001,                                   
+      284 +    )                                                         
+      285 +    const stop = released.findIndex((e) => e.op === 'stop' && 
+          +e.owner === osc.id)                                           
+      286 +    assert.ok(ramp >= 0, 'release ramp recorded')             
+      287 +    assert.ok(stop >= 0, 'oscillator stop recorded')          
+      288 +    assert.ok(ramp < stop, 'ramp is recorded before stop')    
+      289 +  }                                                           
+      290 +})                                                            
+      291 +                                                              
+      292 +test('stopAll without a context or voices does nothing', () =>
+          + {                                                            
+     … 43 more lines (ctrl+o to expand)
+
+● Bảy test mới thất bại đúng dự kiến (13 test cũ vẫn đạt). Giờ thêm
+  implementation.
+
+● Update(src\homeworks\GrandPiano88\PolyphonicSynth.js)
+  ⎿  Added 17 lines
+      56      voice.osc.stop(t + STOP_SECONDS)
+      57      this.voices.delete(midi)
+      58    }
+      59 +                                                               
+      60 +  /** Number of voices that currently sound. */                
+      61 +  get activeCount() {                                          
+      62 +    return this.voices.size                                    
+      63 +  }                                                            
+      64 +                                                               
+      65 +  /** Releases every voice with the click-free envelope. */    
+      66 +  stopAll() {                                                  
+      67 +    for (const midi of [...this.voices.keys()]) this.noteOff(mi
+         +di)                                                            
+      68 +  }                                                            
+      69 +                                                               
+      70 +  /** Stops all voices and closes the context; a later noteOn c
+         +reates a new one. */                                           
+      71 +  close() {                                                    
+      72 +    this.stopAll()                                             
+      73 +    if (this.ctx) this.ctx.close()                             
+      74 +    this.ctx = null                                            
+      75 +  }                                                            
+      76  }
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T07 đã xong. Commit feat(hw2): add click-free note-off envelope and stopAll
+  đã tạo, gồm PolyphonicSynth.js và PolyphonicSynth.test.js. Tôi không push.
+
+  Lần chạy đầu thất bại, như dự kiến: tôi thêm test trước rồi chạy node --test.
+  Có 7 test mới thất bại và 13 test cũ vẫn đạt, vì activeCount, stopAll và close
+  chưa tồn tại.
+
+  Đã kiểm tra sau khi viết implementation:
+  - npm test: 146 test, 146 đạt, 0 thất bại.
+  - Các test mới phủ:
+    - activeCount đếm đúng.
+    - stopAll đưa voices.size về 0, và với từng oscillator thì ramp 0.0001 được
+      ghi trước stop.
+    - close dừng mọi voice, gọi ctx.close() đúng 1 lần và đặt ctx về null.
+    - close rồi noteOn tạo context thứ hai, context cũ vẫn chỉ close 1 lần.
+  - Tôi thêm vài ca biên ngoài yêu cầu: stopAll và close khi chưa có context
+    không ném lỗi và không tạo context, và gọi close hai lần chỉ close context
+    một lần.
+  - Fake AudioContext được thêm close() có bộ đếm closeCalls.
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - C8b vẫn in đúng 2 dòng, C9a không in gì.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Chưa kiểm tra: ctx.close() trả về Promise nhưng code không chờ hay bắt lỗi nó,
+  theo đúng đặc tả của task. Nếu trình duyệt thật từ chối close, lỗi đó sẽ
+  thành unhandled rejection. Tôi chưa thử trên trình duyệt thật.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 17 Keyboard) và TASK_DECOMPOSITION.md
+  (Part 6, mục 6.8, H2-T08). Chỉ làm H2-T08. Test trước.
+
+  Phạm vi file: src/homeworks/GrandPiano88/computerKeyMap.test.js rồi
+  computerKeyMap.js.
+
+  - export const SEMITONE_BY_CODE = new Map([['KeyA', 0], ['KeyW', 1], ['KeyS',
+  2], ['KeyE', 3], ['KeyD', 4], ['KeyF', 5], ['KeyT', 6], ['KeyG', 7],
+  ['KeyY', 8], ['KeyH', 9], ['KeyU', 10], ['KeyJ', 11], ['KeyK', 12]])  (tạo
+  một lần ở cấp module)
+  - export const OCTAVES = Object.freeze([1, 2, 3, 4, 5, 6, 7]) ; export const
+  DEFAULT_OCTAVE = 4
+  - export function computerKeyToMidi(code, octave): semitone =
+  SEMITONE_BY_CODE.get(code); undefined → null; midi = (octave + 1) * 12 +
+  semitone; ngoài [FIRST_MIDI, LAST_MIDI] (import từ pianoKeys.js) → null.
+  - Test: đúng 10 dòng bảng 6.8.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C8a không in gì.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/computerKeyMap.js
+  src/homeworks/GrandPiano88/computerKeyMap.test.js
+  git commit -m "feat(hw2): add computer keyboard to midi map"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/GrandPi
+      ano88 && cat > computerKeyMap.test.js <<'EOF'
+      import { test } from 'node:test'…)
+  ⎿  Created src\homeworks\GrandPiano88\computerKeyMap.test.js (+55 -0)
+       1 +import { test } from 'node:test'                               
+       2 +import assert from 'node:assert/strict'                        
+       3 +import {                                                       
+       4 +  SEMITONE_BY_CODE,                                            
+       5 +  OCTAVES,                                                     
+       6 +  DEFAULT_OCTAVE,                                              
+       7 +  computerKeyToMidi,                                           
+       8 +} from './computerKeyMap.js'                                   
+       9 +                                                               
+      10 +const ROWS = [                                                 
+      11 +  ['KeyA', 4, 60],                                             
+      12 +  ['KeyW', 4, 61],                                             
+      13 +  ['KeyJ', 4, 71],                                             
+      14 +  ['KeyK', 4, 72],                                             
+      15 +  ['KeyA', 0, null],                                           
+      16 +  ['KeyH', 0, 21],                                             
+      17 +  ['KeyK', 7, 108],                                            
+      18 +  ['KeyW', 7, 97],                                             
+      19 +  ['KeyK', 8, null],                                           
+      20 +  ['KeyQ', 4, null],                                           
+      21 +]                                                              
+      22 +                                                               
+      23 +for (const [code, octave, expected] of ROWS) {                 
+      24 +  test(`computerKeyToMidi(${code}, ${octave}) is ${expected}`, 
+         +() => {                                                        
+      25 +    assert.equal(computerKeyToMidi(code, octave), expected)    
+      26 +  })                                                           
+      27 +}                                                              
+      28 +                                                               
+      29 +test('SEMITONE_BY_CODE has 13 codes mapping to semitones 0 to 1
+         +2', () => {                                                    
+      30 +  assert.ok(SEMITONE_BY_CODE instanceof Map)                   
+      31 +  assert.equal(SEMITONE_BY_CODE.size, 13)                      
+      32 +  assert.deepEqual(                                            
+      33 +    [...SEMITONE_BY_CODE.values()].sort((a, b) => a - b),      
+      34 +    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],                
+      35 +  )                                                            
+      36 +  for (const code of SEMITONE_BY_CODE.keys()) {                
+      37 +    assert.match(code, /^Key[A-Z]$/)                           
+      38 +  }                                                            
+      39 +})                                                             
+      40 +                                                               
+     … 15 more lines (ctrl+o to expand)
+
+● Bash(cat > src/homeworks/GrandPiano88/computerKeyMap.js <<'EOF'
+      import { FIRST_MIDI, LAST_MIDI } from './pianoKeys.js'…)
+  ⎿  Created src\homeworks\GrandPiano88\computerKeyMap.js (+34 -0)
+       1 +import { FIRST_MIDI, LAST_MIDI } from './pianoKeys.js'         
+       2 +                                                               
+       3 +/** Physical key (KeyboardEvent.code) to semitone offset from t
+         +he octave's first note. */                                     
+       4 +export const SEMITONE_BY_CODE = new Map([                      
+       5 +  ['KeyA', 0],                                                 
+       6 +  ['KeyW', 1],                                                 
+       7 +  ['KeyS', 2],                                                 
+       8 +  ['KeyE', 3],                                                 
+       9 +  ['KeyD', 4],                                                 
+      10 +  ['KeyF', 5],                                                 
+      11 +  ['KeyT', 6],                                                 
+      12 +  ['KeyG', 7],                                                 
+      13 +  ['KeyY', 8],                                                 
+      14 +  ['KeyH', 9],                                                 
+      15 +  ['KeyU', 10],                                                
+      16 +  ['KeyJ', 11],                                                
+      17 +  ['KeyK', 12],                                                
+      18 +])                                                             
+      19 +                                                               
+      20 +export const OCTAVES = Object.freeze([1, 2, 3, 4, 5, 6, 7])    
+      21 +export const DEFAULT_OCTAVE = 4                                
+      22 +                                                               
+      23 +/**                                                            
+      24 + * @param {string} code    KeyboardEvent.code, for example the 
+         +code of the A key.                                             
+      25 + * @param {number} octave  Scientific pitch octave; the first n
+         +ote of octave n is midi (n + 1) * 12.                          
+      26 + * @returns {number | null}  Midi number, or null when unmapped
+         + or outside the piano range.                                   
+      27 + */                                                            
+      28 +export function computerKeyToMidi(code, octave) {              
+      29 +  const semitone = SEMITONE_BY_CODE.get(code)                  
+      30 +  if (semitone === undefined) return null                      
+      31 +  const midi = (octave + 1) * 12 + semitone                    
+      32 +  if (midi < FIRST_MIDI || midi > LAST_MIDI) return null       
+      33 +  return midi                                                  
+      34 +}                                                              
+
+● H2-T08 đã xong. Commit feat(hw2): add computer keyboard to midi map đã tạo,
+  gồm computerKeyMap.js và computerKeyMap.test.js. Tôi không push.
+
+  Lần chạy đầu thất bại, như dự kiến: tôi viết test trước rồi chạy node --test.
+  Kết quả là ERR_MODULE_NOT_FOUND, vì computerKeyMap.js chưa tồn tại.
+
+  Đã kiểm tra sau khi viết implementation:
+  - npm test: 159 test, 159 đạt, 0 thất bại.
+  - Test phủ đủ 10 dòng bảng 6.8. Tôi thêm 3 test ngoài bảng: SEMITONE_BY_CODE
+    là Map có 13 mã với semitone 0 đến 12, OCTAVES frozen [1..7] chứa
+    DEFAULT_OCTAVE 4, và mọi mã ở mọi octave trong OCTAVES đều ra midi nằm trong
+    21 đến 108.
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - C8a và C9a không in gì.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Lưu ý: WBS ghi "Frozen SEMITONE_BY_CODE", nhưng prompt yêu cầu một Map, và
+  Object.freeze không chặn được set hay delete trên Map. Tôi làm đúng theo
+  prompt (Map tạo một lần ở cấp module, không freeze). Nếu muốn bất biến thật,
+  cần đổi sang object đã freeze hoặc bọc lại, việc này nên làm ở một task riêng.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\lab3-react19\AI_FAILURE_AUDIT.md in the
+  IDE. This may or may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md (mục 18 Sequencer) và TASK_DECOMPOSITION.md
+  (Part 6, mục 6.6, H2-T09). Chỉ làm H2-T09. Test trước.
+
+  Phạm vi file: src/homeworks/GrandPiano88/recorder.test.js rồi recorder.js.
+
+  export function createTakeRecorder(now = () => performance.now()) trả {
+  start, noteOn, noteOff, stop, isRecording }:
+  - start(): xóa dữ liệu cũ, recording = true, lastStart = null.
+  - noteOn(midi, freqHz): bỏ qua nếu không recording hoặc midi đang giữ; t =
+  now(); deltaMs = lastStart === null ? 0 : t - lastStart; lastStart = t; đẩy
+  vào mảng events { midi, freqHz, startedAt: t, deltaMs, durationMs: null } và
+  held.set(midi, index).
+  - noteOff(midi): bỏ qua nếu không recording hoặc midi không giữ; durationMs =
+  now() - startedAt; held.delete(midi).
+  - stop(): note còn giữ lấy durationMs = now() - startedAt; recording = false;
+  trả Object.freeze(events.map((e) => Object.freeze({ midi, freqHz,
+  durationMs, deltaMs }))) (bỏ startedAt).
+  - isRecording(): boolean.
+    Biến nội bộ trong closure; không dùng biến toàn cục. Test với now giả (mảng
+  thời gian hoặc biến cho trước): đủ 6 dòng bảng 6.6.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/recorder.js
+  src/homeworks/GrandPiano88/recorder.test.js
+  git commit -m "feat(hw2): add FIFO take recorder with injected clock"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/GrandPi
+      ano88 && cat > recorder.test.js <<'EOF'
+      import { test } from 'node:test'…)
+  ⎿  Created src\homeworks\GrandPiano88\recorder.test.js (+177 -0)
+        1 +import { test } from 'node:test'                              
+        2 +import assert from 'node:assert/strict'                       
+        3 +import { createTakeRecorder } from './recorder.js'            
+        4 +                                                              
+        5 +const F60 = 261.63                                            
+        6 +const F64 = 329.63                                            
+        7 +                                                              
+        8 +/** A recorder whose clock is a variable the test sets before 
+          +each call. */                                                 
+        9 +function setup() {                                            
+       10 +  let time = 0                                                
+       11 +  const recorder = createTakeRecorder(() => time)             
+       12 +  return {                                                    
+       13 +    recorder,                                                 
+       14 +    at(ms) {                                                  
+       15 +      time = ms                                               
+       16 +      return recorder                                         
+       17 +    },                                                        
+       18 +  }                                                           
+       19 +}                                                             
+       20 +                                                              
+       21 +test('two separate notes: durations and gaps between starts', 
+          +() => {                                                       
+       22 +  const { recorder, at } = setup()                            
+       23 +  at(0).start()                                               
+       24 +  at(100).noteOn(60, F60)                                     
+       25 +  at(400).noteOff(60)                                         
+       26 +  at(600).noteOn(64, F64)                                     
+       27 +  at(700).noteOff(64)                                         
+       28 +  const take = at(800).stop()                                 
+       29 +                                                              
+       30 +  assert.deepEqual(take, [                                    
+       31 +    { midi: 60, freqHz: F60, durationMs: 300, deltaMs: 0 },   
+       32 +    { midi: 64, freqHz: F64, durationMs: 100, deltaMs: 500 }, 
+       33 +  ])                                                          
+       34 +  assert.equal(recorder.isRecording(), false)                 
+       35 +})                                                            
+       36 +                                                              
+       37 +test('chord: events keep start order, second delta is 0', () =
+          +> {                                                           
+       38 +  const { at } = setup()                                      
+       39 +  at(0).start()                                               
+       40 +  at(0).noteOn(60, F60)                                       
+     … 137 more lines (ctrl+o to expand)
+
+● Bash(cat > src/homeworks/GrandPiano88/recorder.js <<'EOF'
+      /**…)
+  ⎿  Created src\homeworks\GrandPiano88\recorder.js (+65 -0)
+       1 +/**                                                            
+       2 + * Records notes in the order they start. The clock is injected
+         + so tests can                                                  
+       3 + * drive time by hand.                                         
+       4 + * @param {() => number} [now]  Milliseconds.                  
+       5 + */                                                            
+       6 +export function createTakeRecorder(now = () => performance.now(
+         +)) {                                                           
+       7 +  let recording = false                                        
+       8 +  let lastStart = null                                         
+       9 +  let events = []                                              
+      10 +  const held = new Map() // midi -> index in events            
+      11 +                                                               
+      12 +  function start() {                                           
+      13 +    events = []                                                
+      14 +    held.clear()                                               
+      15 +    recording = true                                           
+      16 +    lastStart = null                                           
+      17 +  }                                                            
+      18 +                                                               
+      19 +  /**                                                          
+      20 +   * @param {number} midi                                      
+      21 +   * @param {number} freqHz                                    
+      22 +   */                                                          
+      23 +  function noteOn(midi, freqHz) {                              
+      24 +    if (!recording || held.has(midi)) return                   
+      25 +    const t = now()                                            
+      26 +    const deltaMs = lastStart === null ? 0 : t - lastStart     
+      27 +    lastStart = t                                              
+      28 +    events.push({ midi, freqHz, startedAt: t, deltaMs, duration
+         +Ms: null })                                                    
+      29 +    held.set(midi, events.length - 1)                          
+      30 +  }                                                            
+      31 +                                                               
+      32 +  /**                                                          
+      33 +   * @param {number} midi                                      
+      34 +   */                                                          
+      35 +  function noteOff(midi) {                                     
+      36 +    if (!recording || !held.has(midi)) return                  
+      37 +    const event = events[held.get(midi)]                       
+      38 +    event.durationMs = now() - event.startedAt                 
+      39 +    held.delete(midi)                                          
+      40 +  }                                                            
+     … 25 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T09 đã xong. Commit feat(hw2): add FIFO take recorder with injected clock
+  đã tạo, gồm recorder.js và recorder.test.js. Tôi không push.
+
+  Lần chạy đầu thất bại, như dự kiến: tôi viết test trước rồi chạy node --test.
+  Kết quả là ERR_MODULE_NOT_FOUND, vì recorder.js chưa tồn tại.
+
+  Đã kiểm tra sau khi viết implementation:
+  - npm test: 172 test, 172 đạt, 0 thất bại.
+  - Test dùng đồng hồ giả là một biến do test đặt trước mỗi lời gọi, và phủ đủ 6
+    dòng bảng 6.6:
+    - Hai nốt rời nhau cho [{60, 300, 0}, {64, 100, 500}].
+    - Hợp âm giữ thứ tự bắt đầu, nốt thứ hai có delta 0, độ dài 200 và 250.
+    - Nốt còn giữ lúc stop có durationMs bằng 900.
+    - noteOff không có noteOn bị bỏ qua.
+    - Sự kiện trước start và sau stop bị bỏ qua.
+    - Kết quả là mảng frozen chứa các sự kiện frozen và không có startedAt.
+  - Tôi thêm vài ca ngoài bảng: noteOff hai lần chỉ kết thúc nốt một lần, noteOn
+    của midi đang giữ không ghi lại, start xóa take và nốt đang giữ của lần
+    trước, hai recorder không chia sẻ trạng thái, và đồng hồ mặc định
+    performance.now chạy được.
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - C9a không in gì trên recorder.js.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Chưa kiểm tra: độ chính xác của performance.now() trên trình duyệt thật. Test
+  chỉ xác nhận durationMs không âm và deltaMs bằng 0 với nốt đầu.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 16 Fetch and abort, 18 Sequencer) và
+  TASK_DECOMPOSITION.md (Part 6, mục 6.7, H2-T10). Chỉ làm H2-T10. Test trước.
+
+  Phạm vi file: src/homeworks/GrandPiano88/replay.test.js rồi replay.js.
+
+  - export const REPLAY_SPEEDS = Object.freeze([0.5, 1, 2])
+  - export function buildReplaySchedule(events, speed): speed không thuộc
+  REPLAY_SPEEDS → throw RangeError. startMs cộng dồn deltaMs; trả
+  Object.freeze(mảng { midi, freqHz, startMs: cum / speed, durationMs:
+  durationMs / speed } đã freeze).
+  - export function delay(ms, signal): Promise; nếu signal?.aborted thì reject
+  ngay new DOMException('Aborted', 'AbortError'); ngược lại setTimeout(resolve,
+  ms) và signal.addEventListener('abort', onAbort, { once: true }) với
+  onAbort: clearTimeout + reject DOMException AbortError; khi resolve thì
+  removeEventListener.
+  - export async function playSequence(schedule, { onNoteOn, onNoteOff, signal,
+  delay: wait = delay }): tạo danh sách sự kiện on (startMs) và off (startMs +
+  durationMs), sắp theo thời gian bằng .toSorted((a, b) => a.atMs - b.atMs ||
+  (a.type === 'off' ? -1 : 1)); duyệt: await wait(atMs - elapsed, signal); gọi
+  onNoteOn(midi, freqHz) hoặc onNoteOff(midi). Không bắt AbortError ở đây (để
+  caller xử lý).
+  - Test: 5 dòng bảng 6.7 cho buildReplaySchedule; playSequence với fake wait
+  (ghi lại ms, resolve ngay) đúng thứ tự và tổng thời gian; abort giữa chừng →
+  reject name 'AbortError' và không còn onNoteOn sau đó; delay thật với
+  mock.timers của node:test (enable apis setTimeout): resolve sau ms, reject
+  khi abort, không còn timer sau abort.
+  - Không dùng .sort(.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C5 phần .sort( không in gì.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/replay.js
+  src/homeworks/GrandPiano88/replay.test.js
+  git commit -m "feat(hw2): add speed-scaled replay with abortable delay"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\GrandPiano88\replay.test.js)  ⎿  Wrote 251 lines to src\homeworks\GrandPiano88\replay.test.js
+       1 import { test, mock } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { getEventListeners } from 'node:events'
+       4 import { REPLAY_SPEEDS, buildReplaySchedule, delay, playSequence
+          } from './replay.js'
+       5
+       6 const F60 = 261.63
+       7 const F64 = 329.63
+       8 const F67 = 392
+       9 const EVENTS = Object.freeze([
+     … +242 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\GrandPiano88\replay.js)
+  ⎿  Wrote 89 lines to src\homeworks\GrandPiano88\replay.js
+       1 export const REPLAY_SPEEDS = Object.freeze([0.5, 1, 2])
+       2
+       3 /**
+       4  * Pure schedule: start times are the running sum of deltaMs, th
+         en divided by
+       5  * the speed together with the durations.
+       6  * @param {readonly import('./grand-piano.contract.js').Recorded
+         Note[]} events
+       7  * @param {import('./grand-piano.contract.js').ReplaySpeed} spee
+         d
+     … +82 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(src\homeworks\GrandPiano88\replay.test.js)
+  ⎿  Added 1 line, removed 1 line
+      70    )
+      71    for (const note of schedule) {
+      72      assert.ok(Object.isFrozen(note))
+      73 -    assert.deepEqual(Object.keys(note).sort(), ['durationMs', '
+         -freqHz', 'midi', 'startMs'])                                   
+      73 +    assert.deepEqual(Object.keys(note).toSorted(), ['durationMs
+         +', 'freqHz', 'midi', 'startMs'])                               
+      74    }
+      75    assert.equal(EVENTS[1].deltaMs, 500)
+      76  })
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● User answered Claude's questions:
+  ⎿  · Kiểm tra C5 (.sort( trong src) in ra 3 dòng ở các file test của H2-T04,
+     T05, T08, T09 đã commit (pianoKeys.test.js, computerKeyMap.test.js,
+     recorder.test.js). Code H2-T10 và replay.test.js đã sạch. Xử lý thế nào? →
+     Chọn phương án 1. Làm đúng thứ tự sau, KHÔNG đụng replay.js và
+     replay.test.js trong commit sửa:
+
+     1. Chỉ sửa 3 dòng, giữ nguyên logic:
+        - src/homeworks/GrandPiano88/computerKeyMap.test.js:33:
+     [...SEMITONE_BY_CODE.values()].sort((a, b) => a - b) ->
+     [...SEMITONE_BY_CODE.values()].toSorted((a, b) => a - b)
+        - src/homeworks/GrandPiano88/pianoKeys.test.js:93:
+     Object.keys(key).sort() -> Object.keys(key).toSorted()
+        - src/homeworks/GrandPiano88/recorder.test.js:142:
+     Object.keys(event).sort() -> Object.keys(event).toSorted()
+     2. Kiểm tra: npm test (172 test pass trước khi tính replay), npm run build,
+     npm run lint đúng 1 warning đã biết, và C5 (.sort( trong src) không in gì.
+     3. Commit riêng, stage từng file theo đường dẫn:
+        git add src/homeworks/GrandPiano88/computerKeyMap.test.js
+     src/homeworks/GrandPiano88/pianoKeys.test.js
+     src/homeworks/GrandPiano88/recorder.test.js
+        git commit -m "test(hw2): use toSorted in key order assertions"
+     4. Sau đó commit H2-T10 như đã định (chỉ replay.js và replay.test.js),
+     message "feat(hw2): add speed-scaled replay with abortable delay".
+
+     Không push. Báo cáo bằng tiếng Việt, ghi rõ đây là commit phát sinh ngoài
+     WBS.
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/GrandPi
+      ano88 && sed -i '33s/\.sort(/.toSorted(/' computerKeyMap.test.js && sed -i
+      '93s/\.sort(…)
+  ⎿  Updated src\homeworks\GrandPiano88\computerKeyMap.test.js (+1 -1)
+      30    assert.ok(SEMITONE_BY_CODE instanceof Map)
+      31    assert.equal(SEMITONE_BY_CODE.size, 13)
+      32    assert.deepEqual(
+      33 -    [...SEMITONE_BY_CODE.values()].sort((a, b) => a - b),      
+      33 +    [...SEMITONE_BY_CODE.values()].toSorted((a, b) => a - b),  
+      34      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      35    )
+      36    for (const code of SEMITONE_BY_CODE.keys()) {
+  ⎿  Updated src\homeworks\GrandPiano88\pianoKeys.test.js (+1 -1)
+      90  
+      91  test('every key has exactly midi, noteName, isBlack, freqHz', (
+          ) => {
+      92    for (const key of PIANO_KEYS) {
+      93 -    assert.deepEqual(Object.keys(key).sort(), [                
+      93 +    assert.deepEqual(Object.keys(key).toSorted(), [            
+      94        'freqHz',
+      95        'isBlack',
+      96        'midi',
+  ⎿  Updated src\homeworks\GrandPiano88\recorder.test.js (+1 -1)
+      139    assert.ok(Object.isFrozen(take))
+      140    for (const event of take) {
+      141      assert.ok(Object.isFrozen(event))
+      142 -    assert.deepEqual(Object.keys(event).sort(), [             
+      142 +    assert.deepEqual(Object.keys(event).toSorted(), [         
+      143        'deltaMs',
+      144        'durationMs',
+      145        'freqHz',
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Xong H2-T10 và một commit sửa phát sinh. Tôi không push.
+
+  Commit phát sinh ngoài WBS: 8f44ffd test(hw2): use toSorted in key order
+  assertions
+  - Đổi đúng 3 dòng .sort( thành .toSorted( trong computerKeyMap.test.js,
+    pianoKeys.test.js và recorder.test.js, giữ nguyên logic.
+  - Commit chỉ chứa 3 file đó, không đụng replay.js hay replay.test.js.
+  - Lỗi này do tôi: trong các task T04, T08 và T09 tôi chỉ chạy C9a và C8a,
+    không chạy C5.
+
+  Commit H2-T10: dc9bdf5 feat(hw2): add speed-scaled replay with abortable
+  delay, gồm replay.js và replay.test.js.
+
+  Lần chạy đầu thất bại, như dự kiến: tôi viết test trước rồi chạy node --test.
+  Kết quả là ERR_MODULE_NOT_FOUND, vì replay.js chưa tồn tại.
+
+  Đã kiểm tra:
+  - npm test trước commit sửa: 190 test, 190 đạt, 0 thất bại. Con số này gồm cả
+    18 test của replay.test.js, vì file đó đã có trên đĩa nhưng chưa commit. 3
+    file test cũ chạy riêng cho 49 test, 49 đạt.
+  - Test của replay phủ các ý sau:
+    - 5 dòng bảng 6.7 (tốc độ 1, 2, 0.5, 3 ném RangeError, mảng rỗng).
+    - playSequence với fake wait ghi lại các mốc chờ: thứ tự gọi đúng, tổng thời
+      gian là 950 ms.
+    - Abort giữa chừng thì reject AbortError và không còn onNoteOn sau đó.
+    - delay thật với mock.timers của node:test: resolve sau ms, reject khi
+      signal đã abort sẵn, reject khi abort sau đó.
+    - Sau abort, clearTimeout được gọi đúng 1 lần và listener được gỡ. Listener
+      cũng được gỡ khi delay resolve.
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - C5 (.sort( trong src) không in gì sau commit sửa. C5 useEffect, C9a không in
+    gì trên replay.js.
+  - addEventListener và removeEventListener ở replay.js đều 1 lần (kiểm tra theo
+    kiểu C8c).
+  - git status sạch.
+
+  Hai điểm khác prompt mô tả, cần bạn biết:
+  1. Bộ so sánh .toSorted của prompt (a.atMs - b.atMs || (a.type === 'off' ? -1
+     : 1)) không nhất quán khi hai phần tử cùng loại, vì cả (a,b) lẫn (b,a) đều
+     trả 1 hoặc cùng -1. Thứ tự các nốt trong hợp âm khi đó phụ thuộc vào
+     engine. Tôi đổi thành so sánh trả 0 khi cùng loại, để sắp xếp ổn định giữ
+     thứ tự lịch phát. Hành vi "off trước on" vẫn đúng và có test.
+  2. playSequence có thêm một kiểm tra signal?.aborted sau mỗi lần await
+     wait(...), ném AbortError. Nhờ vậy không có onNoteOn nào chạy sau abort, kể
+     cả khi hàm wait được tiêm vào bỏ qua signal. Có test cho trường hợp này.
+
+  Giới hạn đã biết: một nốt có durationMs bằng 0 sẽ phát off trước on do quy tắc
+  "off trước on" khi cùng thời điểm, nên nốt đó có thể kẹt. Invariant 9 yêu cầu
+  dừng mọi voice sau replay, nên ở mức component lỗi này sẽ được dọn. Tôi chưa
+  xử lý riêng trong replay.js.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 3, 18 Memo) và TASK_DECOMPOSITION.md
+  (Part 6, Invariants 3 và 4, H2-T11). Chỉ làm H2-T11.
+
+  Phạm vi file: src/homeworks/GrandPiano88/PianoKey.jsx và tạo
+  src/homeworks/GrandPiano88/GrandPiano88.module.css chỉ gồm 3 class .key,
+  .keyWhite, .keyBlack, mỗi class một khai báo bằng token (layout thật làm ở
+  H2-T19).
+
+  Nội dung theo đúng slide 27, thêm handler:
+  import { memo } from 'react'
+  import styles from './GrandPiano88.module.css'
+  export const PianoKey = memo(function PianoKey({ midi, noteName, isBlack,
+  isPressed, onNoteOn, onNoteOff }) {
+    const handleKeyDown = (e) => { if ((e.key === 'Enter' || e.key === ' ') &&
+  !e.repeat) { e.preventDefault(); onNoteOn(midi) } }
+    const handleKeyUp = (e) => { if (e.key === 'Enter' || e.key === ' ') {
+  e.preventDefault(); onNoteOff(midi) } }
+    return (
+      <button type="button" className={${styles.key} ${isBlack ?
+  styles.keyBlack : styles.keyWhite}} aria-pressed={isPressed}
+        onPointerDown={() => onNoteOn(midi)} onPointerUp={() =>
+  onNoteOff(midi)} onPointerLeave={() => onNoteOff(midi)} onPointerCancel={()
+  => onNoteOff(midi)}
+        onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+        <span>{noteName}</span>
+      </button>
+    )
+  })
+  (Enter/Space dùng e.key là đúng: đây là phím kích hoạt nút, không phải phím
+  tắt chữ cái.)
+
+  Kiểm tra: npm run build; npm run lint exit 0 với đúng 1 warning đã biết; C1',
+  C3, C4, C9b.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/PianoKey.jsx
+  src/homeworks/GrandPiano88/GrandPiano88.module.css
+  git commit -m "feat(hw2): add memoized PianoKey component"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/GrandPi
+      ano88 && cat > GrandPiano88.module.css <<'CSS'
+      .key {…)
+  ⎿  Created src\homeworks\GrandPiano88\GrandPiano88.module.css (+11 -0)
+       1 +.key {                                                         
+       2 +  min-height: var(--control-min-height);                       
+       3 +}                                                              
+       4 +                                                               
+       5 +.keyWhite {                                                    
+       6 +  background-color: var(--color-card-bg);                      
+       7 +}                                                              
+       8 +                                                               
+       9 +.keyBlack {                                                    
+      10 +  background-color: var(--color-text);                         
+      11 +}                                                              
+  ⎿  Created src\homeworks\GrandPiano88\PianoKey.jsx (+46 -0)
+       1 +import { memo } from 'react'                                   
+       2 +import styles from './GrandPiano88.module.css'                 
+       3 +                                                               
+       4 +/**                                                            
+       5 + * One piano key. Memoized: it re-renders only when its own pro
+         +ps change, so the                                              
+       6 + * parent must pass stable onNoteOn / onNoteOff and a boolean i
+         +sPressed.                                                      
+       7 + * @param {import('./grand-piano.contract.js').PianoKeyProps} p
+         +rops                                                           
+       8 + */                                                            
+       9 +export const PianoKey = memo(function PianoKey({               
+      10 +  midi,                                                        
+      11 +  noteName,                                                    
+      12 +  isBlack,                                                     
+      13 +  isPressed,                                                   
+      14 +  onNoteOn,                                                    
+      15 +  onNoteOff,                                                   
+      16 +}) {                                                           
+      17 +  // Enter and Space activate a button; they are not letter sho
+         +rtcuts.                                                        
+      18 +  const handleKeyDown = (e) => {                               
+      19 +    if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {   
+      20 +      e.preventDefault()                                       
+      21 +      onNoteOn(midi)                                           
+      22 +    }                                                          
+      23 +  }                                                            
+      24 +  const handleKeyUp = (e) => {                                 
+      25 +    if (e.key === 'Enter' || e.key === ' ') {                  
+      26 +      e.preventDefault()                                       
+      27 +      onNoteOff(midi)                                          
+      28 +    }                                                          
+      29 +  }                                                            
+      30 +                                                               
+      31 +  return (                                                     
+      32 +    <button                                                    
+      33 +      type="button"                                            
+      34 +      className={`${styles.key} ${isBlack ? styles.keyBlack : s
+         +tyles.keyWhite}`}                                              
+      35 +      aria-pressed={isPressed}                                 
+      36 +      onPointerDown={() => onNoteOn(midi)}                     
+      37 +      onPointerUp={() => onNoteOff(midi)}                      
+      38 +      onPointerLeave={() => onNoteOff(midi)}                   
+      39 +      onPointerCancel={() => onNoteOff(midi)}                  
+      40 +      onKeyDown={handleKeyDown}                                
+     … 6 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T11 đã xong. Commit feat(hw2): add memoized PianoKey component đã tạo, gồm
+  PianoKey.jsx và GrandPiano88.module.css. Tôi không push.
+
+  Đã làm:
+  - PianoKey.jsx theo slide 27: memo(function PianoKey(...)), nhận đúng 6 prop
+    của PianoKeyProps, và chỉ có <span> trong <button type="button"
+    aria-pressed>.
+  - Con trỏ: pointerdown bật, pointerup, pointerleave và pointercancel tắt.
+  - Bàn phím: Enter hoặc Space ở keydown (không phải repeat) bật, keyup tắt. Cả
+    hai đều gọi preventDefault.
+  - CSS Module có đúng 3 class, mỗi class một khai báo dùng token: .key dùng
+    --control-min-height, .keyWhite dùng --color-card-bg, .keyBlack dùng
+    --color-text.
+  - Tôi thêm JSDoc trỏ tới PianoKeyProps và một comment giải thích vì sao Enter
+    và Space đọc bằng e.key.
+
+  Đã kiểm tra trong phiên này:
+  - npm run build đạt.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết
+    (PubgMatchTelemetry.jsx).
+  - npm test: 190 đạt, 0 thất bại.
+  - C1' không in gì (không có <div).
+  - C3 không in gì.
+  - C4 không in gì (không có màu cứng ngoài tokens.css).
+  - Tôi chạy thêm C2, C5 (.sort(), C8a và C9a trên mã mới, đều không in gì.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Chưa kiểm tra được:
+  - C9b: tôi không tìm thấy định nghĩa C9b trong README.md, project-rules.md,
+    Agent.md hay TASK_DECOMPOSITION.md, nên chưa chạy. Nếu bạn gửi lệnh, tôi sẽ
+    chạy bổ sung.
+  - Build chưa bao gồm PianoKey: vì chưa có file nào import nó, bundler không
+    đưa nó vào. Chỉ lint kiểm tra file này. Việc render thật bắt đầu từ H2-T12.
+  - Hành vi trong trình duyệt: chưa kiểm tra bấm chuột và bàn phím, hay render
+    lại một phím khi bấm. Phần Profiler thuộc H2-T14, do bạn tự xác nhận.
+
+  Một điểm cần lưu ý: trong PianoKey, các handler con trỏ và bàn phím là hàm
+  inline tạo mới mỗi lần render, nhưng không làm hỏng memo. memo chỉ so sánh
+  prop mà cha truyền xuống, nên vẫn cần cha đưa onNoteOn và onNoteOff ổn định
+  (H2-T12 và H2-T14).
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 3, 6, 18) và TASK_DECOMPOSITION.md (Part
+  6, Invariants 1, 2, 5, 7, H2-T12). Chỉ làm H2-T12. CHƯA dùng useCallback (để
+  H2-T14), CHƯA làm controls ghi/phát (T15), status (T16), phím máy tính (T17).
+  CHƯA sửa App.jsx (T13).
+
+  Phạm vi file: src/homeworks/GrandPiano88/GrandPiano88.jsx,
+  GrandPiano88.module.css (tối thiểu, chỉ token).
+
+  Yêu cầu:
+  - export function GrandPiano88(); headingId = useId()
+  - const [synth] = useState(() => new PolyphonicSynth(8)); useEffect(() => ()
+  => synth.close(), [synth])
+  - const [pressedMidis, setPressedMidis] = useState(() => new Set())
+  - function noteOn(midi) { const key = PIANO_KEYS[midi - FIRST_MIDI];
+  synth.noteOn(midi, key.freqHz); setPressedMidis((prev) => prev.has(midi) ?
+  prev : new Set(prev).add(midi)) }
+    function noteOff(midi) { synth.noteOff(midi); setPressedMidis((prev) => {
+  if (!prev.has(midi)) return prev; const next = new Set(prev);
+  next.delete(midi); return next }) }
+    (hàm thường, KHÔNG useCallback — H2-T14 sẽ sửa)
+  - JSX: <section className={styles.piano} aria-labelledby={headingId}><h2
+  id={headingId}>HW2 Polyphonic 88-Key Piano</h2>
+    <section className={styles.keyboardScroll} aria-label="Piano keyboard"
+  tabIndex={0}>
+      <ul className={styles.keyboard}>{KEY_SLOTS.map((slot) => (
+        <li key={slot.white.midi} className={styles.slot}>
+          <PianoKey midi={slot.white.midi} noteName={slot.white.noteName}
+  isBlack={false} isPressed={pressedMidis.has(slot.white.midi)}
+  onNoteOn={noteOn} onNoteOff={noteOff} />
+          {slot.black && <PianoKey midi={slot.black.midi}
+  noteName={slot.black.noteName} isBlack
+  isPressed={pressedMidis.has(slot.black.midi)} onNoteOn={noteOn}
+  onNoteOff={noteOff} />}
+        </li>))}</ul></section></section>
+  - Không '<div', không style=, không keyCode.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C8b' (2 dòng), C9a, C9b.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/GrandPiano88.jsx
+  src/homeworks/GrandPiano88/GrandPiano88.module.css
+  git commit -m "feat(hw2): render 88-key piano with pointer and keyboard
+  input"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/GrandPi
+      ano88 && cat > GrandPiano88.jsx <<'JSX'
+      import { useEffect, useId, useState } from 'rea…)
+  ⎿  Created src\homeworks\GrandPiano88\GrandPiano88.jsx (+61 -0)
+       1 +import { useEffect, useId, useState } from 'react'             
+       2 +import { PolyphonicSynth } from './PolyphonicSynth.js'         
+       3 +import { PianoKey } from './PianoKey.jsx'                      
+       4 +import { FIRST_MIDI, KEY_SLOTS, PIANO_KEYS } from './pianoKeys.
+         +js'                                                            
+       5 +import styles from './GrandPiano88.module.css'                 
+       6 +                                                               
+       7 +export function GrandPiano88() {                               
+       8 +  const headingId = useId()                                    
+       9 +  const [synth] = useState(() => new PolyphonicSynth(8))       
+      10 +  const [pressedMidis, setPressedMidis] = useState(() => new Se
+         +t())                                                           
+      11 +                                                               
+      12 +  useEffect(() => () => synth.close(), [synth])                
+      13 +                                                               
+      14 +  function noteOn(midi) {                                      
+      15 +    const key = PIANO_KEYS[midi - FIRST_MIDI]                  
+      16 +    synth.noteOn(midi, key.freqHz)                             
+      17 +    setPressedMidis((prev) => (prev.has(midi) ? prev : new Set(
+         +prev).add(midi)))                                              
+      18 +  }                                                            
+      19 +                                                               
+      20 +  function noteOff(midi) {                                     
+      21 +    synth.noteOff(midi)                                        
+      22 +    setPressedMidis((prev) => {                                
+      23 +      if (!prev.has(midi)) return prev                         
+      24 +      const next = new Set(prev)                               
+      25 +      next.delete(midi)                                        
+      26 +      return next                                              
+      27 +    })                                                         
+      28 +  }                                                            
+      29 +                                                               
+      30 +  return (                                                     
+      31 +    <section className={styles.piano} aria-labelledby={headingI
+         +d}>                                                            
+      32 +      <h2 id={headingId}>HW2 Polyphonic 88-Key Piano</h2>      
+      33 +      <section className={styles.keyboardScroll} aria-label="Pi
+         +ano keyboard" tabIndex={0}>                                    
+      34 +        <ul className={styles.keyboard}>                       
+      35 +          {KEY_SLOTS.map((slot) => (                           
+      36 +            <li key={slot.white.midi} className={styles.slot}> 
+      37 +              <PianoKey                                        
+      38 +                midi={slot.white.midi}                         
+      39 +                noteName={slot.white.noteName}                 
+      40 +                isBlack={false}                                
+     … 21 more lines (ctrl+o to expand)
+  ⎿  Updated src\homeworks\GrandPiano88\GrandPiano88.module.css (+20 -0)
+       9  .keyBlack {
+      10    background-color: var(--color-text);
+      11  }
+      12 +                                                               
+      13 +.piano {                                                       
+      14 +  width: 100%;                                                 
+      15 +  max-width: var(--card-max-width);                            
+      16 +  padding: var(--space-4);                                     
+      17 +  border: 1px solid var(--color-border);                       
+      18 +  background-color: var(--color-card-bg);                      
+      19 +}                                                              
+      20 +                                                               
+      21 +.keyboardScroll {                                              
+      22 +  overflow-x: auto;                                            
+      23 +}                                                              
+      24 +                                                               
+      25 +.keyboard {                                                    
+      26 +  display: flex;                                               
+      27 +}                                                              
+      28 +                                                               
+      29 +.slot {                                                        
+      30 +  display: flex;                                               
+      31 +}                                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T12 đã xong. Commit feat(hw2): render 88-key piano with pointer and
+  keyboard input đã tạo, gồm GrandPiano88.jsx và GrandPiano88.module.css. Tôi
+  không push.
+
+  Đã làm:
+  - GrandPiano88.jsx viết đúng theo mô tả của bạn:
+    - Synth là useState(() => new PolyphonicSynth(8)), và useEffect(() => () =>
+      synth.close(), [synth]).
+    - Trạng thái pressedMidis là một Set.
+    - noteOn và noteOff là hàm thường (chưa dùng useCallback, để H2-T14).
+    - Cấu trúc section > h2 > section có aria-label và tabIndex={0} > ul > 52 li
+      từ KEY_SLOTS, mỗi li có phím trắng và phím đen nếu có.
+  - CSS thêm 4 class dùng token, hoặc không có giá trị màu cứng: .piano,
+    .keyboardScroll (overflow-x: auto), .keyboard (display: flex) và .slot
+    (display: flex). Ba class của T11 giữ nguyên.
+  - Chưa sửa App.jsx, chưa có điều khiển ghi và phát, status hay phím máy tính.
+
+  Đã kiểm tra trong phiên này:
+  - npm run build đạt.
+  - npm test: 190 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết
+    (PubgMatchTelemetry.jsx).
+  - C1', C3, C4, C8a, C9a không in gì.
+  - C8b' in đúng 2 dòng (drumSynth.js:14 và PolyphonicSynth.js:16).
+  - Tôi chạy thêm C5 (.sort() không in gì, không có style= trong file, và
+    GrandPiano88.jsx không có addEventListener.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Chưa kiểm tra được:
+  - C9b: vẫn chưa có định nghĩa trong repo (như ở H2-T11), nên chưa chạy.
+  - Build chưa bao gồm component này: App.jsx chưa import GrandPiano88 (việc của
+    T13), nên bundler chưa đưa nó vào. Chỉ lint kiểm tra file này, và chưa
+    render được trong trình duyệt.
+  - Tiếng đàn, aria-pressed và cuộn ngang: chưa nghe hay thử vì chưa có view
+    hw2.
+
+  Một điểm cần lưu ý: hiện cả 88 phím re-render mỗi lần bấm, vì noteOn và
+  noteOff là hàm mới sau mỗi render và làm memo vô hiệu. Đây là hành vi dự kiến
+  cho tới H2-T14.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 17 App shell) và TASK_DECOMPOSITION.md
+  (Part 6, H2-T13). Chỉ làm H2-T13. Test trước (thêm dòng test, chạy thấy fail,
+  rồi sửa).
+
+  Phạm vi file: src/shell/resolveView.js, src/shell/resolveView.test.js,
+  src/App.jsx.
+  - VIEWS thêm Object.freeze({ id: 'hw2', label: 'HW2 Piano 88' }) sau hw1.
+  - Test thêm: '#hw2' → 'hw2'; VIEWS.length 3.
+  - App.jsx CurrentView: if (view === 'hw2') return <GrandPiano88 />. Không đổi
+  gì khác.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/shell/resolveView.js src/shell/resolveView.test.js src/App.jsx
+  git commit -m "feat(shell): add hw2 view to navigation"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file (ctrl+o to expand)
+
+● Bash(sed -i "s|^  \['#hw1', 'hw1'\],|  ['#hw1', 'hw1'],\n  ['#hw2', 'hw2'],|"
+      src/shell/resolveView.test.js && cat >> src/shell/resolveView.test.js
+      <<'EOF'…)
+  ⎿  Updated src\shell\resolveView.test.js (+13 -0)
+       7    ['#', 'exercises'],
+       8    ['#exercises', 'exercises'],
+       9    ['#hw1', 'hw1'],
+      10 +  ['#hw2', 'hw2'],                                             
+      11    ['hw1', 'hw1'],
+      12    ['#HW1', 'exercises'],
+      13    ['#hw9', 'exercises'],
+     ...
+      30    const ids = VIEWS.map((v) => v.id)
+      31    assert.equal(new Set(ids).size, ids.length)
+      32  })
+      33 +                                                               
+      34 +test('VIEWS lists exercises, hw1 and hw2 in that order', () => 
+         +{                                                              
+      35 +  assert.equal(VIEWS.length, 3)                                
+      36 +  assert.deepEqual(                                            
+      37 +    VIEWS.map((v) => [v.id, v.label]),                         
+      38 +    [                                                          
+      39 +      ['exercises', 'Exercises 1–3'],                          
+      40 +      ['hw1', 'HW1 Drum Kit'],                                 
+      41 +      ['hw2', 'HW2 Piano 88'],                                 
+      42 +    ],                                                         
+      43 +  )                                                            
+      44 +})                                                             
+
+● Hai test mới thất bại đúng dự kiến. Giờ sửa resolveView.js và App.jsx.
+
+● Bash(sed -i "s|^  Object.freeze({ id: 'hw1', label: 'HW1 Drum Kit' }),|&\n
+      Object.freeze({ id: 'hw2', label: 'HW2 Piano 88' }),|"
+      src/shell/resolveView.js && sed -i…)
+  ⎿  Updated src\App.jsx (+2 -0)
+       2  import { ScientistDirectory } from './components/ScientistDirec
+          tory.jsx'
+       3  import { PubgMatchTelemetry } from './components/PubgMatchTelem
+          etry.jsx'
+       4  import { DrumMachine } from './homeworks/DrumMachine/DrumMachin
+          e.jsx'
+       5 +import { GrandPiano88 } from './homeworks/GrandPiano88/GrandPia
+         +no88.jsx'                                                      
+       6  import { SiteHeader } from './shell/SiteHeader.jsx'
+       7  import { useHashView } from './shell/useHashView.js'
+       8  
+       9  function CurrentView({ view }) {
+      10    if (view === 'hw1') return <DrumMachine />
+      11 +  if (view === 'hw2') return <GrandPiano88 />                  
+      12    return (
+      13      <>
+      14        <DeveloperCard />
+  ⎿  Updated src\shell\resolveView.js (+1 -0)
+      1  export const VIEWS = Object.freeze([
+      2    Object.freeze({ id: 'exercises', label: 'Exercises 1–3' }),
+      3    Object.freeze({ id: 'hw1', label: 'HW1 Drum Kit' }),
+      4 +  Object.freeze({ id: 'hw2', label: 'HW2 Piano 88' }),          
+      5  ])
+      6  
+      7  /**
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T13 đã xong. Commit feat(shell): add hw2 view to navigation đã tạo, gồm
+  resolveView.js, resolveView.test.js và App.jsx. Tôi không push.
+
+  Lần chạy đầu thất bại, như dự kiến: tôi thêm test trước rồi chạy node --test
+  trên resolveView.test.js. Có 2 test mới thất bại (resolveView("#hw2") -> hw2
+  và test độ dài VIEWS), 9 test cũ vẫn đạt.
+
+  Đã làm:
+  - VIEWS thêm Object.freeze({ id: 'hw2', label: 'HW2 Piano 88' }) sau hw1.
+  - Test thêm dòng ['#hw2', 'hw2'] vào bảng, và một test kiểm tra VIEWS.length
+    bằng 3 cùng thứ tự id và nhãn.
+  - App.jsx thêm đúng 2 dòng: import GrandPiano88 và if (view === 'hw2') return
+    <GrandPiano88 /> trong CurrentView. Không đổi gì khác.
+
+  Đã kiểm tra trong phiên này:
+  - npm test: 192 test, 192 đạt, 0 thất bại.
+  - npm run build đạt. Bundle JS tăng lên 238.32 kB, nên GrandPiano88 giờ đã
+    được đưa vào build.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - C1' không in gì.
+  - git show --stat HEAD chỉ liệt kê ba file của task (16 dòng thêm), và git
+    status sạch.
+
+  Chưa kiểm tra được: việc mở #hw2 trong trình duyệt, nghe tiếng đàn, cuộn
+  ngang, và việc SiteHeader hiện đúng link thứ ba với aria-current. Tôi chỉ xác
+  nhận bằng test và build, chưa chạy app thật. Việc này thuộc phần kiểm tra
+  trình duyệt của bạn.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 18 Memo) và TASK_DECOMPOSITION.md (Part
+  6, Invariant 3, H2-T14). Chỉ làm H2-T14.
+
+  Phạm vi file: src/homeworks/GrandPiano88/GrandPiano88.jsx.
+  - Bọc noteOn và noteOff bằng useCallback với deps [synth]. Không đổi logic.
+  - Không truyền arrow function mới vào PianoKey.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết (react/exhaustive-deps không báo).
+
+  Commit:
+  git add src/homeworks/GrandPiano88/GrandPiano88.jsx
+  git commit -m "perf(hw2): keep note handlers stable so one key re-renders"
+
+  Không push. Báo cáo bằng tiếng Việt: nhắc tôi kiểm tra Profiler.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(src\homeworks\GrandPiano88\GrandPiano88.jsx)
+  ⎿  Added 20 lines, removed 14 lines
+      11  
+      12    useEffect(() => () => synth.close(), [synth])
+      13  
+      14 -  function noteOn(midi) {                                      
+      15 -    const key = PIANO_KEYS[midi - FIRST_MIDI]                  
+      16 -    synth.noteOn(midi, key.freqHz)                             
+      17 -    setPressedMidis((prev) => (prev.has(midi) ? prev : new Set(
+         -prev).add(midi)))                                              
+      18 -  }                                                            
+      14 +  const noteOn = useCallback(                                  
+      15 +    (midi) => {                                                
+      16 +      const key = PIANO_KEYS[midi - FIRST_MIDI]                
+      17 +      synth.noteOn(midi, key.freqHz)                           
+      18 +      setPressedMidis((prev) => (prev.has(midi) ? prev : new Se
+         +t(prev).add(midi)))                                            
+      19 +    },                                                         
+      20 +    [synth],                                                   
+      21 +  )                                                            
+      22  
+      20 -  function noteOff(midi) {                                     
+      21 -    synth.noteOff(midi)                                        
+      22 -    setPressedMidis((prev) => {                                
+      23 -      if (!prev.has(midi)) return prev                         
+      24 -      const next = new Set(prev)                               
+      25 -      next.delete(midi)                                        
+      26 -      return next                                              
+      27 -    })                                                         
+      28 -  }                                                            
+      23 +  const noteOff = useCallback(                                 
+      24 +    (midi) => {                                                
+      25 +      synth.noteOff(midi)                                      
+      26 +      setPressedMidis((prev) => {                              
+      27 +        if (!prev.has(midi)) return prev                       
+      28 +        const next = new Set(prev)                             
+      29 +        next.delete(midi)                                      
+      30 +        return next                                            
+      31 +      })                                                       
+      32 +    },                                                         
+      33 +    [synth],                                                   
+      34 +  )                                                            
+      35  
+      36    return (
+      37      <section className={styles.piano} aria-labelledby={headingI
+          d}>
+
+● Update(src\homeworks\GrandPiano88\GrandPiano88.jsx)  ⎿  Added 1 line, removed 1 line
+      1 -import { useEffect, useId, useState } from 'react'              
+      1 +import { useCallback, useEffect, useId, useState } from 'react' 
+      2  import { PolyphonicSynth } from './PolyphonicSynth.js'
+      3  import { PianoKey } from './PianoKey.jsx'
+      4  import { FIRST_MIDI, KEY_SLOTS, PIANO_KEYS } from './pianoKeys.j
+         s'
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● H2-T14 đã xong về phần mã. Commit perf(hw2): keep note handlers stable so one
+  key re-renders đã tạo, chỉ chứa GrandPiano88.jsx. Tôi không push.
+
+  Đã làm:
+  - noteOn và noteOff bọc bằng useCallback với deps [synth], logic bên trong giữ
+    nguyên, và đã thêm useCallback vào import.
+  - Deps [synth] là đủ: PIANO_KEYS và FIRST_MIDI là hằng số cấp module, còn
+    setPressedMidis là hàm ổn định của React.
+  - Hai handler truyền thẳng vào PianoKey qua onNoteOn={noteOn} và
+    onNoteOff={noteOff}. Tôi grep không thấy arrow function inline nào được
+    truyền vào PianoKey.
+
+  Đã kiểm tra trong phiên này:
+  - npm run build đạt.
+  - npm test: 192 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết
+    (PubgMatchTelemetry.jsx). Không có cảnh báo exhaustive-deps nào.
+  - git show --stat HEAD chỉ liệt kê GrandPiano88.jsx, và git status sạch.
+
+  Nhắc bạn kiểm tra Profiler (phần tôi chưa làm và không báo kết quả):
+  1. Mở #hw2 bằng npm run dev, bật React DevTools Profiler và bắt đầu ghi.
+  2. Nhấn giữ rồi thả một phím, ví dụ C4. Mỗi lần nhấn và mỗi lần thả là một
+     commit.
+  3. Trong mỗi commit, chỉ PianoKey của phím đó (kèm GrandPiano88) được render.
+     87 phím còn lại phải hiện "Did not render".
+  4. Chụp màn hình Profiler và lưu vào evidence cho H2-T25.
+
+  Nếu Profiler vẫn cho thấy nhiều phím render lại, hãy gửi tôi ảnh chụp để xem
+  nguyên nhân. Tôi chưa chạy app trong trình duyệt nên chưa xác nhận được điều
+  này.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 4, 6, 16 Fetch and abort, 18 Sequencer)
+  và TASK_DECOMPOSITION.md (Part 6, Invariants 8, 9, H2-T15). Chỉ làm H2-T15.
+  CHƯA làm output trạng thái (T16).
+
+  Phạm vi file: src/homeworks/GrandPiano88/GrandPiano88.jsx; class tối thiểu
+  trong GrandPiano88.module.css.
+
+  Yêu cầu:
+  - const [mode, setMode] = useState('idle'); const [take, setTake] =
+  useState([]); const [speed, setSpeed] = useState(1)
+  - const recorderRef = useRef(null) (lazy: tạo createTakeRecorder() khi bấm
+  Record lần đầu, trong handler); const replayRef = useRef(null)
+  (AbortController đang chạy)
+  - noteOn/noteOff (useCallback): nếu recorderRef.current?.isRecording() thì
+  gọi recorder.noteOn(midi, freqHz) / noteOff(midi). Deps vẫn trung thực.
+  - handleRecord: nếu mode 'idle' → tạo/lấy recorder, start(),
+  setMode('recording'); nếu 'recording' → setTake(recorder.stop()),
+  setMode('idle').
+  - handlePlay: async; nếu take rỗng hoặc mode khác 'idle' thì return;
+  controller = new AbortController(); replayRef.current = controller;
+  setMode('playing');
+    try { await playSequence(buildReplaySchedule(take, speed), { onNoteOn:
+  noteOn, onNoteOff: noteOff, signal: controller.signal }) }
+    catch (err) { if (err.name !== 'AbortError') throw err }
+    finally { synth.stopAll(); setPressedMidis(new Set()); if
+  (replayRef.current === controller) replayRef.current = null; setMode('idle')
+  }
+  - handleStop: replayRef.current?.abort()
+  - Unmount: effect cleanup hiện có của synth đổi thành useEffect(() => () => {
+  replayRef.current?.abort(); synth.close() }, [synth]). Nếu lint báo warning
+  mới về ref trong cleanup thì DỪNG và báo, không tự tắt rule.
+  - JSX (trên bàn phím): <p className={styles.controls}>
+    <button type="button" onClick={handleRecord} disabled={mode === 'playing'}
+  aria-pressed={mode === 'recording'}>{mode === 'recording' ? 'Stop recording'
+  : 'Record'}</button>
+    <button type="button" onClick={handlePlay} disabled={mode !== 'idle' ||
+  take.length === 0}>Play take</button>
+    <button type="button" onClick={handleStop} disabled={mode !==
+  'playing'}>Stop Sequence</button></p>
+    <fieldset><legend>Replay speed</legend>{REPLAY_SPEEDS.map((s) => (<label
+  key={s}><input type="radio" name={speedName} value={s} checked={speed === s}
+  onChange={() => setSpeed(s)} /> {s}x</label>))}</fieldset>
+    (speedName = useId())
+  - Trong lúc 'playing', bấm phím bằng chuột vẫn cho chơi (không ghi). Không
+  setInterval.
+
+  Lưu ý focus (mục 15 "Focus after delete" và mục 16 "Loading, errors and
+  focus"): gọi focus() vào nút đang disabled không có tác dụng, nên phải cập
+  nhật state xong rồi mới focus, bằng flushSync từ 'react-dom' và ref, KHÔNG
+  dùng useEffect. Tạo playButtonRef và stopButtonRef (useRef(null)), gắn vào
+  hai nút bằng ref={playButtonRef} / ref={stopButtonRef}. Hai chỗ: (a) trong
+  handlePlay, ngay sau khi gán replayRef.current = controller và trước await
+  đầu tiên: flushSync(() => setMode('playing')); stopButtonRef.current?.focus()
+  (nút Play take vừa bị disabled nên focus chuyển sang Stop Sequence); (b)
+  trong finally: flushSync(() => { setPressedMidis(new Set()); setMode('idle')
+  }); rồi chỉ khi document.activeElement là document.body hoặc chính nút Stop
+  Sequence thì playButtonRef.current?.focus() (không cướp focus nếu người dùng
+  đã chuyển sang chỗ khác; nếu take rỗng thì không focus). Nếu lint báo warning
+  mới (ví dụ react(refs)) thì DỪNG và báo, không tự tắt rule.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C5 (.sort(), C9c.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/GrandPiano88.jsx
+  src/homeworks/GrandPiano88/GrandPiano88.module.css
+  git commit -m "feat(hw2): add record, replay speed and stop sequence
+  controls"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Write(src\homeworks\GrandPiano88\GrandPiano88.jsx)
+  ⎿  Added 107 lines, removed 2 lines
+       1 -import { useCallback, useEffect, useId, useState } from 'react'
+       1 +import { useCallback, useEffect, useId, useRef, useState } from
+         + 'react'                                                       
+       2 +import { flushSync } from 'react-dom'                          
+       3  import { PolyphonicSynth } from './PolyphonicSynth.js'
+       4  import { PianoKey } from './PianoKey.jsx'
+       5  import { FIRST_MIDI, KEY_SLOTS, PIANO_KEYS } from './pianoKeys.
+          js'
+       6 +import { createTakeRecorder } from './recorder.js'             
+       7 +import { REPLAY_SPEEDS, buildReplaySchedule, playSequence } fro
+         +m './replay.js'                                                
+       8  import styles from './GrandPiano88.module.css'
+       9  
+      10  export function GrandPiano88() {
+      11    const headingId = useId()
+      12 +  const speedName = useId()                                    
+      13    const [synth] = useState(() => new PolyphonicSynth(8))
+      14    const [pressedMidis, setPressedMidis] = useState(() => new Se
+          t())
+      15 +  const [mode, setMode] = useState('idle')                     
+      16 +  const [take, setTake] = useState([])                         
+      17 +  const [speed, setSpeed] = useState(1)                        
+      18 +  const recorderRef = useRef(null)                             
+      19 +  const replayRef = useRef(null)                               
+      20 +  const playButtonRef = useRef(null)                           
+      21 +  const stopButtonRef = useRef(null)                           
+      22  
+      12 -  useEffect(() => () => synth.close(), [synth])                
+      23 +  useEffect(                                                   
+      24 +    () => () => {                                              
+      25 +      replayRef.current?.abort()                               
+      26 +      synth.close()                                            
+      27 +    },                                                         
+      28 +    [synth],                                                   
+      29 +  )                                                            
+      30  
+      31    const noteOn = useCallback(
+      32      (midi) => {
+      33        const key = PIANO_KEYS[midi - FIRST_MIDI]
+      34        synth.noteOn(midi, key.freqHz)
+      35 +      if (recorderRef.current?.isRecording()) recorderRef.curre
+         +nt.noteOn(midi, key.freqHz)                                    
+      36        setPressedMidis((prev) => (prev.has(midi) ? prev : new Se
+          t(prev).add(midi)))
+      37      },
+      38      [synth],
+     ...
+      41    const noteOff = useCallback(
+      42      (midi) => {
+      43        synth.noteOff(midi)
+      44 +      if (recorderRef.current?.isRecording()) recorderRef.curre
+         +nt.noteOff(midi)                                               
+      45        setPressedMidis((prev) => {
+      46          if (!prev.has(midi)) return prev
+      47          const next = new Set(prev)
+     ...
+       52      [synth],
+       53    )
+       54  
+       55 +  function handleRecord() {                                   
+       56 +    if (mode === 'idle') {                                    
+       57 +      recorderRef.current ??= createTakeRecorder()            
+       58 +      recorderRef.current.start()                             
+       59 +      setMode('recording')                                    
+       60 +    } else if (mode === 'recording') {                        
+       61 +      setTake(recorderRef.current.stop())                     
+       62 +      setMode('idle')                                         
+       63 +    }                                                         
+       64 +  }                                                           
+       65 +                                                              
+       66 +  async function handlePlay() {                               
+       67 +    if (take.length === 0 || mode !== 'idle') return          
+       68 +    const controller = new AbortController()                  
+       69 +    replayRef.current = controller                            
+       70 +    // Update state first: focus() on a disabled button does n
+          +othing.                                                       
+       71 +    flushSync(() => setMode('playing'))                       
+       72 +    stopButtonRef.current?.focus()                            
+       73 +    try {                                                     
+       74 +      await playSequence(buildReplaySchedule(take, speed), {  
+       75 +        onNoteOn: noteOn,                                     
+       76 +        onNoteOff: noteOff,                                   
+       77 +        signal: controller.signal,                            
+       78 +      })                                                      
+       79 +    } catch (err) {                                           
+       80 +      if (err.name !== 'AbortError') throw err                
+       81 +    } finally {                                               
+       82 +      synth.stopAll()                                         
+       83 +      if (replayRef.current === controller) replayRef.current 
+          += null                                                        
+       84 +      flushSync(() => {                                       
+       85 +        setPressedMidis(new Set())                            
+       86 +        setMode('idle')                                       
+       87 +      })                                                      
+       88 +      const active = document.activeElement                   
+       89 +      if (active === document.body || active === stopButtonRef
+          +.current) {                                                   
+       90 +        playButtonRef.current?.focus()                        
+       91 +      }                                                       
+       92 +    }                                                         
+       93 +  }                                                           
+       94 +                                                              
+       95 +  function handleStop() {                                     
+       96 +    replayRef.current?.abort()                                
+       97 +  }                                                           
+       98 +                                                              
+       99    return (
+      100      <section className={styles.piano} aria-labelledby={heading
+           Id}>
+      101        <h2 id={headingId}>HW2 Polyphonic 88-Key Piano</h2>
+      102 +      <p className={styles.controls}>                         
+      103 +        <button                                               
+      104 +          type="button"                                       
+      105 +          onClick={handleRecord}                              
+      106 +          disabled={mode === 'playing'}                       
+      107 +          aria-pressed={mode === 'recording'}                 
+      108 +        >                                                     
+      109 +          {mode === 'recording' ? 'Stop recording' : 'Record'}
+      110 +        </button>                                             
+      111 +        <button                                               
+      112 +          type="button"                                       
+      113 +          ref={playButtonRef}                                 
+      114 +          onClick={handlePlay}                                
+      115 +          disabled={mode !== 'idle' || take.length === 0}     
+      116 +        >                                                     
+      117 +          Play take                                           
+      118 +        </button>                                             
+      119 +        <button                                               
+      120 +          type="button"                                       
+      121 +          ref={stopButtonRef}                                 
+      122 +          onClick={handleStop}                                
+      123 +          disabled={mode !== 'playing'}                       
+      124 +        >                                                     
+      125 +          Stop Sequence                                       
+      126 +        </button>                                             
+      127 +      </p>                                                    
+      128 +      <fieldset>                                              
+      129 +        <legend>Replay speed</legend>                         
+      130 +        {REPLAY_SPEEDS.map((s) => (                           
+      131 +          <label key={s} htmlFor={`${speedName}-${s}`}>       
+      132 +            <input                                            
+      133 +              type="radio"                                    
+      134 +              id={`${speedName}-${s}`}                        
+      135 +              name={speedName}                                
+      136 +              value={s}                                       
+      137 +              checked={speed === s}                           
+      138 +              onChange={() => setSpeed(s)}                    
+      139 +            />{' '}                                           
+      140 +            {s}x                                              
+      141 +          </label>                                            
+      142 +        ))}                                                   
+      143 +      </fieldset>                                             
+      144        <section className={styles.keyboardScroll} aria-label="P
+           iano keyboard" tabIndex={0}>
+      145          <ul className={styles.keyboard}>
+      146            {KEY_SLOTS.map((slot) => (
+
+● Bash(cat >> src/homeworks/GrandPiano88/GrandPiano88.module.css <<'CSS'…)
+  ⎿  Updated src\homeworks\GrandPiano88\GrandPiano88.module.css (+6 -0)
+      29  .slot {
+      30    display: flex;
+      31  }
+      32 +                                                               
+      33 +.controls {                                                    
+      34 +  display: flex;                                               
+      35 +  flex-wrap: wrap;                                             
+      36 +  gap: var(--space-2);                                         
+      37 +}                                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T15 đã xong về phần mã. Commit feat(hw2): add record, replay speed and stop
+  sequence controls đã tạo, gồm GrandPiano88.jsx và GrandPiano88.module.css.
+  Tôi không push.
+
+  Đã làm:
+  - Thêm các state mode, take, speed và 4 ref: recorderRef (tạo
+    createTakeRecorder() lười, trong handler handleRecord), replayRef,
+    playButtonRef, stopButtonRef.
+  - noteOn và noteOff ghi vào recorder khi đang isRecording(). Deps vẫn là
+    [synth] và lint không đòi thêm gì.
+  - handleRecord, handlePlay (có AbortController, bắt AbortError, finally gọi
+    stopAll, xóa phím đang nhấn và đặt về idle) và handleStop đúng như bạn mô
+    tả.
+  - Effect dọn dẹp giờ là replayRef.current?.abort(); synth.close().
+  - Focus: trong handlePlay, flushSync(() => setMode('playing')) rồi focus nút
+    Stop Sequence trước await đầu tiên. Trong finally, flushSync rồi chỉ focus
+    lại Play take khi document.activeElement là body hoặc chính nút Stop
+    Sequence. Không có useEffect nào cho focus; file vẫn chỉ có 1 useEffect.
+  - JSX: ba nút điều khiển trong <p className={styles.controls}>, và fieldset
+    với legend "Replay speed" cùng 3 radio 0.5x, 1x, 2x. CSS thêm đúng một class
+    .controls.
+
+  Một chỗ khác với mô tả của bạn: mục 4 của project-rules.md yêu cầu mỗi input
+  có <label htmlFor> với id từ useId(). Vì vậy mỗi radio có id là
+  ${speedName}-${s}, và label có htmlFor tương ứng, thay vì chỉ bọc input trong
+  label.
+
+  Đã kiểm tra trong phiên này:
+  - npm run build đạt.
+  - npm test: 192 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết. Không có cảnh báo
+    mới về ref trong cleanup hay exhaustive-deps, nên không phải dừng.
+  - C1', C3, C4, C5 (.sort(), C8a, C9a không in gì. File không có setInterval
+    hay style=.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Chưa kiểm tra được:
+  - C9c: không có định nghĩa trong repo, nên tôi chưa chạy. Bạn gửi lệnh thì tôi
+    sẽ chạy bổ sung.
+  - Toàn bộ hành vi chạy thật chưa được thử trong trình duyệt: ghi một take,
+    phát ở 0.5x, 1x và 2x, nút Stop Sequence, và việc không còn phím nào bị kẹt
+    sau khi dừng. Hai chỗ cần xem kỹ là chuyển focus giữa Play take và Stop
+    Sequence, và chuyển sang view khác khi đang phát (dự kiến replay bị hủy,
+    không còn âm thanh).
+  - Phím chơi bằng chuột khi playing: theo yêu cầu, bấm phím vẫn kêu và không
+    ghi. Tôi chưa thử.
+  - Không có test tự động cho component: repo chỉ test bằng node:test trên
+    module thuần, nên logic của GrandPiano88 chưa có test.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 4) và TASK_DECOMPOSITION.md (Part 6,
+  Invariant 10, H2-T16). Chỉ làm H2-T16.
+
+  Phạm vi file: src/homeworks/GrandPiano88/GrandPiano88.jsx.
+  - Thêm state voiceCount (cập nhật trong noteOn/noteOff/finally bằng
+  setVoiceCount(synth.activeCount) — ngay sau khi gọi synth).
+  - Thêm statusText tính khi render (không đọc ref trong render): mode
+  'recording' → 'Recording' (không dấu chấm lửng, vì câu sau đã có dấu chấm);
+  'playing' → Playing take (${take.length} notes) at ${speed}x; 'idle' và
+  take.length > 0 → Take ready: ${take.length} notes; ngược lại 'Ready'.
+  - <output className={styles.status} role="status"
+  aria-live="polite">{statusText}. Voices: {voiceCount} of
+  {MAX_VOICES}.</output>
+  - Thêm hằng số module const MAX_VOICES = 8 ở đầu file, dùng cho cả new
+  PolyphonicSynth(MAX_VOICES) lẫn chữ "of" (không để số 8 lặp hai nơi). Trong
+  khối finally của handlePlay, cập nhật voiceCount trong cùng flushSync đang
+  có: setVoiceCount(synth.activeCount) (sau synth.stopAll()).
+  - Không useEffect mới.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/GrandPiano88.jsx
+  git commit -m "feat(hw2): announce voices and sequence status"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(f=src/homeworks/GrandPiano88/GrandPiano88.jsx && node -e "
+      const fs=require('fs');let s=fs.readFileSync('$f','utf8');…)
+  ⎿  Updated src\homeworks\GrandPiano88\GrandPiano88.jsx (+15 -1)
+       7  import { REPLAY_SPEEDS, buildReplaySchedule, playSequence } fro
+          m './replay.js'
+       8  import styles from './GrandPiano88.module.css'
+       9  
+      10 +const MAX_VOICES = 8                                           
+      11 +                                                               
+      12  export function GrandPiano88() {
+      13    const headingId = useId()
+      14    const speedName = useId()
+      13 -  const [synth] = useState(() => new PolyphonicSynth(8))       
+      15 +  const [synth] = useState(() => new PolyphonicSynth(MAX_VOICES
+         +))                                                             
+      16    const [pressedMidis, setPressedMidis] = useState(() => new Se
+          t())
+      17    const [mode, setMode] = useState('idle')
+      18    const [take, setTake] = useState([])
+      19    const [speed, setSpeed] = useState(1)
+      20 +  const [voiceCount, setVoiceCount] = useState(0)              
+      21    const recorderRef = useRef(null)
+      22    const replayRef = useRef(null)
+      23    const playButtonRef = useRef(null)
+     ...
+      35      (midi) => {
+      36        const key = PIANO_KEYS[midi - FIRST_MIDI]
+      37        synth.noteOn(midi, key.freqHz)
+      38 +      setVoiceCount(synth.activeCount)                         
+      39        if (recorderRef.current?.isRecording()) recorderRef.curre
+          nt.noteOn(midi, key.freqHz)
+      40        setPressedMidis((prev) => (prev.has(midi) ? prev : new Se
+          t(prev).add(midi)))
+      41      },
+     ...
+      45    const noteOff = useCallback(
+      46      (midi) => {
+      47        synth.noteOff(midi)
+      48 +      setVoiceCount(synth.activeCount)                         
+      49        if (recorderRef.current?.isRecording()) recorderRef.curre
+          nt.noteOff(midi)
+      50        setPressedMidis((prev) => {
+      51          if (!prev.has(midi)) return prev
+     ...
+      88        if (replayRef.current === controller) replayRef.current =
+           null
+      89        flushSync(() => {
+      90          setPressedMidis(new Set())
+      91 +        setVoiceCount(synth.activeCount)                       
+      92          setMode('idle')
+      93        })
+      94        const active = document.activeElement
+     ...
+      102      replayRef.current?.abort()
+     … 19 more lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● H2-T16 đã xong. Commit feat(hw2): announce voices and sequence status đã tạo,
+  chỉ chứa GrandPiano88.jsx (15 dòng thêm, 1 dòng sửa). Tôi không push.
+
+  Đã làm:
+  - Thêm hằng MAX_VOICES = 8 ở đầu file, dùng cho cả new
+    PolyphonicSynth(MAX_VOICES) lẫn chữ "of". Số 8 chỉ còn ở một chỗ.
+  - Thêm state voiceCount. setVoiceCount(synth.activeCount) được gọi ngay sau
+    synth.noteOn và synth.noteOff, và trong flushSync ở finally của handlePlay
+    (sau synth.stopAll()).
+  - statusText tính trong lúc render, không đọc ref:
+    - Recording khi đang ghi.
+    - Playing take (n notes) at {speed}x khi đang phát.
+    - Take ready: n notes khi idle và take không rỗng.
+    - Ready trong các trường hợp còn lại.
+  - Thêm <output className={styles.status} role="status" aria-live="polite">
+    hiển thị {statusText}. Voices: n of 8., đặt sau fieldset và trước bàn phím.
+  - Không thêm useEffect mới; file vẫn chỉ có 1.
+
+  Đã kiểm tra trong phiên này:
+  - npm run build đạt.
+  - npm test: 192 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - Tôi chạy thêm C1' (<div), .sort(, keyCode, style={{ và C9a. Tất cả không in
+    gì.
+  - git show --stat HEAD chỉ liệt kê GrandPiano88.jsx, và git status sạch.
+
+  Hai điều cần lưu ý:
+  1. Class .status chưa tồn tại: GrandPiano88.module.css chưa có class này, nên
+     styles.status là undefined và className không có tác dụng. Task này chỉ cho
+     sửa file .jsx, nên tôi để vậy. Cần thêm class khi làm layout ở H2-T19.
+  2. Số ít, số nhiều: theo mẫu bạn đưa, chuỗi có thể hiện "Take ready: 1 notes".
+     Tôi giữ nguyên mẫu, chưa xử lý.
+
+  Chưa kiểm tra được: thông báo của trình đọc màn hình (aria-live) và việc
+  voiceCount đổi đúng khi nhấn nhiều phím trong trình duyệt. Tôi chỉ xác nhận
+  bằng build, test và lint.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 6, 17 Keyboard) và TASK_DECOMPOSITION.md
+  (Part 6, H2-T17). Chỉ làm H2-T17.
+
+  Phạm vi file: src/homeworks/GrandPiano88/GrandPiano88.jsx; class tối thiểu
+  trong GrandPiano88.module.css.
+  - state octave (DEFAULT_OCTAVE), shortcutsOn (true). Labels qua useId.
+  - <p><label htmlFor={octaveId}>Keyboard octave</label><select id={octaveId}
+  value={octave} onChange={(e) =>
+  setOctave(Number(e.target.value))}>{OCTAVES.map((o) => <option key={o}
+  value={o}>{o}</option>)}</select></p>
+    <p><input id={kbId} type="checkbox" checked={shortcutsOn} onChange={(e) =>
+  setShortcutsOn(e.target.checked)} /><label htmlFor={kbId}>Keyboard shortcuts
+  (A W S E D F T G Y H U J K)</label></p>
+  - Một useEffect: nếu !shortcutsOn || mode === 'playing' return undefined.
+  Ngược lại keydown: if (!shouldHandleKey(e, true)) return; midi =
+  computerKeyToMidi(e.code, octave); nếu null return; e.preventDefault();
+  noteOn(midi). keyup: midi tương tự (không cần guard repeat) → noteOff(midi).
+  blur: nhả mọi midi trong synth (synth.stopAll()), setPressedMidis(new Set())
+  và setVoiceCount(synth.activeCount) (T16 đã thêm voiceCount; không cập nhật
+  thì status kẹt số cũ). Cleanup gỡ cả ba. Deps trung thực [shortcutsOn, mode,
+  octave, noteOn, noteOff, synth].
+  - Import shouldHandleKey từ '../DrumMachine/shouldHandleKey.js'.
+  - Lưu ý: đổi octave khi đang giữ phím → keyup tính midi khác; trong cleanup
+  của effect (chạy khi octave đổi) gọi stopAll, xóa pressed và
+  setVoiceCount(synth.activeCount) để không kẹt (cleanup cũng chạy khi mode đổi
+  sang 'playing'; chấp nhận được vì khi đó phím máy tính bị tắt). Nếu lint báo
+  warning mới (ví dụ react(set-state-in-effect) cho setState trong cleanup)
+  thì DỪNG và báo, không tự tắt rule.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C8a (không keyCode, which, charCode trong src); C8c (trong
+  GrandPiano88.jsx số addEventListener bằng số removeEventListener, cùng 3); C5
+  (.sort( trong src không in gì).
+
+  Commit:
+  git add src/homeworks/GrandPiano88/GrandPiano88.jsx
+  src/homeworks/GrandPiano88/GrandPiano88.module.css
+  git commit -m "feat(hw2): add computer keyboard octave select and toggle"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(f=src/homeworks/GrandPiano88/GrandPiano88.jsx && cat > /tmp/edit17.cjs
+      <<'JS'
+      const fs = require('fs')…)
+  ⎿  Updated src\homeworks\GrandPiano88\GrandPiano88.jsx (+57 -0)
+       3  import { PolyphonicSynth } from './PolyphonicSynth.js'
+       4  import { PianoKey } from './PianoKey.jsx'
+       5  import { FIRST_MIDI, KEY_SLOTS, PIANO_KEYS } from './pianoKeys.
+          js'
+       6 +import { DEFAULT_OCTAVE, OCTAVES, computerKeyToMidi } from './c
+         +omputerKeyMap.js'                                              
+       7 +import { shouldHandleKey } from '../DrumMachine/shouldHandleKey
+         +.js'                                                           
+       8  import { createTakeRecorder } from './recorder.js'
+       9  import { REPLAY_SPEEDS, buildReplaySchedule, playSequence } fro
+          m './replay.js'
+      10  import styles from './GrandPiano88.module.css'
+     ...
+      14  export function GrandPiano88() {
+      15    const headingId = useId()
+      16    const speedName = useId()
+      17 +  const octaveId = useId()                                     
+      18 +  const kbId = useId()                                         
+      19    const [synth] = useState(() => new PolyphonicSynth(MAX_VOICES
+          ))
+      20    const [pressedMidis, setPressedMidis] = useState(() => new Se
+          t())
+      21    const [mode, setMode] = useState('idle')
+      22    const [take, setTake] = useState([])
+      23    const [speed, setSpeed] = useState(1)
+      24    const [voiceCount, setVoiceCount] = useState(0)
+      25 +  const [octave, setOctave] = useState(DEFAULT_OCTAVE)         
+      26 +  const [shortcutsOn, setShortcutsOn] = useState(true)         
+      27    const recorderRef = useRef(null)
+      28    const replayRef = useRef(null)
+      29    const playButtonRef = useRef(null)
+     ...
+       63      [synth],
+       64    )
+       65  
+       66 +  useEffect(() => {                                           
+       67 +    if (!shortcutsOn || mode === 'playing') return undefined  
+       68 +                                                              
+       69 +    function handleKeyDown(e) {                               
+       70 +      if (!shouldHandleKey(e, true)) return                   
+       71 +      const midi = computerKeyToMidi(e.code, octave)          
+       72 +      if (midi === null) return                               
+       73 +      e.preventDefault()                                      
+       74 +      noteOn(midi)                                            
+       75 +    }                                                         
+       76 +    function handleKeyUp(e) {                                 
+       77 +      const midi = computerKeyToMidi(e.code, octave)          
+       78 +      if (midi === null) return                               
+     … 47 more lines (ctrl+o to expand)
+  ⎿  Updated src\homeworks\GrandPiano88\GrandPiano88.module.css (+7 -0)
+      35    flex-wrap: wrap;
+      36    gap: var(--space-2);
+      37  }
+      38 +                                                               
+      39 +.field {                                                       
+      40 +  display: flex;                                               
+      41 +  flex-wrap: wrap;                                             
+      42 +  align-items: center;                                         
+      43 +  gap: var(--space-2);                                         
+      44 +}                                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T17 đã xong về phần mã. Commit feat(hw2): add computer keyboard octave
+  select and toggle đã tạo, gồm GrandPiano88.jsx và GrandPiano88.module.css. Tôi
+  không push.
+
+  Đã làm:
+  - Thêm state octave (mặc định DEFAULT_OCTAVE) và shortcutsOn (mặc định bật).
+    Id của hai điều khiển lấy từ useId.
+  - Thêm <select> octave với OCTAVES, và checkbox "Keyboard shortcuts (A W S E D
+    F T G Y H U J K)". Cả hai đều có <label htmlFor>.
+  - Thêm một useEffect cho phím máy tính. Nó không làm gì khi shortcuts tắt hoặc
+    mode === 'playing'.
+    - keydown dùng shouldHandleKey(e, true) từ DrumMachine, rồi
+      computerKeyToMidi(e.code, octave), preventDefault và noteOn.
+    - keyup gọi noteOff.
+    - blur và cleanup đều gọi releaseAll: synth.stopAll(), xóa pressedMidis và
+      cập nhật voiceCount.
+    - Cleanup gỡ cả 3 listener. Deps là [shortcutsOn, mode, octave, noteOn,
+      noteOff, synth].
+  - CSS thêm một class .field, dùng cho hai đoạn <p> của select và checkbox.
+
+  Đã kiểm tra trong phiên này:
+  - npm run build đạt.
+  - npm test: 192 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết. Không có cảnh báo
+    mới (kể cả set-state-in-effect cho setState trong cleanup), nên không phải
+    dừng.
+  - C1', C3, C4, C5, C8a và C9a không in gì.
+  - C8c chạy trên mọi file nguồn: không có file nào lệch. GrandPiano88.jsx có 3
+    addEventListener và 3 removeEventListener.
+  - C8b' vẫn đúng 2 dòng.
+  - git show --stat HEAD chỉ liệt kê hai file của task, và git status sạch.
+
+  Chưa kiểm tra được:
+  - Chơi bằng bàn phím máy tính thật: chưa thử trong trình duyệt các việc sau,
+    vì tôi chưa chạy app:
+    - Phím A đến K ở nhiều octave, và giữ nhiều phím cùng lúc.
+    - Chuyển cửa sổ (blur) khi đang giữ phím.
+    - Đổi octave khi đang giữ phím.
+    - Gõ phím trong ô select không phát tiếng.
+  - Với bộ gõ tiếng Việt (UniKey): e.code được thiết kế để an toàn, nhưng chưa
+    thử thật.
+
+  Điểm cần biết về hành vi: vì mode nằm trong deps, mỗi lần bắt đầu hoặc dừng
+  ghi, cleanup chạy và nhả mọi nốt đang giữ, kể cả nốt giữ bằng chuột. Điều này
+  nhất quán với lưu ý của bạn về cleanup khi đổi mode. Nếu bạn thấy nốt ngắt bất
+  ngờ khi bấm Record, đây là nguyên nhân.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 6,
+  H2-T18). Chỉ làm H2-T18.
+  Phạm vi: src/styles/tokens.css, chỉ THÊM nhóm "/* Piano (Homework 2) */" vào
+  :root:
+    --piano-white-key-width: 2.75rem;
+    --piano-white-key-height: 11rem;
+    --piano-black-key-width: 1.75rem;
+    --piano-black-key-height: 7rem;
+    --color-piano-white: var(--color-card-bg);
+    --color-piano-white-text: var(--color-text);
+    --color-piano-black: var(--color-text);
+    --color-piano-black-text: var(--color-card-bg);
+    --color-piano-pressed: var(--color-tier-core-bg);
+    --color-piano-pressed-text: var(--color-tier-core-text);
+    --color-piano-pressed-border: var(--color-accent);
+  Báo tương phản: piano-black-text trên piano-black; pressed-text trên pressed
+  (>= 4.5:1); pressed-border trên card-bg (>= 3:1).
+  Kiểm tra: git diff 0 dòng xóa; npm run build; C4 không in gì.
+  Commit:
+  git add src/styles/tokens.css
+  git commit -m "style(hw2): add piano tokens"
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(src\styles\tokens.css)
+  ⎿  Added 13 lines
+      60    --color-pad-active-bg: var(--color-tier-core-bg);
+      61    --color-pad-active-text: var(--color-tier-core-text);
+      62    --color-pad-active-border: var(--color-accent);
+      63 +                                                               
+      64 +  /* Piano (Homework 2) */                                     
+      65 +  --piano-white-key-width: 2.75rem;                            
+      66 +  --piano-white-key-height: 11rem;                             
+      67 +  --piano-black-key-width: 1.75rem;                            
+      68 +  --piano-black-key-height: 7rem;                              
+      69 +  --color-piano-white: var(--color-card-bg);                   
+      70 +  --color-piano-white-text: var(--color-text);                 
+      71 +  --color-piano-black: var(--color-text);                      
+      72 +  --color-piano-black-text: var(--color-card-bg);              
+      73 +  --color-piano-pressed: var(--color-tier-core-bg);            
+      74 +  --color-piano-pressed-text: var(--color-tier-core-text);     
+      75 +  --color-piano-pressed-border: var(--color-accent);           
+      76  }
+
+  Made 1 scratchpad edit +34, ran 3 shell commands (ctrl+o to expand)
+
+● H2-T18 đã xong. Commit style(hw2): add piano tokens đã tạo, chỉ chứa
+  src/styles/tokens.css (13 dòng thêm). Tôi không push.
+
+  Đã làm: thêm nhóm /* Piano (Homework 2) */ vào cuối :root với đúng 11 token
+  như bạn liệt kê. Bốn token kích thước dùng rem. Bảy token màu đều là var() của
+  token có sẵn, nên không có màu cứng mới.
+
+  Tương phản (tính trong phiên này bằng công thức WCAG từ giá trị thật trong
+  tokens.css):
+
+  ┌────────────────────────────────────────────┬───────┬─────────┬─────────┐
+  │                    Cặp                     │ Giá   │  Tỉ lệ  │ Yêu cầu │
+  │                                            │  trị  │         │         │
+  ├────────────────────────────────────────────┼───────┼─────────┼─────────┤
+  │ piano-black-text (#ffffff) trên            │       │ 17.85:1 │ ≥ 4.5,  │
+  │ piano-black (#0f172a)                      │       │         │ đạt     │
+  ├────────────────────────────────────────────┼───────┼─────────┼─────────┤
+  │ piano-pressed-text (#1e3a8a) trên          │       │ 8.49:1  │ ≥ 4.5,  │
+  │ piano-pressed (#dbeafe)                    │       │         │ đạt     │
+  ├────────────────────────────────────────────┼───────┼─────────┼─────────┤
+  │ piano-pressed-border (#1d4ed8) trên        │       │ 6.70:1  │ ≥ 3,    │
+  │ card-bg (#ffffff)                          │       │         │ đạt     │
+  └────────────────────────────────────────────┴───────┴─────────┴─────────┘
+
+  Tôi tính thêm ba cặp để tham khảo: chữ trắng-phím-trắng 17.85:1, viền pressed
+  trên nền pressed 5.49:1, và phím đen trên nền card 17.85:1. Cả ba đều đạt.
+
+  Đã kiểm tra trong phiên này:
+  - git diff: 0 dòng xóa, 13 dòng thêm.
+  - npm run build đạt.
+  - npm test: 192 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0.
+  - C4 không in gì.
+  - git show --stat HEAD chỉ liệt kê tokens.css, và git status sạch.
+
+  Chưa làm: chưa có CSS nào dùng các token này, vì layout để H2-T19. Tỉ lệ tương
+  phản chỉ là tính toán trên giá trị token, chưa phải đo trên màn hình thật.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 6,
+  Invariant 11, H2-T19). Chỉ làm H2-T19. Tham khảo (không sửa)
+  DrumMachine.module.css cho kiểu thẻ.
+
+  Phạm vi: src/homeworks/GrandPiano88/GrandPiano88.module.css. Không sửa JSX.
+  - .piano: kiểu thẻ như .drumKit nhưng max-width: min(100%, 72rem) bằng token
+  nếu có, min-width 0.
+  - .keyboardScroll: overflow-x auto; max-width 100%; padding var(--space-2)
+  (đủ lớn hơn vòng focus 3px + offset 2px để viền focus của phím đầu/phím đen
+  không bị overflow cắt); outline focus dùng :focus-visible có sẵn.
+  - .keyboard: display flex; list-style none; margin 0; padding 0; width
+  max-content.
+  - .slot: position relative; flex 0 0 var(--piano-white-key-width).
+  - .key: font inherit; font-size var(--font-size-xs); display flex;
+  align-items flex-end; justify-content center; padding-block-end
+  var(--space-2); border var(--control-border-width) solid var(--color-border);
+  touch-action pan-x (KHÔNG dùng none: none chặn vuốt ngang nên trên điện
+  thoại không cuộn được bàn đàn; pan-x cho vuốt ngang cuộn container, trình
+  duyệt gửi pointercancel và PianoKey đã nhả nốt qua onPointerCancel);
+  user-select none.
+  - .keyWhite: width 100%; height var(--piano-white-key-height); nền
+  var(--color-piano-white); chữ var(--color-piano-white-text); bo dưới
+  var(--radius-sm).
+  - .keyBlack: position absolute; top 0; left 100%; translate -50% 0; z-index
+  1; width var(--piano-black-key-width); height var(--piano-black-key-height);
+  nền var(--color-piano-black); chữ var(--color-piano-black-text).
+  - .key[aria-pressed='true']: nền var(--color-piano-pressed); chữ
+  var(--color-piano-pressed-text); box-shadow inset 0 -0.375rem 0
+  var(--color-piano-pressed-border); font-weight 700.
+  - .controls (đã có), .field (đã có) giữ nguyên; thêm .piano fieldset display
+  flex; flex-wrap wrap; gap token; min-width 0 (fieldset mặc định
+  min-inline-size: min-content nên có thể làm tràn ngang ở 375px); .status
+  display block; overflow-wrap anywhere; nút trong .controls có min-height
+  var(--control-min-height).
+  - Không nowrap, không mã màu.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C4; git diff --stat chỉ 1 file css.
+
+  Commit:
+  git add src/homeworks/GrandPiano88/GrandPiano88.module.css
+  git commit -m "style(hw2): add responsive piano layout with inner scroll"
+
+  Không push. Báo cáo bằng tiếng Việt: nêu rõ chưa kiểm tra trình duyệt.
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+● Bash(cat > src/homeworks/GrandPiano88/GrandPiano88.module.css <<'CSS'
+      .piano {…)
+  ⎿  Updated src\homeworks\GrandPiano88\GrandPiano88.module.css (+102 -20)
+       1 -.key {                                                         
+       2 -  min-height: var(--control-min-height);                       
+       3 -}                                                              
+       4 -                                                               
+       5 -.keyWhite {                                                    
+       6 -  background-color: var(--color-card-bg);                      
+       7 -}                                                              
+       8 -                                                               
+       9 -.keyBlack {                                                    
+      10 -  background-color: var(--color-text);                         
+      11 -}                                                              
+      12 -                                                               
+       1  .piano {
+       2 +  display: grid;                                               
+       3 +  grid-template-columns: minmax(0, 1fr);                       
+       4 +  gap: var(--space-3);                                         
+       5    width: 100%;
+      15 -  max-width: var(--card-max-width);                            
+       6 +  min-width: 0;                                                
+       7 +  max-width: min(100%, 72rem);                                 
+       8    padding: var(--space-4);
+       9    border: 1px solid var(--color-border);
+      10 +  border-radius: var(--radius-lg);                             
+      11    background-color: var(--color-card-bg);
+      12 +  color: var(--color-text);                                    
+      13  }
+      14  
+      21 -.keyboardScroll {                                              
+      22 -  overflow-x: auto;                                            
+      15 +.piano h2 {                                                    
+      16 +  font-size: var(--font-size-lg);                              
+      17 +  line-height: 1.2;                                            
+      18 +  overflow-wrap: anywhere;                                     
+      19  }
+      20  
+      25 -.keyboard {                                                    
+      21 +.controls {                                                    
+      22    display: flex;
+      23 +  flex-wrap: wrap;                                             
+      24 +  gap: var(--space-2);                                         
+     … 104 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T19 đã xong về phần CSS. Commit style(hw2): add responsive piano layout
+  with inner scroll đã tạo, chỉ chứa GrandPiano88.module.css, không sửa JSX. Tôi
+  không push. Tôi chưa mở giao diện trong trình duyệt nên chưa kiểm tra cách
+  hiển thị.
+
+  Đã làm theo mô tả của bạn:
+  - .piano kiểu thẻ như .drumKit, có min-width: 0 và max-width: min(100%,
+    72rem).
+  - .keyboardScroll có overflow-x: auto, max-width: 100% và padding:
+    var(--space-2), đủ rộng hơn vòng focus 3px cộng offset 2px.
+  - .keyboard là flex với width: max-content, .slot là position: relative với
+    flex: 0 0 var(--piano-white-key-width).
+  - .key, .keyWhite, .keyBlack như mô tả. Phím đen đặt tuyệt đối ở mép phải của
+    slot và dịch -50%.
+  - .key[aria-pressed='true'] đổi nền, chữ, thêm thanh box-shadow inset và chữ
+    đậm.
+  - touch-action: pan-x kèm comment giải thích.
+  - .piano fieldset cho phép xuống dòng, có min-width: 0. .status là display:
+    block với overflow-wrap: anywhere. Nút trong .controls có min-height theo
+    token.
+  - Không có nowrap, không có mã màu.
+
+  Hai điểm cần bạn biết:
+  1. 72rem là giá trị cố định: trong tokens.css chưa có token nào cho chiều rộng
+     này nên tôi viết thẳng 72rem. Task này không cho phép sửa tokens.css.
+  2. Tôi thêm một số quy tắc ngoài mô tả: select, checkbox và radio trong form
+     được đặt kích thước tối thiểu theo token (--control-min-height, --space-5),
+     để chạm mục tiêu tối thiểu 24×24px của mục 7. Có thêm .piano h2 và label
+     trong fieldset được căn giữa. Class .controls và .field giữ nguyên. Nếu bạn
+     muốn đúng từng chữ như mô tả thì tôi sẽ gỡ các quy tắc thêm này.
+
+  Đã kiểm tra trong phiên này:
+  - npm run build đạt (CSS bundle tăng lên 13.20 kB).
+  - npm test: 192 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - C4 không in gì. Mọi class mà JSX dùng (kể cả styles.status còn thiếu ở
+    H2-T16) đều đã có trong CSS.
+  - git diff --stat chỉ 1 file CSS, và git status sạch.
+
+  Chưa kiểm tra (cần bạn xem trong trình duyệt):
+  - Không có cuộn ngang của cả trang ở 375px và 320px; bàn phím phải cuộn bên
+    trong khung của nó.
+  - Phím đen nằm đúng giữa hai phím trắng và nằm trên phím trắng.
+  - Vòng focus của phím đầu tiên và phím đen không bị cắt.
+  - Trên cảm ứng, vuốt ngang cuộn được bàn phím và nhả nốt đúng.
+  - Phím đang nhấn khác biệt rõ ràng ngoài màu sắc.
+  - Lighthouse cho #hw2 (task H2-T20 xử lý nếu có phát hiện).
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 6, H2-T21). Chỉ
+  làm H2-T21.
+
+  Phạm vi file: README.md. Chỉ THÊM, 0 dòng xóa và 0 dòng sửa của nội dung cũ.
+
+  1) Thêm mới ở CUỐI file mục "## Homework 2: Polyphonic 88-Key Piano" với các
+  mục con ###:
+
+  Mô tả đầu mục: GrandPiano88 là bàn đàn 88 phím (A0 đến C8, midi 21 đến 108)
+  chơi được nhiều nốt cùng lúc (tối đa 8 voice, voice cũ nhất bị lấy lại khi
+  nốt thứ 9 vào). Có ghi một take, phát lại ở 0.5x, 1x, 2x và dừng bằng Stop
+  Sequence. Âm thanh tổng hợp bằng Web Audio API.
+
+  ### Source layout: khối code với cây src/homeworks/GrandPiano88/ gồm
+  grand-piano.contract.js, pianoKeys.js / .test.js, PolyphonicSynth.js /
+  .test.js, computerKeyMap.js / .test.js, recorder.js / .test.js, replay.js /
+  .test.js, PianoKey.jsx, GrandPiano88.jsx, GrandPiano88.module.css, mỗi file
+  một dòng mô tả ngắn đúng với mã hiện có (hãy đọc file để mô tả cho đúng). Ghi
+  thêm: view #hw2 nằm trong src/shell/resolveView.js, token nằm ở nhóm "Piano
+  (Homework 2)" trong src/styles/tokens.css, và shouldHandleKey được import từ
+  src/homeworks/DrumMachine/shouldHandleKey.js.
+
+  ### Constraints: 88 phím sinh từ midi bằng f = 440 × 2^((midi − 69) / 12)
+  (không gõ tay tên nốt hay tần số ngoài test); voices là Map theo thứ tự chèn
+  và voices.keys().next().value là nốt bị lấy lại (FIFO); mỗi voice ramp gain
+  về 0.0001 bằng exponentialRampToValueAtTime trước osc.stop; PianoKey là
+  React.memo, onNoteOn/onNoteOff ổn định bằng useCallback và isPressed là
+  boolean nên một lần nhấn chỉ render một phím (kiểm tra bằng React DevTools
+  Profiler); mode là một state 'idle' | 'recording' | 'playing'; replay tính
+  bằng hàm thuần buildReplaySchedule và chờ bằng delay có thể hủy; Stop
+  Sequence và unmount đều abort cùng một AbortController, dừng mọi voice và nhả
+  mọi phím; AbortContext tạo lười trong PolyphonicSynth và đóng khi unmount;
+  phím máy tính đọc e.code, không đọc chữ từ e.key.
+
+  ### Controls: bảng gồm: con trỏ (nhấn giữ phím), Enter hoặc Space trên phím
+  đang focus, phím máy tính A W S E D F T G Y H U J K ứng với C C# D D# E F F#
+  G G# A A# B và C của octave kế tiếp (octave 1 đến 7, mặc định 4), nút Record
+  / Stop recording, Play take, Stop Sequence, nhóm Replay speed (0.5x, 1x, 2x),
+  checkbox Keyboard shortcuts.
+
+  ### Text checks: nêu rằng C8b' (new AudioContext trong file không phải test
+  phải in đúng 2 dòng: drumSynth.js và PolyphonicSynth.js), C9a (không có tên
+  nốt viết cứng như 'A0' hay "C#4" ngoài test và file *.contract.js, phải không
+  in gì), C9b (PianoKey.jsx có memo(function PianoKey, in 1 dòng), C9c
+  (GrandPiano88.jsx có new AbortController() và .abort(), in ít nhất 2 dòng),
+  cùng C5 (.sort( trong src, phải không in gì). Viết lệnh PowerShell và lệnh
+  Git Bash tương đương cho từng check (lệnh PowerShell lấy nguyên văn từ các
+  lệnh đã dùng trong repo, bản C9a dùng điều kiện loại *.test.js và
+  *.contract.js), rồi CHẠY thử cả Git Bash lẫn PowerShell và xác nhận kết quả
+  đúng như mô tả (C8b' 2 dòng, C9a rỗng, C9b 1 dòng, C9c ít nhất 2 dòng, C5
+  rỗng).
+
+  ### How to test: các bước làm tay trong trình duyệt tại
+  http://localhost:5173/#hw2: (1) Đếm phím: dán đoạn mã Console đếm phím, kỳ
+  vọng [88, 36]; (2) Profiler: bật "Record why each component rendered", ghi,
+  nhấn một phím, ở chế độ Ranked chỉ GrandPiano88 và một PianoKey được render,
+  lý do là isPressed; (3) Lấy voice: đoạn mã Console nhấn 9 phím (cắt từ chỉ số
+  30 đến 39 của các nút trong [aria-label="Piano keyboard"], phát pointerdown)
+  cho status "Voices: 8 of 8", rồi pointerup để thả; (4) Ghi và phát: Record,
+  chơi vài nốt, Stop recording, chọn 2x, Play take, rồi Stop Sequence giữa
+  chừng, đếm [aria-pressed="true"] trong bàn đàn phải bằng 0; (5) Phím máy
+  tính: giữ A, D, G cho hợp âm; bỏ tick Keyboard shortcuts thì không còn tiếng;
+  (6) UniKey Telex: xem Known limits.
+
+  ### Known limits (đúng các ý sau, tiếng Anh):
+  - The synth file lives in src/homeworks/GrandPiano88/ instead of the slide's
+  src/audio/ (repository rule 14).
+  - The keyboard scrolls horizontally inside its own container at 375px; the
+  page itself does not.
+  - Pressed keys can exceed 8 while only 8 voices sound (the oldest voice is
+  stolen).
+  - The Lab 2 code was not reused; this homework was written from scratch.
+  - With UniKey in Telex mode, the W key and the tone key S can reach the page
+  as keydown events with an empty `code` (UniKey rewrites the typed letter), so
+  those notes may not play, for example A then S loses the D. Switch UniKey to
+  English mode, or use the pointer or Enter and Space on a focused key.
+  - Computer-keyboard notes do not play while focus is on the octave select,
+  the Keyboard shortcuts checkbox or a Replay speed radio; click an empty area
+  of the page first.
+  - Starting or stopping a recording releases every held note, because the
+  keyboard effect depends on mode.
+  - The status text says "Take ready: 1 notes" for a single note.
+  - Browsers throttle timers in background tabs, so replay timing can drift
+  when the tab is not visible.
+  Không ghi điểm hay số đo.
+
+  2) Cập nhật hai mục có sẵn, chỉ THÊM dòng: nếu mục "### Open a view" trong
+  "## App shell" liệt kê các view thì thêm một dòng cho #hw2; nếu "##
+  Repository layout" liệt kê các thư mục homework thì thêm một dòng cho
+  src/homeworks/GrandPiano88/. Không sửa dòng cũ.
+
+  Kiểm tra: npm run build; npm run lint exit 0 với đúng 1 warning đã biết; npm
+  test (192 pass); git diff --numstat README.md phải có 0 dòng xóa; chạy thật
+  các lệnh Git Bash đã ghi trong Text checks và dán kết quả vào báo cáo.
+
+  Commit:
+  git add README.md
+  git commit -m "docs(readme): document hw2"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Made 2 scratchpad edits +163, searched for 1 pattern, ran 4 shell commands (ctrl+o to expand)
+
+● Bash(SP="C:/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/dd6ffbbf-876
+      e-412a-bf7e-31909c664064/scratchpad" && node "$SP/apply-readme.cjs"
+      "$SP/readme-hw2.md"…)
+  ⎿  Updated README.md (+139 -0)
+      261  The page now shows one view at a time. The view comes from the
+            URL hash.
+      262  
+      263  - Hash views: `#exercises` (the default) and `#hw1`. An unknow
+           n hash shows the exercises.
+      264 +- `#hw2` shows the Homework 2 piano (`GrandPiano88`).         
+      265  - The view is read with `useSyncExternalStore`, subscribed to 
+           the `hashchange` event. There is no router package.
+      266  - The page `<h1>` now lives in a `<header>` together with `<na
+           v aria-label="Lab sections">`. The link of the current view ha
+           s `aria-current="page"`.
+      267  
+      268  ### Open a view
+      269  
+      270  - `npm run dev`, then open `http://localhost:5173/#exercises` 
+           or `http://localhost:5173/#hw1`.
+      271 +- For Homework 2, open `http://localhost:5173/#hw2` (or `http:
+          +//localhost:4173/#hw2` on the preview build).                 
+      272  - For Lighthouse, build and serve the production bundle with `
+           npm run build` and `npm run preview`, then run Lighthouse on e
+           ach view by its URL with the hash, for example `http://localho
+           st:4173/#hw1`. Run it once per view.
+      273  
+      274  ## Homework 1: Production Studio Drum Kit
+     ...
+      374  - aria-live announces only the latest hit; earlier hits are su
+           mmarised by the total.
+      375  - Audio starts only after the first click or key press (browse
+           r autoplay policy).
+      376  - With UniKey in Telex mode, the W key reaches the page as a k
+           eydown event with an empty `code` (and `key` "ư"), so the Kick
+            pad does not play. Switch UniKey to English mode or use the p
+           ointer. The other six pad keys are not affected.
+      377 +                                                              
+      378 +## Homework 2: Polyphonic 88-Key Piano                        
+      379 +                                                              
+      380 +`GrandPiano88` is an 88-key piano (A0 to C8, midi 21 to 108) t
+          +hat plays several notes at once: up to 8 voices, and the oldes
+          +t voice is stolen when a 9th note arrives. You can record a ta
+          +ke, replay it at 0.5x, 1x or 2x, and stop it with Stop Sequenc
+          +e. The sounds are synthesized with the Web Audio API. It rende
+          +rs only in the `#hw2` view.                                   
+      381 +                                                              
+      382 +### Source layout                                             
+      383 +                                                              
+      384 +```                                                           
+      385 +src/                                                          
+      386 +  shell/resolveView.js             VIEWS gains { id: 'hw2', la
+          +bel: 'HW2 Piano 88' } (and resolveView.test.js)               
+      387 +  App.jsx                          renders GrandPiano88 for th
+          +e hw2 view                                                    
+      388 +  homeworks/                                                  
+      389 +    GrandPiano88/                                             
+      390 +      grand-piano.contract.js      JSDoc typedefs only        
+      391 +      pianoKeys.js / .test.js      FIRST_MIDI, LAST_MIDI, midi
+          +ToFrequency, midiToNoteName, buildPianoKeys, frozen PIANO_KEYS
+          +, groupIntoSlots, frozen KEY_SLOTS (52 white-key slots), with 
+          +tests                                                         
+      392 +      PolyphonicSynth.js / .test.js   voice pool in a Map, FIF
+          +O voice stealing, noteOn, noteOff, stopAll, close, activeCount
+          +, injectable context factory, with tests                      
+      393 +      computerKeyMap.js / .test.js    SEMITONE_BY_CODE, OCTAVE
+          +S, DEFAULT_OCTAVE, computerKeyToMidi(code, octave), with tests
+      394 +      recorder.js / .test.js          createTakeRecorder(now) 
+          +with an injected clock, with tests                            
+      395 +      replay.js / .test.js            REPLAY_SPEEDS, pure buil
+          +dReplaySchedule, abortable delay, playSequence, with tests    
+      396 +      PianoKey.jsx                    memoized key button with
+          + pointer and Enter/Space handlers                             
+      397 +      GrandPiano88.jsx                the piano: synth, presse
+          +d keys, recorder, replay, status, computer keyboard           
+      398 +      GrandPiano88.module.css         layout, key colors and t
+          +he inner scroll of the keyboard                               
+      399 +```                                                           
+     … 114 more lines (ctrl+o to expand)
+
+● Phần README đã thêm xong (139 dòng thêm, 0 dòng xóa). Giờ tôi chạy thật các
+  lệnh đúng như đã ghi trong README, ở cả hai shell, rồi build, lint, test.
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● H2-T21 đã xong. Commit docs(readme): document hw2 đã tạo, chỉ chứa README.md
+  với 139 dòng thêm và 0 dòng xóa. Tôi không push.
+
+  Đã thêm:
+  - Mục ## Homework 2: Polyphonic 88-Key Piano ở cuối file, gồm mô tả đầu mục và
+    các mục con: Source layout, Constraints, Controls, Text checks, How to
+    test, Known limits. Phần Known limits đúng 9 ý bạn yêu cầu, bằng tiếng Anh.
+    Không có điểm hay số đo.
+  - Source layout được viết sau khi đối chiếu với mã hiện có, và có nhắc view
+    #hw2, nhóm token Piano và việc import shouldHandleKey.
+  - Hai dòng thêm vào mục có sẵn: một bullet về #hw2 trong "App shell", và một
+    bullet mở #hw2 trong "Open a view". Không sửa dòng cũ.
+
+  Kết quả các lệnh Text checks. Tôi trích nguyên văn lệnh từ chính README rồi
+  chạy ở cả hai shell. Kết quả hai shell khớp nhau:
+
+  ┌───────┬─────────────────────────────────────────────┬───────────────────┐
+  │ Check │                  Git Bash                   │    PowerShell     │
+  ├───────┼─────────────────────────────────────────────┼───────────────────┤
+  │ C8b'  │ 2 dòng: drumSynth.js:14,                    │ 2 dòng, cùng nội  │
+  │       │ PolyphonicSynth.js:16                       │ dung              │
+  ├───────┼─────────────────────────────────────────────┼───────────────────┤
+  │ C9a   │ không in gì                                 │ không in gì       │
+  ├───────┼─────────────────────────────────────────────┼───────────────────┤
+  │ C9b   │ PianoKey.jsx dòng 9: memo(function          │ 1 dòng, cùng nội  │
+  │       │ PianoKey({ (1 dòng)                         │ dung              │
+  ├───────┼─────────────────────────────────────────────┼───────────────────┤
+  │ C9c   │ GrandPiano88.jsx dòng 34, 111, 140 (3 dòng) │ 3 dòng, cùng nội  │
+  │       │                                             │ dung              │
+  ├───────┼─────────────────────────────────────────────┼───────────────────┤
+  │ C5    │ không in gì                                 │ không in gì       │
+  └───────┴─────────────────────────────────────────────┴───────────────────┘
+
+  Bản PowerShell của C9a dùng -CaseSensitive. Mặc định Select-String không phân
+  biệt hoa thường, nên không có cờ này thì nó khớp nhầm các chuỗi như a0 hay e1.
+
+  Kiểm tra khác: npm run build đạt, npm test 192 đạt, npm run lint thoát mã 0
+  với đúng 1 warning đã biết, git status sạch. git diff --numstat README.md ra
+  139  0.
+
+  Điểm khác với yêu cầu, cần bạn biết:
+  1. Lỗi chính tả: bạn viết "AbortContext tạo lười", tôi viết thành "The
+     AudioContext is created lazily", vì ý đúng là AudioContext.
+  2. Mục "Repository layout": tôi không thêm dòng nào. Dòng src/homeworks/ có
+     sẵn đã liệt kê GrandPiano88 (HW2), và Homework 1 cũng không thêm dòng
+     riêng. Nếu bạn vẫn muốn một dòng mới, tôi sẽ thêm.
+  3. Các đoạn mã Console tôi tự viết: bạn chỉ mô tả ý, nên mã là của tôi. Chúng
+     cần xác nhận khi bạn chạy thật:
+     - Bước 1 đếm phím phân biệt phím đen bằng ký tự # trong tên nốt, kỳ vọng
+       [88, 36].
+     - Bước 3 giả lập sự kiện pointerdown và pointerup trên 9 nút (slice 30
+       đến 39).
+     - Bước 4 đếm [aria-pressed="true"], kỳ vọng 0.
+     - Tôi ghi chú rằng sự kiện giả lập không phải thao tác người dùng nên trình
+       duyệt có thể không phát tiếng; đây là nhận định của tôi, chưa kiểm
+       chứng.
+
+  Chưa kiểm tra:
+  - Toàn bộ mục "How to test" chưa được chạy thật; đó là các bước thủ công của
+    bạn.
+  - Các mục Known limits liên quan UniKey (W và S trả code rỗng, ví dụ "A rồi S
+    mất D") là nội dung bạn cung cấp, tôi ghi lại nguyên văn mà chưa kiểm chứng.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 6, H2-T22). Chỉ
+  làm H2-T22.
+
+  Phạm vi file: AI_FAILURE_AUDIT.md (ở gốc repo). Chỉ THÊM ở CUỐI file; giữ
+  nguyên Failure #01 và #02; 0 dòng xóa, 0 dòng sửa. Chép NGUYÊN VĂN khối giữa
+  hai dòng ===== BEGIN ===== và ===== END ===== (không chép hai dòng đó), cách
+  phần cũ một dòng trống:
+
+  ===== BEGIN =====
+  Failure #03: H2-T17 UniKey Telex rewrites the W and S keys, so those piano
+  notes have no code
+
+  Logged 2026-11-12 20:21, task H2-T17 (WBS row H2-T17).
+
+  Prompt: The Homework 2 guide, decision D4(b) and H2-T17: "Computer-keyboard
+  piano ... KeyA C, KeyW C#, KeyS D ...". The guide and H2-T08 assume e.code
+  reaches the page for all 13 keys, also with UniKey on. This is the same
+  assumption as Failure #02.
+
+  AI Code: computerKeyToMidi(e.code, octave) in computerKeyMap.js (H2-T08,
+  commit 216fed7), called from the window keydown listener in GrandPiano88.jsx
+  (H2-T17, commit 986cb6b). The code follows the task and project-rules section
+  17. The wrong part is the assumption that e.code is always filled.
+
+  Bug: With UniKey in Vietnamese Telex mode, W and the tone key S reach the
+  page as synthetic events with an empty code; UniKey also sends two Backspace
+  events and the composed character (ă and a vowel with a tone mark).
+  computerKeyToMidi('') returns null, so no note sounds. W alone is silent and
+  plays only after several presses, and a melody C then D (A then S) loses the
+  D. E, D, F, T, G, Y, H, U, J and K arrived as KeyE, KeyD, and so on, in the
+  same run. It has the same root cause as Failure #02, with a wider effect.
+
+  DevTools Proof: Console screenshot
+  docs/evidence/HW2_GrandPiano88/hw2-10b-unikey-ecode.png (added in H2-T25):
+  rows with an empty code for the keys UniKey rewrote and code: KeyX for the
+  others. Detected by running a keydown listener in the Console with UniKey
+  Telex on, pressing A W S E D F T G Y H U J K in order, then pressing W alone
+  on the piano page and listening.
+
+  Engineering Fix (Commit 810c886): e.code is kept, because the task requires
+  it and project-rules section 17 forbids reading letters from e.key. The limit
+  and the workaround (switch UniKey to English mode, or use the pointer or
+  Enter and Space on a focused key) are documented under Known limits in the
+  README (H2-T21). No code change.
+  ===== END =====
+
+  Kiểm tra: git diff --numstat AI_FAILURE_AUDIT.md phải có 0 dòng xóa; file có
+  đúng 3 dòng bắt đầu bằng "## Failure #" (#01, #02, #03) và hash 810c886 có
+  trong git log; npm run build; npm test; npm run lint exit 0 với đúng 1
+  warning đã biết.
+
+  Commit:
+  git add AI_FAILURE_AUDIT.md
+  git commit -m "docs(audit): record hw2 ai failures"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Made 1 scratchpad edit +15, ran 1 shell command (ctrl+o to expand)
+
+● Bash(cat "C:/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/dd6ffbbf-87
+      6e-412a-bf7e-31909c664064/scratchpad/audit-03.md" >> AI_FAILURE_AUDIT.md
+      && git diff --…)
+  ⎿  Updated AI_FAILURE_AUDIT.md (+14 -0)
+      29  **DevTools Proof:** Console screenshot `docs/evidence/HW1_DrumM
+          achine/hw1-07-unikey-ecode.png` (added in H1-T22): `code:  | ke
+          y: ư`, `code: KeyA | key: a`, `code: KeyD | key: d`. Detected b
+          y running a `keydown` listener in the Console with UniKey Telex
+           on and pressing W, A, D.
+      30  
+      31  **Engineering Fix (Commit ea60b22):** `e.code` is kept, because
+           the task requires it and project-rules section 17 forbids read
+          ing letters from `e.key`. The limit and the workaround (switch 
+          UniKey to English mode, or use the pointer) are documented unde
+          r Known limits in the README.
+      32 +                                                               
+      33 +## Failure #03: H2-T17 UniKey Telex rewrites the W and S keys, 
+         +so those piano notes have no code                              
+      34 +                                                               
+      35 +Logged 2026-11-12 20:21, task H2-T17 (WBS row H2-T17).         
+      36 +                                                               
+      37 +**Prompt:** The Homework 2 guide, decision D4(b) and H2-T17: "C
+         +omputer-keyboard piano ... `KeyA` C, `KeyW` C#, `KeyS` D ...". 
+         +The guide and H2-T08 assume `e.code` reaches the page for all 1
+         +3 keys, also with UniKey on. This is the same assumption as Fai
+         +lure #02.                                                      
+      38 +                                                               
+      39 +**AI Code:** `computerKeyToMidi(e.code, octave)` in `computerKe
+         +yMap.js` (H2-T08, commit 216fed7), called from the window `keyd
+         +own` listener in `GrandPiano88.jsx` (H2-T17, commit 986cb6b). T
+         +he code follows the task and project-rules section 17. The wron
+         +g part is the assumption that `e.code` is always filled.       
+      40 +                                                               
+      41 +**Bug:** With UniKey in Vietnamese Telex mode, W and the tone k
+         +ey S reach the page as synthetic events with an empty `code`; U
+         +niKey also sends two `Backspace` events and the composed charac
+         +ter (ă and a vowel with a tone mark). `computerKeyToMidi('')` r
+         +eturns null, so no note sounds. W alone is silent and plays onl
+         +y after several presses, and a melody C then D (A then S) loses
+         + the D. E, D, F, T, G, Y, H, U, J and K arrived as `KeyE`, `Key
+         +D`, and so on, in the same run. It has the same root cause as F
+         +ailure #02, with a wider effect.                               
+      42 +                                                               
+      43 +**DevTools Proof:** Console screenshot `docs/evidence/HW2_Grand
+         +Piano88/hw2-10b-unikey-ecode.png` (added in H2-T25): rows with 
+         +an empty `code` for the keys UniKey rewrote and `code: KeyX` fo
+         +r the others. Detected by running a `keydown` listener in the C
+         +onsole with UniKey Telex on, pressing A W S E D F T G Y H U J K
+         + in order, then pressing W alone on the piano page and listenin
+         +g.                                                             
+      44 +                                                               
+      45 +**Engineering Fix (Commit 810c886):** `e.code` is kept, because
+         + the task requires it and project-rules section 17 forbids read
+         +ing letters from `e.key`. The limit and the workaround (switch 
+         +UniKey to English mode, or use the pointer or Enter and Space o
+         +n a focused key) are documented under Known limits in the READM
+         +E (H2-T21). No code change.                                    
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● H2-T22 đã xong. Commit docs(audit): record hw2 ai failures đã tạo, chỉ chứa
+  AI_FAILURE_AUDIT.md với 14 dòng thêm và 0 dòng xóa. Tôi không push.
+
+  Đã làm: thêm nguyên văn khối Failure #03 vào cuối file, cách phần cũ một dòng
+  trống. Hai dòng BEGIN và END không bị chép vào. Failure #01 và #02 giữ nguyên.
+
+  Đã kiểm tra trong phiên này:
+  - git diff --numstat AI_FAILURE_AUDIT.md ra 14  0, tức là 0 dòng xóa.
+  - File có đúng 3 dòng bắt đầu bằng ## Failure # (dòng 5, 19 và 33).
+  - Ba hash trong nội dung đều có thật trong git log: 810c886 (docs(readme):
+    document hw2), 986cb6b (feat(hw2): add computer keyboard octave select and
+    toggle) và 216fed7 (feat(hw2): add computer keyboard to midi map).
+  - npm run build đạt.
+  - npm test: 192 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - git status sạch.
+
+  Lưu ý:
+  - Ảnh minh chứng chưa tồn tại: mục DevTools Proof trỏ tới
+    docs/evidence/HW2_GrandPiano88/hw2-10b-unikey-ecode.png, nhưng ảnh này chưa
+    có trong repo. Theo nội dung thì nó được thêm ở H2-T25.
+  - Nội dung chưa được tôi kiểm chứng: các mô tả về UniKey (sự kiện giả với code
+    rỗng, hai Backspace, ví dụ "A rồi S mất D", giờ ghi log 2026-11-12 20:21)
+    là nội dung bạn cung cấp. Tôi chép đúng nguyên văn và không tự tái hiện được
+    hành vi này.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\lab3-react19\AI_FAILURE_AUDIT.md in the
+  IDE. This may or may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 6, H2-T23). Chỉ
+  làm H2-T23.
+
+  Phạm vi file: src/components/DeveloperCard.jsx, chỉ giá trị commits mặc định
+  (dòng metrics = { commits: 80, vdomNodes: 0, a11yScore: 100 }). Đổi commits:
+  80 thành commits: 104. Không tự tính số này; 104 là giá trị tôi cung cấp.
+  Không đổi vdomNodes, a11yScore hay dòng nào khác.
+
+  Kiểm tra: git diff phải đúng +1/−1 dòng trong DeveloperCard.jsx; npm run
+  build; npm test (192 pass); npm run lint exit 0 với đúng 1 warning đã biết.
+
+  Commit:
+  git add src/components/DeveloperCard.jsx
+  git commit -m "fix(ex1): sync commits metric after hw2"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Bash(sed -i '14s/commits: 80,/commits: 104,/' src/components/DeveloperCard.jsx
+      && git diff --numstat 2>/dev/null; git diff -U0 2>/dev/null | grep -E
+      '^[-+][^-+]'; np…)
+  ⎿  Updated src\components\DeveloperCard.jsx (+1 -1)
+      11    fullName = 'Võ Văn Thiện',
+      12    role = 'Student at the University of Information Technology –
+           VNU-HCM',
+      13    avatarUrl = 'https://images.unsplash.com/photo-1534528741775-
+          53994a69daeb?w=240',
+      14 -  metrics = { commits: 80, vdomNodes: 0, a11yScore: 100 },     
+      14 +  metrics = { commits: 104, vdomNodes: 0, a11yScore: 100 },    
+      15    skills = [
+      16      { id: 'sk-1', name: 'React 19 createRoot + StrictMode', tie
+          r: 'Core' },
+      17      { id: 'sk-2', name: 'Hooks: useState, useEffect, useId', ti
+          er: 'Core' },
+
+● H2-T23 đã xong. Commit fix(ex1): sync commits metric after hw2 đã tạo, chỉ
+  chứa src/components/DeveloperCard.jsx. Tôi không push.
+
+  Đã làm: đổi đúng một giá trị ở dòng 14, commits: 80 thành commits: 104, là số
+  bạn cung cấp. Tôi không tự tính số này. vdomNodes, a11yScore và các dòng khác
+  giữ nguyên.
+
+  Đã kiểm tra trong phiên này:
+  - git diff --numstat ra 1  1, tức là đúng +1/−1 dòng trong DeveloperCard.jsx.
+  - npm run build đạt.
+  - npm test: 192 đạt, 0 thất bại.
+  - npm run lint thoát với mã 0 và có đúng 1 warning đã biết.
+  - git show --stat HEAD chỉ liệt kê một file, và git status sạch.
+
+  Cần bạn lưu ý: sau commit này git rev-list --count HEAD ra 103, trong khi thẻ
+  ghi 104. Điều này có thể đúng như dự kiến: theo WBS, H2-T25 (commit lưu minh
+  chứng) còn thêm một commit nữa nên số đếm sẽ bằng 104 sau đó. H2-T24 không tạo
+  commit. Tôi chỉ báo số đếm hiện tại và không đổi giá trị bạn đưa.
+
+  Git vẫn báo "LF will be replaced by CRLF", không ảnh hưởng nội dung commit.
