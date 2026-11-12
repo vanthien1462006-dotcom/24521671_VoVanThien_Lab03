@@ -589,3 +589,168 @@ Tests use a fake AudioContext that records every call; `connect` returns its arg
 
 ### 5.10 Verification gate
 Before every commit: npm run build, npm run lint (exactly the one known warning), npm test, C1' to C7 and C8a to C8c as described in the guide. Browser and audio checks are done by the user.
+
+## Part 6. Homework 2: Polyphonic 88-Key Piano & FIFO Sequencer
+
+### 6.1 Overview
+`GrandPiano88` (src/homeworks/GrandPiano88/) generates an 88-key piano (A0, midi 21, to C8, midi 108) from the formula f = 440 × 2^((midi − 69) / 12). A Web Audio synth plays up to 8 voices and steals the oldest voice first (FIFO, ES6 Map). Each key is a `React.memo` component, so pressing one key re-renders only that key. A recorder stores `{ midi, freqHz, durationMs, deltaMs }` events and replays them at 0.5x, 1x or 2x; Stop Sequence and unmount cancel the replay with an AbortController. Source: slides 27 and 28.
+
+### 6.2 Contract
+```js
+/**
+ * @typedef {Object} PianoKeyData
+ * @property {number} midi       21 to 108.
+ * @property {string} noteName   Sharp names, for example 'A0', 'C#4'.
+ * @property {boolean} isBlack
+ * @property {number} freqHz     440 × 2^((midi − 69) / 12).
+ */
+
+/**
+ * @typedef {Object} KeySlot
+ * @property {PianoKeyData} white
+ * @property {PianoKeyData | null} black   The black key that follows the white key, if any.
+ */
+
+/**
+ * @typedef {Object} RecordedNote
+ * @property {number} midi
+ * @property {number} freqHz
+ * @property {number} durationMs  Time the note was held.
+ * @property {number} deltaMs     Time since the previous note started (0 for the first).
+ */
+
+/**
+ * @typedef {Object} ScheduledNote
+ * @property {number} midi
+ * @property {number} freqHz
+ * @property {number} startMs     From the start of the replay, already divided by the speed.
+ * @property {number} durationMs  Already divided by the speed.
+ */
+
+/**
+ * @typedef {0.5 | 1 | 2} ReplaySpeed
+ */
+
+/**
+ * @typedef {'idle' | 'recording' | 'playing'} PianoMode
+ */
+
+/**
+ * @typedef {Object} PianoKeyProps
+ * @property {number} midi
+ * @property {string} noteName
+ * @property {boolean} isBlack
+ * @property {boolean} isPressed
+ * @property {(midi: number) => void} onNoteOn
+ * @property {(midi: number) => void} onNoteOff
+ */
+
+export {};
+```
+
+### 6.3 Invariants
+1. GrandPiano88 is one `<section aria-labelledby>` with `<h2>HW2 Polyphonic 88-Key Piano</h2>`, rendered only in the `hw2` view.
+2. The 88 keys come only from `buildPianoKeys()`; no note name or frequency is typed by hand outside tests.
+3. `PianoKey` is `memo(function PianoKey(...))` with exactly the props of PianoKeyProps. The parent passes stable `onNoteOn` / `onNoteOff` (useCallback) and a boolean `isPressed`, so one press re-renders one key.
+4. Each key is `<button type="button" aria-pressed>` with its note name. Pointer: pointerdown on, pointerup / pointerleave / pointercancel off. Keyboard: Enter or Space keydown (not repeat) on, keyup off.
+5. `PolyphonicSynth` keeps `voices` as a Map from midi to `{ osc, gain }` in insertion order. At `maxVoices` (8) the oldest key `voices.keys().next().value` is released before the new voice starts. A midi that already sounds is ignored.
+6. Every voice starts at gain 0.0001, ramps to 0.2 in 10 ms, and on release ramps with `exponentialRampToValueAtTime(0.0001, t + 0.04)` before `osc.stop(t + 0.05)`.
+7. The AudioContext is created lazily on the first noteOn, only as the default factory of PolyphonicSynth, and closed when GrandPiano88 unmounts.
+8. One `mode` state: 'idle' | 'recording' | 'playing'. While playing, recording and live play from the computer keyboard are disabled.
+9. Replay builds a pure schedule, waits with an abortable delay, and is cancelled by Stop Sequence and on unmount through one AbortController; afterwards all voices are stopped and no key stays pressed. AbortError is a normal outcome.
+10. Status messages (voices in use, recording, playing, stopped) go in one `<output role="status" aria-live="polite">`.
+11. At 375px the page has no horizontal scroll; the keyboard scrolls inside its own focusable, labelled container.
+
+### 6.4 Expected results of buildPianoKeys() and midiToFrequency(midi)
+| Check | Expected |
+| --- | --- |
+| length | 88 |
+| white / black | 52 / 36 |
+| first | { midi: 21, noteName: 'A0', isBlack: false, freqHz: 27.5 } |
+| midi 22 | noteName 'A#0', isBlack true |
+| midi 60 | noteName 'C4', freqHz 261.63 (±0.01) |
+| midi 69 | noteName 'A4', freqHz 440 |
+| last | { midi: 108, noteName: 'C8', isBlack: false }, freqHz 4186.01 (±0.01) |
+| order | midi strictly increasing by 1 |
+| frozen | array and every key frozen |
+
+`groupIntoSlots(keys)`: 52 slots; 36 have a black key; slot 0 is { white A0, black A#0 }; slot 1 is { white B0, black null }; the last slot is { white C8, black null }.
+
+### 6.5 Expected results of PolyphonicSynth (fake AudioContext)
+| Case | Expected |
+| --- | --- |
+| constructed | no context created; voices.size 0 |
+| noteOn(60, f) | one context; osc → gain → destination; frequency set to f; gain 0.0001 then ramp to 0.2 at t + 0.01; voices has 60 |
+| noteOn(60, f) again | ignored, voices.size 1, no new oscillator |
+| 9 different noteOn | voices.size 8; the first midi was released (its gain ramp to 0.0001 at t + 0.04 recorded before its stop at t + 0.05); the 9th midi is in voices |
+| keys order after stealing | Map order = notes 2 to 9 |
+| noteOff(unknown) | no throw, nothing changes |
+| stopAll() | every voice released, voices.size 0 |
+| close() then noteOn | first context closed once; a new context created |
+| context 'suspended' on noteOn | resume() called |
+
+### 6.6 Expected results of the recorder (now injected)
+`createTakeRecorder(now)`; times in ms.
+| Calls (time) | Expected `stop()` result |
+| --- | --- |
+| start(0) noteOn(60,f60) at 100, noteOff(60) at 400, noteOn(64,f64) at 600, noteOff(64) at 700, stop | [{ midi: 60, freqHz: f60, durationMs: 300, deltaMs: 0 }, { midi: 64, freqHz: f64, durationMs: 100, deltaMs: 500 }] |
+| chord: noteOn 60 at 0, noteOn 64 at 0, noteOff 60 at 200, noteOff 64 at 250 | [{60, 200, 0}, {64, 250, 0}] (start order) |
+| note still held at stop (noteOn 60 at 0, stop at 900) | [{60, durationMs 900, deltaMs 0}] |
+| noteOff without noteOn | ignored |
+| events before start or after stop | ignored |
+| result | frozen array of frozen events |
+
+### 6.7 Expected results of buildReplaySchedule(events, speed)
+Events: [{60, f60, 300, 0}, {64, f64, 100, 500}, {67, f67, 200, 250}].
+| speed | Expected (startMs, durationMs) |
+| --- | --- |
+| 1 | (0, 300), (500, 100), (750, 200) |
+| 2 | (0, 150), (250, 50), (375, 100) |
+| 0.5 | (0, 600), (1000, 200), (1500, 400) |
+| 3 | throws RangeError |
+| [] | [] |
+
+`playSequence(schedule, { onNoteOn, onNoteOff, signal, delay })` with a fake delay: calls in time order; if the signal is aborted during a delay it rejects with an error named 'AbortError' and calls no further onNoteOn. `delay(ms, signal)` (real): resolves after ms; rejects AbortError immediately when already aborted or when aborted later, and clears its timer.
+
+### 6.8 Expected results of computerKeyToMidi(code, octave)
+| code | octave | Expected |
+| --- | --- | --- |
+| KeyA | 4 | 60 |
+| KeyW | 4 | 61 |
+| KeyJ | 4 | 71 |
+| KeyK | 4 | 72 |
+| KeyA | 0 | null (12 is below 21) |
+| KeyH | 0 | 21 |
+| KeyK | 7 | 108 |
+| KeyW | 7 | 97 |
+| KeyK | 8 | null (120 is above 108) |
+| KeyQ | 4 | null |
+
+### 6.9 Work breakdown structure
+| ID | Task | File | Acceptance criteria | Commit message |
+| --- | --- | --- | --- | --- |
+| H2-T01 | Write this WBS for Homework 2 | `TASK_DECOMPOSITION.md` | Part 6 appended. Parts 1 to 5 unchanged. 25 rows. | `docs(spec): add hw2 task decomposition` |
+| H2-T02 | Add the Homework 2 rules | `project-rules.md` | New section 18 appended. Sections 1 to 17 unchanged. | `docs(rules): add hw2 polyphony, memo and sequencer rules` |
+| H2-T03 | Add the JSDoc contract | `src/homeworks/GrandPiano88/grand-piano.contract.js` | Exactly the code block of section 6.2. Build and lint pass. | `docs(hw2): add GrandPiano88 JSDoc contract` |
+| H2-T04 | Generate the keys, test first | `src/homeworks/GrandPiano88/pianoKeys.js`, `src/homeworks/GrandPiano88/pianoKeys.test.js` | First run fails. Exports `FIRST_MIDI` 21, `LAST_MIDI` 108, `midiToFrequency`, `midiToNoteName`, `buildPianoKeys` and frozen `PIANO_KEYS`. Section 6.4 rows pass. | `feat(hw2): generate 88 piano keys from midi 21 to 108` |
+| H2-T05 | Group keys into slots, test first | `src/homeworks/GrandPiano88/pianoKeys.js`, `src/homeworks/GrandPiano88/pianoKeys.test.js` | Export `groupIntoSlots(keys)` and frozen `KEY_SLOTS`. Slot rows of section 6.4 pass. | `feat(hw2): group piano keys into 52 white-key slots` |
+| H2-T06 | Add the synth voice pool, test first | `src/homeworks/GrandPiano88/PolyphonicSynth.js`, `src/homeworks/GrandPiano88/PolyphonicSynth.test.js` | First run fails. Class as slide 28 plus `{ createContext }` option, attack ramp, `noteOff` and stealing. Rows 1 to 6 and 9 of section 6.5 pass. | `feat(hw2): add 8-voice synth with FIFO voice stealing` |
+| H2-T07 | Add release and cleanup, test first | `src/homeworks/GrandPiano88/PolyphonicSynth.js`, `src/homeworks/GrandPiano88/PolyphonicSynth.test.js` | `stopAll()`, `close()`, getter `activeCount`. Rows 7 and 8 pass; release order checked. | `feat(hw2): add click-free note-off envelope and stopAll` |
+| H2-T08 | Add the computer key map, test first | `src/homeworks/GrandPiano88/computerKeyMap.js`, `src/homeworks/GrandPiano88/computerKeyMap.test.js` | Frozen `SEMITONE_BY_CODE` (13 codes of decision D4) and `computerKeyToMidi(code, octave)`. Section 6.8 rows pass. | `feat(hw2): add computer keyboard to midi map` |
+| H2-T09 | Add the recorder, test first | `src/homeworks/GrandPiano88/recorder.js`, `src/homeworks/GrandPiano88/recorder.test.js` | `createTakeRecorder(now = () => performance.now())` with start, noteOn, noteOff, stop, isRecording. Section 6.6 rows pass. | `feat(hw2): add FIFO take recorder with injected clock` |
+| H2-T10 | Add the replay, test first | `src/homeworks/GrandPiano88/replay.js`, `src/homeworks/GrandPiano88/replay.test.js` | `REPLAY_SPEEDS` [0.5, 1, 2], `buildReplaySchedule`, `delay`, `playSequence`. Section 6.7 rows pass; delay tested with node:test mock timers. | `feat(hw2): add speed-scaled replay with abortable delay` |
+| H2-T11 | Add the PianoKey component | `src/homeworks/GrandPiano88/PianoKey.jsx`, `src/homeworks/GrandPiano88/GrandPiano88.module.css` | Invariants 3 and 4. Slide 27 markup plus pointerleave, pointercancel and Enter/Space handlers. CSS Module created with only `.key`, `.keyWhite`, `.keyBlack`. | `feat(hw2): add memoized PianoKey component` |
+| H2-T12 | Render the piano | `src/homeworks/GrandPiano88/GrandPiano88.jsx`, `src/homeworks/GrandPiano88/GrandPiano88.module.css` | Invariants 1, 2, 5, 7. 52 slot `li` from KEY_SLOTS, synth from useState, closed on unmount, `pressedMidis` Set state. Minimal CSS. | `feat(hw2): render 88-key piano with pointer and keyboard input` |
+| H2-T13 | Add the hw2 view | `src/shell/resolveView.js`, `src/shell/resolveView.test.js`, `src/App.jsx` | VIEWS gains `{ id: 'hw2', label: 'HW2 Piano 88' }`; test row '#hw2' → 'hw2'; App renders GrandPiano88 for 'hw2'. | `feat(shell): add hw2 view to navigation` |
+| H2-T14 | Keep handlers stable | `src/homeworks/GrandPiano88/GrandPiano88.jsx` | `noteOn` / `noteOff` in useCallback with honest deps; no inline arrow passed to PianoKey; author confirms in the Profiler that one press renders one PianoKey. If T12 already satisfies this, the task changes only what the Profiler shows is needed; if nothing is needed it is skipped with no commit. | `perf(hw2): keep note handlers stable so one key re-renders` |
+| H2-T15 | Add the sequencer controls | `src/homeworks/GrandPiano88/GrandPiano88.jsx`, `src/homeworks/GrandPiano88/GrandPiano88.module.css` | Invariants 8 and 9. Record / Stop recording, Play take, Stop Sequence buttons, speed radio group in a fieldset with legend. | `feat(hw2): add record, replay speed and stop sequence controls` |
+| H2-T16 | Add the status output | `src/homeworks/GrandPiano88/GrandPiano88.jsx` | Invariant 10, text includes "Voices: n of 8". | `feat(hw2): announce voices and sequence status` |
+| H2-T17 | Add the computer keyboard | `src/homeworks/GrandPiano88/GrandPiano88.jsx`, `src/homeworks/GrandPiano88/GrandPiano88.module.css` | One effect with keydown, keyup, blur on window, guard `shouldHandleKey` from DrumMachine, octave select (useId label), shortcuts checkbox; cleanup removes all three. | `feat(hw2): add computer keyboard octave select and toggle` |
+| H2-T18 | Add the piano tokens | `src/styles/tokens.css` | Only additions, colors as var() of existing tokens. C4 empty. | `style(hw2): add piano tokens` |
+| H2-T19 | Add the responsive layout | `src/homeworks/GrandPiano88/GrandPiano88.module.css` | Invariant 11. Black keys absolutely positioned in their slot. Pressed keys differ by more than color. JSX untouched. | `style(hw2): add responsive piano layout with inner scroll` |
+| H2-T20 | Fix Lighthouse findings (conditional) | Files named by the finding | Only if Lighthouse on `#hw2` reports an Accessibility finding. | `fix(a11y): <finding>` |
+| H2-T21 | Document Homework 2 | `README.md` | New section after Homework 1. No scores. | `docs(readme): document hw2` |
+| H2-T22 | Record AI failures (conditional) | `AI_FAILURE_AUDIT.md` | Only real Homework 2 defects from the author. | `docs(audit): record hw2 ai failures` |
+| H2-T23 | Sync the commits metric | `src/components/DeveloperCard.jsx` | Only `metrics.commits`, value from the author. | `fix(ex1): sync commits metric after hw2` |
+| H2-T24 | Final audit | No file changes | Checks pass; log matches Parts 1 to 6. | (no commit) |
+| H2-T25 | Archive Homework 2 evidence | `docs/evidence/HW2_GrandPiano88/*.png`, `docs/prompt_logs/HW2_GrandPiano88.txt` | Copied with names unchanged. | `docs(evidence): archive hw2 screenshots and prompt log` |
