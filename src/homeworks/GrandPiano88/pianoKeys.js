@@ -55,3 +55,25 @@ export function buildPianoKeys() {
 }
 
 export const PIANO_KEYS = buildPianoKeys()
+
+/**
+ * Groups keys into white-key slots. A black key joins the slot of the white
+ * key right before it.
+ * @param {readonly import('./grand-piano.contract.js').PianoKeyData[]} keys
+ * @returns {readonly import('./grand-piano.contract.js').KeySlot[]}
+ */
+export function groupIntoSlots(keys) {
+  const drafts = []
+  for (const key of keys) {
+    if (!key.isBlack) {
+      drafts.push({ white: key, black: null })
+    } else if (drafts.length === 0) {
+      throw new RangeError('A black key needs a white key before it.')
+    } else {
+      drafts[drafts.length - 1].black = key
+    }
+  }
+  return Object.freeze(drafts.map((slot) => Object.freeze(slot)))
+}
+
+export const KEY_SLOTS = groupIntoSlots(PIANO_KEYS)

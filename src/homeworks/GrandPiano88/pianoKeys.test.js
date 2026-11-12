@@ -7,6 +7,8 @@ import {
   midiToNoteName,
   buildPianoKeys,
   PIANO_KEYS,
+  groupIntoSlots,
+  KEY_SLOTS,
 } from './pianoKeys.js'
 
 const TOLERANCE = 0.01
@@ -113,4 +115,68 @@ test('midiToNoteName uses sharp names and floor(midi / 12) - 1 octaves', () => {
 
 test('PIANO_KEYS equals a fresh buildPianoKeys()', () => {
   assert.deepEqual(PIANO_KEYS, buildPianoKeys())
+})
+
+test('groupIntoSlots gives 52 slots, 36 with a black key', () => {
+  const slots = groupIntoSlots(PIANO_KEYS)
+  assert.equal(slots.length, 52)
+  assert.equal(slots.filter((s) => s.black !== null).length, 36)
+})
+
+test('slot 0 is A0 with A#0', () => {
+  const slot = groupIntoSlots(PIANO_KEYS)[0]
+  assert.equal(slot.white.noteName, 'A0')
+  assert.equal(slot.black.noteName, 'A#0')
+})
+
+test('slot 1 is B0 with no black key', () => {
+  const slot = groupIntoSlots(PIANO_KEYS)[1]
+  assert.equal(slot.white.noteName, 'B0')
+  assert.equal(slot.black, null)
+})
+
+test('last slot is C8 with no black key', () => {
+  const slots = groupIntoSlots(PIANO_KEYS)
+  const last = slots[slots.length - 1]
+  assert.equal(last.white.noteName, 'C8')
+  assert.equal(last.black, null)
+})
+
+test('slots hold all 88 keys, each black key follows its white key', () => {
+  const slots = groupIntoSlots(PIANO_KEYS)
+  const whites = slots.length
+  const blacks = slots.filter((s) => s.black !== null).length
+  assert.equal(whites + blacks, 88)
+  for (const slot of slots) {
+    assert.equal(slot.white.isBlack, false)
+    if (slot.black !== null) {
+      assert.equal(slot.black.isBlack, true)
+      assert.equal(slot.black.midi, slot.white.midi + 1)
+    }
+  }
+})
+
+test('array and every slot are frozen', () => {
+  const slots = groupIntoSlots(PIANO_KEYS)
+  assert.ok(Object.isFrozen(slots))
+  for (const slot of slots) {
+    assert.ok(Object.isFrozen(slot))
+  }
+})
+
+test('groupIntoSlots does not mutate its frozen input', () => {
+  const copy = [...PIANO_KEYS]
+  groupIntoSlots(PIANO_KEYS)
+  assert.deepEqual([...PIANO_KEYS], copy)
+})
+
+test('groupIntoSlots throws RangeError when a black key comes first', () => {
+  const blackKey = PIANO_KEYS.find((k) => k.isBlack)
+  assert.throws(() => groupIntoSlots([blackKey]), RangeError)
+})
+
+test('KEY_SLOTS is frozen and equals groupIntoSlots(PIANO_KEYS)', () => {
+  assert.ok(Object.isFrozen(KEY_SLOTS))
+  assert.equal(KEY_SLOTS.length, 52)
+  assert.deepEqual(KEY_SLOTS, groupIntoSlots(PIANO_KEYS))
 })
