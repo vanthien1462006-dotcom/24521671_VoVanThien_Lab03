@@ -27,6 +27,21 @@
   color: var(--color-text);
 }
 
+.alert {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border: var(--control-border-width) solid var(--color-alert-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-tier-awareness-bg);
+  color: var(--color-tier-awareness-text);
+}
+
+.alert button {
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  font: inherit;
+}
+
 .crates {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

@@ -1,15 +1,74 @@
-import { useId, useState } from 'react'
-import { SAMPLE_DATA_NOTICE, buildSampleCrates } from './arenaData.js'
-import { createArenaState } from './arenaReducer.js'
+import { useCallback, useEffect, useId, useReducer, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
+import { SAMPLE_DATA_NOTICE, buildSampleCrates, buildServerStock } from './arenaData.js'
+import { arenaReducer, createArenaState } from './arenaReducer.js'
+import { createMockArenaServer } from './mockArenaServer.js'
 import { CrateCard } from './CrateCard.jsx'
 import styles from './KraftonPubgVnArena.module.css'
 
-/** Composes the arena. The claim handler is not wired yet (H3-T17). */
+/**
+ * Composes the arena and wires optimistic claims.
+ * A claim updates the UI at once, then the mock server answers; a 409 rolls the claim back.
+ * Every pending request has an AbortController, and unmount aborts all of them.
+ */
 export function KraftonPubgVnArena() {
   const headingId = useId()
   const dropsId = useId()
+  const dropsHeadingRef = useRef(null)
   const [crates] = useState(() => buildSampleCrates(Date.now()))
-  const [state] = useState(() => createArenaState(crates))
+  const [state, dispatch] = useReducer(arenaReducer, crates, createArenaState)
+  const [server] = useState(() => createMockArenaServer({ serverStock: buildServerStock() }))
+  const inFlightRef = useRef(new Map())
+
+  useEffect(() => {
+    const inFlight = inFlightRef.current
+    return () => {
+      for (const controller of inFlight.values()) controller.abort()
+      inFlight.clear()
+    }
+  }, [])
+
+  const handleClaim = useCallback(
+    async (crateId) => {
+      const inFlight = inFlightRef.current
+      if (inFlight.has(crateId)) return
+      const claimId = crypto.randomUUID()
+      const controller = new AbortController()
+      inFlight.set(crateId, controller)
+      dispatch({ type: 'CLAIM_STARTED', crateId, claimId })
+      try {
+        const res = await server.claimCrate(crateId, claimId, { signal: controller.signal })
+        if (res.status === 200) {
+          dispatch({ type: 'CLAIM_CONFIRMED', crateId, claimId, remainingStock: res.remainingStock })
+        } else {
+          dispatch({
+            type: 'CLAIM_REJECTED',
+            crateId,
+            claimId,
+            remainingStock: res.remainingStock,
+            error: `${res.error}: your claim was rolled back.`,
+          })
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return
+        dispatch({
+          type: 'CLAIM_REJECTED',
+          crateId,
+          claimId,
+          error: 'Claim failed: your claim was rolled back.',
+        })
+      } finally {
+        inFlight.delete(crateId)
+      }
+    },
+    [server],
+  )
+
+  // The Dismiss button disappears with the message, so focus moves to the Airdrops heading here.
+  const handleDismiss = () => {
+    flushSync(() => dispatch({ type: 'DISMISS_ERROR' }))
+    dropsHeadingRef.current?.focus()
+  }
 
   return (
     <section className={styles.arena} aria-labelledby={headingId}>
@@ -18,16 +77,26 @@ export function KraftonPubgVnArena() {
         <strong>{SAMPLE_DATA_NOTICE}</strong>
       </p>
       <section aria-labelledby={dropsId}>
-        <h3 id={dropsId}>Airdrops</h3>
+        <h3 id={dropsId} ref={dropsHeadingRef} tabIndex={-1}>
+          Airdrops
+        </h3>
+        {state.lastError && (
+          <p className={styles.alert} role="alert">
+            {state.lastError}{' '}
+            <button type="button" onClick={handleDismiss}>
+              Dismiss
+            </button>
+          </p>
+        )}
         <ul className={styles.crates}>
           {crates.map((crate) => (
             <li key={crate.id}>
               <CrateCard
                 crate={crate}
                 stock={state.stock[crate.id]}
-                isPending={false}
-                ownedCount={0}
-                onClaim={() => {}}
+                isPending={Boolean(state.pending[crate.id])}
+                ownedCount={state.owned[crate.id] ?? 0}
+                onClaim={handleClaim}
               />
             </li>
           ))}
