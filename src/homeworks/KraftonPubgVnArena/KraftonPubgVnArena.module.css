@@ -1,3 +1,41 @@
+.arena {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  width: 100%;
+  min-width: 0;
+  max-width: min(100%, 72rem);
+  padding: var(--space-4);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-card-bg);
+  color: var(--color-text);
+}
+
+.arena h2 {
+  font-size: var(--font-size-lg);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.arena h3 {
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-md);
+}
+
+.notice {
+  color: var(--color-text);
+}
+
+.crates {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .crate {
   display: grid;
   gap: var(--space-2);
