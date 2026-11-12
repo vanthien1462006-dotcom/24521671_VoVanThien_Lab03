@@ -269,6 +269,7 @@ The page now shows one view at a time. The view comes from the URL hash.
 
 - `npm run dev`, then open `http://localhost:5173/#exercises` or `http://localhost:5173/#hw1`.
 - For Homework 2, open `http://localhost:5173/#hw2` (or `http://localhost:4173/#hw2` on the preview build).
+- For Homework 3, open `http://localhost:5173/#hw3` (or `http://localhost:4173/#hw3` on the preview build).
 - For Lighthouse, build and serve the production bundle with `npm run build` and `npm run preview`, then run Lighthouse on each view by its URL with the hash, for example `http://localhost:4173/#hw1`. Run it once per view.
 
 ## Homework 1: Production Studio Drum Kit
@@ -511,3 +512,142 @@ These steps are done by hand in the browser at `http://localhost:5173/#hw2`.
 - Starting or stopping a recording releases every held note, because the keyboard effect depends on mode.
 - The status text says "Take ready: 1 notes" for a single note.
 - Browsers throttle timers in background tabs, so replay timing can drift when the tab is not visible.
+
+## Homework 3: KRAFTON x PUBG Vietnam Airdrop Arena
+
+`KraftonPubgVnArena` shows PVS Finals ticket and G-Coin crate airdrops with an anti-drift countdown (`usePubgAirdropTimer`, resynced on `visibilitychange`), optimistic claims with an in-flight lock and rollback on 409 Looted Out against an in-memory mock server, a leaderboard of the squads te, ces, ge and agg sorted by WWCD, placement points, kill points or total, and a kill feed filtered by squad. It renders only in the `#hw3` view.
+
+**Sample data, not official PVS results or prices.**
+
+All numbers, prices and stock in this homework are sample data written for the exercise.
+
+### Source layout
+
+```
+src/
+  shell/resolveView.js             VIEWS gains { id: 'hw3', label: 'HW3 PUBG VN Arena' } (and resolveView.test.js)
+  App.jsx                          renders KraftonPubgVnArena for the hw3 view
+  styles/tokens.css                "Arena (Homework 3)" token group
+  homeworks/
+    KraftonPubgVnArena/
+      pubg-vn-arena.contract.js    JSDoc typedefs only
+      arenaData.js / .test.js      SAMPLE_DATA_NOTICE, DROP_WINDOW_MS, frozen SQUAD_STANDINGS and CRATE_SEEDS, buildSampleCrates(nowMs), buildServerStock(), with tests
+      airdropClock.js / .test.js   computeRemainingMs, formatCountdown, DROP_PHASES, getDropPhase, with tests
+      formatVnd.js / .test.js      formatVnd with one module-level Intl.NumberFormat('vi-VN'), with tests
+      arenaReducer.js / .test.js   createArenaState and the pure arenaReducer (CLAIM_STARTED, CLAIM_CONFIRMED, CLAIM_REJECTED, CLAIM_ABORTED, DISMISS_ERROR), with tests
+      mockArenaServer.js / .test.js   createMockArenaServer: in-memory claimCrate that answers by claimId (idempotent), 200 or 409 Looted Out, abortable, with tests
+      standings.js / .test.js      SORT_OPTIONS and selectStandings (filter, derived totalPts, toSorted), with tests
+      killFeed.js / .test.js       WEAPONS, seeded generateKillFeed, frozen SAMPLE_KILL_FEED, filterKillFeed, with tests
+      usePubgAirdropTimer.js       hook: stores nowMs, 200 ms tick, visibilitychange resync, returns { remainingMs, isLive, nowMs }
+      CrateCard.jsx                one crate: price, stock, phase, countdown while warming up, Claim button with aria-disabled
+      Leaderboard.jsx              standings table with caption, scope and aria-sort inside a focusable scroll container
+      KillFeed.jsx                 filtered kill-feed list with a result count
+      KraftonPubgVnArena.jsx       the arena: claim reducer, mock server, in-flight Map, squad and sort filters, error alert
+      KraftonPubgVnArena.module.css   layout, crate grid, table, kill-feed rows with content-visibility
+```
+
+The view id `#hw3` lives in `src/shell/resolveView.js`. The arena design tokens are in `src/styles/tokens.css`, in the "Arena (Homework 3)" group. The abortable `delay` is imported from `src/homeworks/GrandPiano88/replay.js`.
+
+### Constraints
+
+- Remaining time is derived during render from `computeRemainingMs(targetEpochMs, nowMs, serverOffsetMs)`. The hook only stores `nowMs`.
+- The slide's hook was restructured because its effect reads a function that is not in the dependency list (`exhaustive-deps`) and calls `setState` synchronously in the effect body (`set-state-in-effect`).
+- The effect ticks every 200 ms and resyncs on `visibilitychange`, and its cleanup clears the timer and removes the listener.
+- `setInterval` is allowed only in `usePubgAirdropTimer.js`.
+- The claim reducer is pure, with a pending `claimId` lock per crate. `CLAIM_REJECTED` restores the optimistic decrement and then applies the server stock. An in-flight `Map` in the component backs the lock.
+- The claim button uses `aria-disabled` plus a handler guard, so it keeps focus.
+- Every claim has an `AbortController` and unmount aborts them all. `AbortError` is not shown as an error.
+- Prices use one module-level `Intl.NumberFormat('vi-VN')`.
+- The kill feed uses CSS `content-visibility: auto` with `contain-intrinsic-size` instead of JavaScript windowing, because windowing needs dynamic inline styles, which project-rules section 7 forbids.
+- Leaderboard sorting uses `toSorted`.
+
+### Sample data
+
+Crates (from `arenaData.js`). UI stock is what the page shows at first; server stock is what the mock server holds. The drop offset is added to the time the arena opened.
+
+| id | title | priceVnd | UI stock | server stock | drop offset (ms) |
+| --- | --- | --- | --- | --- | --- |
+| `vip-pass` | PVS Finals VIP Pass + 5,000 G-Coin | 1990000 | 5 | 5 | +45000 |
+| `gcoin-600` | G-Coin Contraband Crate (600 G-Coin) | 149000 | 3 | 3 | -60000 |
+| `gcoin-last` | G-Coin Contraband Crate (Last Crate) | 149000 | 1 | 0 | -60000 |
+| `early-bird` | PVS Finals Early-Bird Pass | 990000 | 2 | 2 | -1200000 |
+
+Squads (from `arenaData.js`).
+
+| squadId | squadName | wwcdCount | placementPts | killPts |
+| --- | --- | --- | --- | --- |
+| `te` | The Expendables | 3 | 58 | 47 |
+| `ces` | Cerberus Esports | 2 | 61 | 39 |
+| `ge` | Genius Esports | 2 | 44 | 52 |
+| `agg` | AGG | 1 | 49 | 33 |
+
+Other values: `DROP_WINDOW_MS` is 600000 (10 minutes), the mock server latency is 800 ms, and the kill feed has 120 events generated with seed 2026.
+
+### Text checks
+
+C6', C10, C11 and C12 apply to this homework. Run them from the repository root.
+
+| Check | Looks for | Expected |
+| --- | --- | --- |
+| C6' | `isLoading` or `isError`; `setInterval(` outside `usePubgAirdropTimer.js`; `fetch(` outside the telemetry fetch helper | prints nothing for all three commands |
+| C10 | a countdown done by subtraction (`=> x - 1` or `-= 1000`) in `src/homeworks/KraftonPubgVnArena/` | prints nothing |
+| C11 | `setInterval(`, `clearInterval(` and the `visibilitychange` add and remove calls in `usePubgAirdropTimer.js` | prints exactly 4 lines |
+| C12 | `not official` in `arenaData.js` and `README.md` | prints at least 2 lines, one from each file |
+
+PowerShell:
+
+```powershell
+# C6'
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern 'isLoading|isError'
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -ne 'usePubgAirdropTimer.js' | Select-String -Pattern 'setInterval\('
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike 'fetchKraftonPubgTelemetry*' | Select-String -Pattern '\bfetch\('
+# C10
+Get-ChildItem src\homeworks\KraftonPubgVnArena -Recurse -Include *.jsx,*.js | Select-String -Pattern '=>\s*\w+\s*-\s*1\b|-=\s*1000'
+# C11
+Select-String -Path src\homeworks\KraftonPubgVnArena\usePubgAirdropTimer.js -Pattern 'setInterval\(|clearInterval\(|addEventListener\(.visibilitychange|removeEventListener\(.visibilitychange'
+# C12
+Select-String -Path src\homeworks\KraftonPubgVnArena\arenaData.js, README.md -Pattern 'not official'
+```
+
+Git Bash:
+
+```sh
+# C6'
+grep -rnE 'isLoading|isError' src --include='*.jsx' --include='*.js'
+grep -rnE 'setInterval\(' src --include='*.jsx' --include='*.js' --exclude='usePubgAirdropTimer.js'
+grep -rnE '\bfetch\(' src --include='*.jsx' --include='*.js' --exclude='fetchKraftonPubgTelemetry*'
+# C10
+grep -rnE '=>\s*\w+\s*-\s*1\b|-=\s*1000' src/homeworks/KraftonPubgVnArena --include='*.jsx' --include='*.js'
+# C11
+grep -nE 'setInterval\(|clearInterval\(|addEventListener\(.visibilitychange|removeEventListener\(.visibilitychange' src/homeworks/KraftonPubgVnArena/usePubgAirdropTimer.js
+# C12
+grep -n 'not official' src/homeworks/KraftonPubgVnArena/arenaData.js README.md
+```
+
+### How to test
+
+These steps are done by hand in the browser at `http://localhost:5173/#hw3`.
+
+1. Four crates are shown: the VIP pass is in Warm-up with a countdown that turns Airdrop live after about 45 seconds without a reload, two G-Coin crates are live, and the Early-Bird pass is Expired.
+2. Background tab: reload, switch to another tab for at least 60 seconds, then come back. The countdown is already correct.
+3. Optimistic claim: click Claim on the 600 G-Coin crate. The stock drops at once and the button says Claiming…, then "Claimed by you 1" appears.
+4. Double-click lock: in the Console run the snippet below. The stock drops by 1 only.
+
+   ```js
+   const b = [...document.querySelectorAll('button')].find(x => x.textContent === 'Claim' && x.closest('article').textContent.includes('600 G-Coin')); for (let i = 0; i < 5; i++) b.click()
+   ```
+
+5. Rollback: click Claim on the Last Crate. The stock goes from 1 to 0, then a red alert "Looted Out: your claim was rolled back." appears and the status is Looted out.
+6. Unmount: click Claim and at once click HW1 in the nav. The Console stays clean.
+7. Leaderboard and kill feed: set Sort to Kill points to get the order Genius Esports, The Expendables, Cerberus Esports, AGG. Set Squad to AGG to see only AGG events in the kill feed.
+
+### Known limits
+
+- All numbers, prices and stock are sample data, not official PVS results or prices.
+- The mock server lives in memory, so reloading the page resets the stock and the claims.
+- Background tabs may tick only once a minute; the countdown is corrected when the tab becomes visible again (`visibilitychange`).
+- One squad select filters both the leaderboard and the kill feed, so with a squad selected the leaderboard shows a single row.
+- Each crate card runs its own 200 ms timer, so four timers run while the arena is open.
+- Kill-feed rows rely on `content-visibility`; browsers without it render every row normally.
+- The Lab 2 code (anti-drift timer, virtual scroller) was not reused; this homework was written from scratch.
+- The mock server is in memory only; there is no real network or server, and claim IDs come from `crypto.randomUUID`, which needs localhost or HTTPS.
