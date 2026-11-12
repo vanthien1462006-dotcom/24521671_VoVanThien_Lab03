@@ -924,3 +924,86 @@ generateKillFeed(count, seed): 120 events for (120, 2026); ids 'kf-001' … 'kf-
 | H3-T25 | Sync the commits metric | `src/components/DeveloperCard.jsx` | Only `metrics.commits`, value from the author. | `fix(ex1): sync commits metric after hw3` |
 | H3-T26 | Final audit | No file changes | Checks pass; log matches Parts 1 to 7. | (no commit) |
 | H3-T27 | Archive Homework 3 evidence | `docs/evidence/HW3_KraftonPubgVnArena/*.png`, `docs/prompt_logs/HW3_KraftonPubgVnArena.txt` | Copied, names unchanged. | `docs(evidence): archive hw3 screenshots and prompt log` |
+
+## Part 8. Bonus Exercise: "Hẹn Hò Nhưng Không Yêu" Situationship FSM
+
+### 8.1 Overview
+`SituationshipAnalyzer` (src/homeworks/BonusSituationship/) replaces the boolean soup `isDating && !isLoved && !hasTitle` with a finite state machine of four phases. Effort is asymmetric: Em's tries weigh 0.1, Ai đó's parts weigh 50. Scores and the red flag are derived during render from raw inputs and an immutable signal log. While the phase is DATING_NO_LOVE, a 5-second reply timer (abortable) moves the phase to GHOSTED_EXIT; sending a message restarts it, and unmount or Unbind cancels it. Source: slides 31 and 32.
+
+### 8.2 Contract
+```js
+/**
+ * @typedef {'FRIENDS' | 'DATING_NO_LOVE' | 'OFFICIAL_LOVE' | 'GHOSTED_EXIT'} RelationshipPhase
+ */
+
+/**
+ * @typedef {'START_DATING' | 'CONFIRM_LOVE' | 'GHOST_TIMEOUT' | 'UNBIND' | 'RESET'} RelationshipEvent
+ */
+
+/**
+ * @typedef {Object} EffortSignal
+ * @property {string} id           crypto.randomUUID()
+ * @property {'EM' | 'AI_DO'} actor
+ * @property {'EM' | 'AI_DO'} type Same value as actor (slide 32 log entry shape).
+ * @property {number} steps
+ * @property {number} multiplier   0.1 for EM, 50 for AI_DO.
+ * @property {number} impact       steps × multiplier.
+ */
+
+export {};
+```
+
+### 8.3 Invariants
+1. The UI is `<article aria-label="Hẹn Hò Nhưng Không Yêu Analyzer" lang="vi">` inside a section with `<h2>Bonus Exercise: Situationship FSM</h2>`, rendered only in the `bonus` view.
+2. Phase is one state value of RelationshipPhase, changed only through `transition(phase, event)`. No isDating, isLoved or hasTitle anywhere.
+3. Raw state: phase, myTries, rivalTries, signals. myImpact = myTries × 0.1, rivalImpact = rivalTries × 50, isRedFlag = phase === 'DATING_NO_LOVE' && myImpact < rivalImpact, all derived during render. No effect synchronizes derived values.
+4. One effect, deps [phase, myTries]: only in DATING_NO_LOVE it creates an AbortController, waits 5000 ms with the abortable delay, then applies GHOST_TIMEOUT; its cleanup aborts. AbortError is ignored.
+5. Signals are appended with [...prev, signal]; the list shows the last 10, newest first, keyed by id.
+6. Both number inputs have visible labels through useId, read valueAsNumber and never store NaN or negative values.
+7. `<output role="status" aria-live="polite">` shows '[RED-FLAG] Red Flag: Hẹn hò nhưng không yêu — Giải phóng bộ nhớ!' or '[OK] Stable', and the phase.
+8. A `<meter min="0" max="1">` shows Em's share of effort impact with a visible label and a text value.
+9. Only the short phrases of slides 31 and 32 are used; no song lyrics are added.
+
+### 8.4 Expected results
+transition(phase, event):
+| phase | event | Expected |
+| --- | --- | --- |
+| FRIENDS | START_DATING | DATING_NO_LOVE |
+| DATING_NO_LOVE | CONFIRM_LOVE | OFFICIAL_LOVE |
+| DATING_NO_LOVE | GHOST_TIMEOUT | GHOSTED_EXIT |
+| FRIENDS | UNBIND | GHOSTED_EXIT |
+| DATING_NO_LOVE | UNBIND | GHOSTED_EXIT |
+| OFFICIAL_LOVE | UNBIND | GHOSTED_EXIT |
+| GHOSTED_EXIT | RESET | FRIENDS |
+| OFFICIAL_LOVE | GHOST_TIMEOUT | OFFICIAL_LOVE |
+| GHOSTED_EXIT | START_DATING | GHOSTED_EXIT |
+| FRIENDS | CONFIRM_LOVE | FRIENDS |
+| 'NOPE' | START_DATING | throws TypeError |
+
+computeImpacts(myTries, rivalTries): (100, 1) → { myImpact: 10, rivalImpact: 50, emShare: 1/6 }; (500, 1) → { 50, 50, 0.5 }; (0, 0) → { 0, 0, 0 }.
+isRedFlag(phase, myImpact, rivalImpact): ('DATING_NO_LOVE', 10, 50) → true; ('DATING_NO_LOVE', 50, 50) → false; ('OFFICIAL_LOVE', 10, 50) → false; ('FRIENDS', 10, 50) → false.
+createSignal('EM', 1, () => 'id-1') → { id: 'id-1', actor: 'EM', type: 'EM', steps: 1, multiplier: 0.1, impact: 0.1 } frozen; createSignal('AI_DO', 1, …) impact 50; createSignal('X', 1, …) throws TypeError.
+appendSignal(log, s) returns a new frozen array, input unchanged. latestSignals(log, 10) returns at most 10, newest first.
+sanitizeCount(valueAsNumber): NaN → 0; -3 → 0; 2.7 → 2; 42 → 42.
+
+### 8.5 Work breakdown structure
+| ID | Task | File | Acceptance criteria | Commit message |
+| --- | --- | --- | --- | --- |
+| B-T01 | Write this WBS for the bonus | `TASK_DECOMPOSITION.md` | Part 8 appended. Parts 1 to 7 unchanged. 18 rows. | `docs(spec): add bonus situationship task decomposition` |
+| B-T02 | Add the bonus rules | `project-rules.md` | New section 20 appended. Sections 1 to 19 unchanged except two renames in section 14: the evidence folder `HW4_BonusSituationship` becomes `BONUS_Situationship`, and "(counted as HW4)" is removed. | `docs(rules): add bonus fsm and ghosting rules` |
+| B-T03 | Add the JSDoc contract | `src/homeworks/BonusSituationship/situationship.contract.js` | Exactly the code block of section 8.2. | `docs(bonus): add Situationship JSDoc contract` |
+| B-T04 | Model the state machine, test first | `src/homeworks/BonusSituationship/situationshipModel.js`, `src/homeworks/BonusSituationship/situationshipModel.test.js` | First run fails. `PHASES`, `EFFORT_WEIGHTS`, `transition`, `computeImpacts`, `isRedFlag`; transition, impact and red-flag rows of 8.4 pass. | `feat(fsm): model HenHoKhongYeu state machine` |
+| B-T05 | Add the signal helpers, test first | `src/homeworks/BonusSituationship/situationshipModel.js`, `src/homeworks/BonusSituationship/situationshipModel.test.js` | `createSignal`, `appendSignal`, `latestSignals`, `sanitizeCount`; rows of 8.4 pass. | `feat(bonus): add immutable effort signal log helpers` |
+| B-T06 | Add the analyzer with inputs | `src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx`, `src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css` | Invariants 1 and 6; raw state phase, myTries, rivalTries. No effect yet. | `feat(bonus): add situationship analyzer with labelled effort inputs` |
+| B-T07 | Add the bonus view | `src/shell/resolveView.js`, `src/shell/resolveView.test.js`, `src/App.jsx` | VIEWS gains `{ id: 'bonus', label: 'Bonus Exercise' }`; test row; App branch. | `feat(shell): add bonus view to navigation` |
+| B-T08 | Add the derived red flag, meter and ghosting cleanup | `src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx`, `src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css` | Invariants 3, 4, 7, 8. | `feat(ui): add derived red-flag meter & ghosting cleanup` |
+| B-T09 | Add signal buttons and the log | `src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx`, `src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css` | Invariant 5; "Gửi tin nhắn" and "Ai đó một phần" buttons. | `feat(bonus): add signal buttons and immutable log list` |
+| B-T10 | Add transitions and unbind | `src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx` | "Xác nhận yêu" (only when not red flag), "Unbind & Free Memory", "Bắt đầu lại", "Bắt đầu hẹn hò" buttons through transition; focus kept on a stable control. | `feat(bonus): add phase transitions and unbind control` |
+| B-T11 | Add the tokens | `src/styles/tokens.css` | Only additions, colors as var() of existing tokens. | `style(bonus): add situationship tokens` |
+| B-T12 | Add the responsive layout | `src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css` | Mobile first; no horizontal scroll at 375px and 320px. | `style(bonus): add responsive 375px situationship layout` |
+| B-T13 | Fix Lighthouse findings (conditional) | Files named by the finding | Only if Lighthouse on `#bonus` reports an Accessibility finding. | `fix(a11y): <finding>` |
+| B-T14 | Document the bonus | `README.md` | New section after Homework 3. Two existing Repository layout lines are renamed (`HW4_BonusSituationship/` becomes `BONUS_Situationship/`, `(HW4, bonus)` becomes `(Bonus Exercise)`); nothing else old changes. | `docs(readme): document bonus situationship` |
+| B-T15 | Record AI failures (conditional) | `AI_FAILURE_AUDIT.md` | Only real defects supplied by the author. | `docs(audit): record bonus ai failures` |
+| B-T16 | Sync the commits metric | `src/components/DeveloperCard.jsx` | Only `metrics.commits`, value from the author. | `fix(ex1): sync commits metric after bonus` |
+| B-T17 | Final audit | No file changes | Checks pass; log matches Parts 1 to 8. | (no commit) |
+| B-T18 | Archive bonus evidence | `docs/evidence/BONUS_Situationship/*.png`, `docs/prompt_logs/BONUS_Situationship.txt` | Copied, names unchanged. | `docs(evidence): archive bonus screenshots and prompt log` |
