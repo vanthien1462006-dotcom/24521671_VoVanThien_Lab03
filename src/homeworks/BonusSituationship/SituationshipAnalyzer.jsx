@@ -1,6 +1,14 @@
 import { useEffect, useId, useState } from 'react'
 import { delay } from '../GrandPiano88/replay.js'
-import { computeImpacts, isRedFlag, sanitizeCount, transition } from './situationshipModel.js'
+import {
+  appendSignal,
+  computeImpacts,
+  createSignal,
+  isRedFlag,
+  latestSignals,
+  sanitizeCount,
+  transition,
+} from './situationshipModel.js'
 import styles from './SituationshipAnalyzer.module.css'
 
 const GHOST_DELAY_MS = 5000
@@ -13,6 +21,7 @@ export function SituationshipAnalyzer() {
   const [phase, setPhase] = useState('DATING_NO_LOVE')
   const [myTries, setMyTries] = useState(100)
   const [rivalTries, setRivalTries] = useState(1)
+  const [signals, setSignals] = useState(() => Object.freeze([]))
 
   const { myImpact, rivalImpact, emShare } = computeImpacts(myTries, rivalTries)
   const redFlag = isRedFlag(phase, myImpact, rivalImpact)
@@ -27,6 +36,18 @@ export function SituationshipAnalyzer() {
       })
     return () => controller.abort()
   }, [phase, myTries])
+
+  function sendMessage() {
+    setSignals((prev) => appendSignal(prev, createSignal('EM', 1)))
+    setMyTries((t) => t + 1)
+  }
+
+  function rivalPart() {
+    setSignals((prev) => appendSignal(prev, createSignal('AI_DO', 1)))
+    setRivalTries((t) => t + 1)
+  }
+
+  const recent = latestSignals(signals)
 
   return (
     <section className={styles.bonus} aria-labelledby={headingId}>
@@ -75,6 +96,26 @@ export function SituationshipAnalyzer() {
             onChange={(e) => setRivalTries(sanitizeCount(e.target.valueAsNumber))}
           />
         </p>
+        <p className={styles.actions}>
+          <button type="button" onClick={sendMessage}>
+            Gửi tin nhắn
+          </button>
+          <button type="button" onClick={rivalPart}>
+            Ai đó một phần
+          </button>
+        </p>
+        <h3>Signal log</h3>
+        {recent.length === 0 ? (
+          <p>Chưa có tín hiệu.</p>
+        ) : (
+          <ol className={styles.log} aria-label="Last 10 signals, newest first">
+            {recent.map((s) => (
+              <li key={s.id}>
+                {s.actor === 'EM' ? 'Em cố trăm lần' : 'Ai đó một phần'}: +{s.impact.toFixed(1)}
+              </li>
+            ))}
+          </ol>
+        )}
       </article>
     </section>
   )
