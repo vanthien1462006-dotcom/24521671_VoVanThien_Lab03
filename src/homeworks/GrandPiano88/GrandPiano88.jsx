@@ -7,14 +7,17 @@ import { createTakeRecorder } from './recorder.js'
 import { REPLAY_SPEEDS, buildReplaySchedule, playSequence } from './replay.js'
 import styles from './GrandPiano88.module.css'
 
+const MAX_VOICES = 8
+
 export function GrandPiano88() {
   const headingId = useId()
   const speedName = useId()
-  const [synth] = useState(() => new PolyphonicSynth(8))
+  const [synth] = useState(() => new PolyphonicSynth(MAX_VOICES))
   const [pressedMidis, setPressedMidis] = useState(() => new Set())
   const [mode, setMode] = useState('idle')
   const [take, setTake] = useState([])
   const [speed, setSpeed] = useState(1)
+  const [voiceCount, setVoiceCount] = useState(0)
   const recorderRef = useRef(null)
   const replayRef = useRef(null)
   const playButtonRef = useRef(null)
@@ -32,6 +35,7 @@ export function GrandPiano88() {
     (midi) => {
       const key = PIANO_KEYS[midi - FIRST_MIDI]
       synth.noteOn(midi, key.freqHz)
+      setVoiceCount(synth.activeCount)
       if (recorderRef.current?.isRecording()) recorderRef.current.noteOn(midi, key.freqHz)
       setPressedMidis((prev) => (prev.has(midi) ? prev : new Set(prev).add(midi)))
     },
@@ -41,6 +45,7 @@ export function GrandPiano88() {
   const noteOff = useCallback(
     (midi) => {
       synth.noteOff(midi)
+      setVoiceCount(synth.activeCount)
       if (recorderRef.current?.isRecording()) recorderRef.current.noteOff(midi)
       setPressedMidis((prev) => {
         if (!prev.has(midi)) return prev
@@ -83,6 +88,7 @@ export function GrandPiano88() {
       if (replayRef.current === controller) replayRef.current = null
       flushSync(() => {
         setPressedMidis(new Set())
+        setVoiceCount(synth.activeCount)
         setMode('idle')
       })
       const active = document.activeElement
@@ -95,6 +101,11 @@ export function GrandPiano88() {
   function handleStop() {
     replayRef.current?.abort()
   }
+
+  let statusText = 'Ready'
+  if (mode === 'recording') statusText = 'Recording'
+  else if (mode === 'playing') statusText = `Playing take (${take.length} notes) at ${speed}x`
+  else if (take.length > 0) statusText = `Take ready: ${take.length} notes`
 
   return (
     <section className={styles.piano} aria-labelledby={headingId}>
@@ -141,6 +152,9 @@ export function GrandPiano88() {
           </label>
         ))}
       </fieldset>
+      <output className={styles.status} role="status" aria-live="polite">
+        {statusText}. Voices: {voiceCount} of {MAX_VOICES}.
+      </output>
       <section className={styles.keyboardScroll} aria-label="Piano keyboard" tabIndex={0}>
         <ul className={styles.keyboard}>
           {KEY_SLOTS.map((slot) => (
