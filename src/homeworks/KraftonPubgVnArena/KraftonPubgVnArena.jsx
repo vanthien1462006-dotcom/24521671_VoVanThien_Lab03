@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useId, useReducer, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { SAMPLE_DATA_NOTICE, buildSampleCrates, buildServerStock } from './arenaData.js'
+import {
+  SAMPLE_DATA_NOTICE,
+  SQUAD_STANDINGS,
+  buildSampleCrates,
+  buildServerStock,
+} from './arenaData.js'
 import { arenaReducer, createArenaState } from './arenaReducer.js'
 import { createMockArenaServer } from './mockArenaServer.js'
+import { SORT_OPTIONS, selectStandings } from './standings.js'
 import { CrateCard } from './CrateCard.jsx'
+import { Leaderboard } from './Leaderboard.jsx'
 import styles from './KraftonPubgVnArena.module.css'
 
 /**
@@ -14,7 +21,11 @@ import styles from './KraftonPubgVnArena.module.css'
 export function KraftonPubgVnArena() {
   const headingId = useId()
   const dropsId = useId()
+  const squadSelectId = useId()
+  const sortSelectId = useId()
   const dropsHeadingRef = useRef(null)
+  const [squadFilter, setSquadFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('wwcd')
   const [crates] = useState(() => buildSampleCrates(Date.now()))
   const [state, dispatch] = useReducer(arenaReducer, crates, createArenaState)
   const [server] = useState(() => createMockArenaServer({ serverStock: buildServerStock() }))
@@ -70,6 +81,8 @@ export function KraftonPubgVnArena() {
     dropsHeadingRef.current?.focus()
   }
 
+  const rows = selectStandings(SQUAD_STANDINGS, { squadId: squadFilter, sortBy })
+
   return (
     <section className={styles.arena} aria-labelledby={headingId}>
       <h2 id={headingId}>HW3 KRAFTON x PUBG Vietnam Airdrop Arena</h2>
@@ -102,6 +115,30 @@ export function KraftonPubgVnArena() {
           ))}
         </ul>
       </section>
+      <form role="search" className={styles.filters} onSubmit={(e) => e.preventDefault()}>
+        <p>
+          <label htmlFor={squadSelectId}>Squad</label>
+          <select id={squadSelectId} value={squadFilter} onChange={(e) => setSquadFilter(e.target.value)}>
+            <option value="all">All squads</option>
+            {SQUAD_STANDINGS.map((s) => (
+              <option key={s.squadId} value={s.squadId}>
+                {s.squadName}
+              </option>
+            ))}
+          </select>
+        </p>
+        <p>
+          <label htmlFor={sortSelectId}>Sort leaderboard by</label>
+          <select id={sortSelectId} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </p>
+      </form>
+      <Leaderboard rows={rows} sortBy={sortBy} />
     </section>
   )
 }
