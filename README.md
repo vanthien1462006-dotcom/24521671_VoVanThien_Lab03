@@ -261,12 +261,14 @@ grep -nE 'new AbortController\(\)|controller\.abort\(\)|AbortError' src/componen
 The page now shows one view at a time. The view comes from the URL hash.
 
 - Hash views: `#exercises` (the default) and `#hw1`. An unknown hash shows the exercises.
+- `#hw2` shows the Homework 2 piano (`GrandPiano88`).
 - The view is read with `useSyncExternalStore`, subscribed to the `hashchange` event. There is no router package.
 - The page `<h1>` now lives in a `<header>` together with `<nav aria-label="Lab sections">`. The link of the current view has `aria-current="page"`.
 
 ### Open a view
 
 - `npm run dev`, then open `http://localhost:5173/#exercises` or `http://localhost:5173/#hw1`.
+- For Homework 2, open `http://localhost:5173/#hw2` (or `http://localhost:4173/#hw2` on the preview build).
 - For Lighthouse, build and serve the production bundle with `npm run build` and `npm run preview`, then run Lighthouse on each view by its URL with the hash, for example `http://localhost:4173/#hw1`. Run it once per view.
 
 ## Homework 1: Production Studio Drum Kit
@@ -372,3 +374,140 @@ These steps are done by hand in the browser at `http://localhost:5173/#hw1`.
 - aria-live announces only the latest hit; earlier hits are summarised by the total.
 - Audio starts only after the first click or key press (browser autoplay policy).
 - With UniKey in Telex mode, the W key reaches the page as a keydown event with an empty `code` (and `key` "ư"), so the Kick pad does not play. Switch UniKey to English mode or use the pointer. The other six pad keys are not affected.
+
+## Homework 2: Polyphonic 88-Key Piano
+
+`GrandPiano88` is an 88-key piano (A0 to C8, midi 21 to 108) that plays several notes at once: up to 8 voices, and the oldest voice is stolen when a 9th note arrives. You can record a take, replay it at 0.5x, 1x or 2x, and stop it with Stop Sequence. The sounds are synthesized with the Web Audio API. It renders only in the `#hw2` view.
+
+### Source layout
+
+```
+src/
+  shell/resolveView.js             VIEWS gains { id: 'hw2', label: 'HW2 Piano 88' } (and resolveView.test.js)
+  App.jsx                          renders GrandPiano88 for the hw2 view
+  homeworks/
+    GrandPiano88/
+      grand-piano.contract.js      JSDoc typedefs only
+      pianoKeys.js / .test.js      FIRST_MIDI, LAST_MIDI, midiToFrequency, midiToNoteName, buildPianoKeys, frozen PIANO_KEYS, groupIntoSlots, frozen KEY_SLOTS (52 white-key slots), with tests
+      PolyphonicSynth.js / .test.js   voice pool in a Map, FIFO voice stealing, noteOn, noteOff, stopAll, close, activeCount, injectable context factory, with tests
+      computerKeyMap.js / .test.js    SEMITONE_BY_CODE, OCTAVES, DEFAULT_OCTAVE, computerKeyToMidi(code, octave), with tests
+      recorder.js / .test.js          createTakeRecorder(now) with an injected clock, with tests
+      replay.js / .test.js            REPLAY_SPEEDS, pure buildReplaySchedule, abortable delay, playSequence, with tests
+      PianoKey.jsx                    memoized key button with pointer and Enter/Space handlers
+      GrandPiano88.jsx                the piano: synth, pressed keys, recorder, replay, status, computer keyboard
+      GrandPiano88.module.css         layout, key colors and the inner scroll of the keyboard
+```
+
+The view id `#hw2` lives in `src/shell/resolveView.js`. The piano design tokens are in `src/styles/tokens.css`, in the "Piano (Homework 2)" group. `shouldHandleKey` is imported from `src/homeworks/DrumMachine/shouldHandleKey.js`.
+
+### Constraints
+
+- The 88 keys are generated from midi numbers with f = 440 × 2^((midi − 69) / 12). Note names and frequencies are never typed by hand outside tests.
+- `voices` is a `Map` in insertion order, and `voices.keys().next().value` is the note that gets stolen (FIFO).
+- Every voice ramps its gain to 0.0001 with `exponentialRampToValueAtTime` before `osc.stop`, so there is no click.
+- `PianoKey` is `React.memo`. `onNoteOn` and `onNoteOff` are stable through `useCallback` and `isPressed` is a boolean, so one press renders one key. Check it with the React DevTools Profiler.
+- `mode` is one state value: `'idle'`, `'recording'` or `'playing'`.
+- The replay schedule is computed by the pure function `buildReplaySchedule`, and the replay waits with a delay that can be aborted.
+- Stop Sequence and unmount abort the same `AbortController`, stop every voice and release every pressed key. `AbortError` is a normal outcome.
+- The `AudioContext` is created lazily in `PolyphonicSynth` and closed when `GrandPiano88` unmounts.
+- Computer-keyboard notes are read from `e.code`. Letters are never read from `e.key`.
+
+### Controls
+
+| Control | What it does |
+| --- | --- |
+| Pointer (press and hold a key) | Plays the note while held; release, leave or cancel stops it |
+| Enter or Space on a focused key | Plays the note while held |
+| Computer keys A W S E D F T G Y H U J K | C, C#, D, D#, E, F, F#, G, G#, A, A#, B and the C of the next octave, in the selected octave |
+| Keyboard octave select | Octave 1 to 7 for the computer keys, 4 by default |
+| Keyboard shortcuts checkbox | Turns the computer keys on or off |
+| Record / Stop recording | Starts a take, or ends it |
+| Play take | Replays the last take at the selected speed |
+| Stop Sequence | Aborts the replay in progress |
+| Replay speed (0.5x, 1x, 2x) | Speed of the next replay |
+
+### Text checks
+
+C8b', C9a, C9b, C9c are new for this homework. C5 is the existing check for `.sort(`. Run them from the repository root.
+
+| Check | Looks for | Expected |
+| --- | --- | --- |
+| C8b' | `new AudioContext` in non-test files under `src/` | prints exactly 2 lines (`drumSynth.js` and `PolyphonicSynth.js`) |
+| C9a | a hard-coded note name such as `A0` or `C#4` in `src/homeworks/GrandPiano88/`, except `*.test.js` and `*.contract.js` | prints nothing |
+| C9b | `memo(function PianoKey` in `PianoKey.jsx` | prints 1 line |
+| C9c | `new AbortController()` and `.abort()` in `GrandPiano88.jsx` | prints at least 2 lines |
+| C5 | `.sort(` anywhere in `src/` | prints nothing |
+
+PowerShell:
+
+```powershell
+# C8b'
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike '*.test.js' | Select-String -Pattern 'new (window\.)?AudioContext'
+# C9a
+Get-ChildItem src\homeworks\GrandPiano88 -Recurse -Include *.jsx,*.js | Where-Object { $_.Name -notlike '*.test.js' -and $_.Name -notlike '*.contract.js' } | Select-String -CaseSensitive -Pattern '\b[A-G]#?[0-8]\b'
+# C9b
+Select-String -Path src\homeworks\GrandPiano88\PianoKey.jsx -Pattern 'memo\(function PianoKey'
+# C9c
+Select-String -Path src\homeworks\GrandPiano88\GrandPiano88.jsx -Pattern 'new AbortController\(\)|\.abort\(\)'
+# C5
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern '\.sort\('
+```
+
+Git Bash:
+
+```sh
+# C8b'
+grep -rnE 'new (window\.)?AudioContext' src --include='*.jsx' --include='*.js' --exclude='*.test.js'
+# C9a
+grep -rnE '\b[A-G]#?[0-8]\b' src/homeworks/GrandPiano88 --include='*.jsx' --include='*.js' --exclude='*.test.js' --exclude='*.contract.js'
+# C9b
+grep -n 'memo(function PianoKey' src/homeworks/GrandPiano88/PianoKey.jsx
+# C9c
+grep -nE 'new AbortController\(\)|\.abort\(\)' src/homeworks/GrandPiano88/GrandPiano88.jsx
+# C5
+grep -rn '\.sort(' src --include='*.jsx' --include='*.js'
+```
+
+### How to test
+
+These steps are done by hand in the browser at `http://localhost:5173/#hw2`.
+
+1. Count the keys. Paste this in the DevTools Console. Expected: `[88, 36]` (88 keys, 36 of them black).
+
+   ```js
+   const keys = [...document.querySelectorAll('[aria-label="Piano keyboard"] button')];
+   [keys.length, keys.filter((k) => k.textContent.includes('#')).length];
+   ```
+
+2. Profiler. In React DevTools, open Profiler settings and turn on "Record why each component rendered". Start recording, press one key, stop recording. In the Ranked view only `GrandPiano88` and one `PianoKey` rendered, and the reason for that `PianoKey` is a changed prop (`isPressed`).
+3. Voice stealing. Paste this in the Console. The status line reads "Voices: 8 of 8". Then release the keys with the second snippet. Synthetic events are not user gestures, so the browser may keep the audio silent; the status line still counts voices.
+
+   ```js
+   const piano = [...document.querySelectorAll('[aria-label="Piano keyboard"] button')].slice(30, 39);
+   piano.forEach((k) => k.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
+   ```
+
+   ```js
+   piano.forEach((k) => k.dispatchEvent(new PointerEvent('pointerup', { bubbles: true })));
+   ```
+
+4. Record and replay. Press Record, play a few notes, press Stop recording, choose 2x, press Play take, then press Stop Sequence in the middle. Then run this in the Console. Expected: `0`.
+
+   ```js
+   document.querySelectorAll('[aria-label="Piano keyboard"] [aria-pressed="true"]').length;
+   ```
+
+5. Computer keyboard. Hold A, D and G for a chord. Clear the Keyboard shortcuts checkbox: the keys no longer play.
+6. UniKey in Telex mode: see Known limits.
+
+### Known limits
+
+- The synth file lives in src/homeworks/GrandPiano88/ instead of the slide's src/audio/ (repository rule 14).
+- The keyboard scrolls horizontally inside its own container at 375px; the page itself does not.
+- Pressed keys can exceed 8 while only 8 voices sound (the oldest voice is stolen).
+- The Lab 2 code was not reused; this homework was written from scratch.
+- With UniKey in Telex mode, the W key and the tone key S can reach the page as keydown events with an empty `code` (UniKey rewrites the typed letter), so those notes may not play, for example A then S loses the D. Switch UniKey to English mode, or use the pointer or Enter and Space on a focused key.
+- Computer-keyboard notes do not play while focus is on the octave select, the Keyboard shortcuts checkbox or a Replay speed radio; click an empty area of the page first.
+- Starting or stopping a recording releases every held note, because the keyboard effect depends on mode.
+- The status text says "Take ready: 1 notes" for a single note.
+- Browsers throttle timers in background tabs, so replay timing can drift when the tab is not visible.
