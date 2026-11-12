@@ -90,7 +90,7 @@ test('array and every key are frozen', () => {
 
 test('every key has exactly midi, noteName, isBlack, freqHz', () => {
   for (const key of PIANO_KEYS) {
-    assert.deepEqual(Object.keys(key).sort(), [
+    assert.deepEqual(Object.keys(key).toSorted(), [
       'freqHz',
       'isBlack',
       'midi',

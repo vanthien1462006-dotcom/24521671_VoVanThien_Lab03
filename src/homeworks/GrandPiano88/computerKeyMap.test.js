@@ -30,7 +30,7 @@ test('SEMITONE_BY_CODE has 13 codes mapping to semitones 0 to 12', () => {
   assert.ok(SEMITONE_BY_CODE instanceof Map)
   assert.equal(SEMITONE_BY_CODE.size, 13)
   assert.deepEqual(
-    [...SEMITONE_BY_CODE.values()].sort((a, b) => a - b),
+    [...SEMITONE_BY_CODE.values()].toSorted((a, b) => a - b),
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   )
   for (const code of SEMITONE_BY_CODE.keys()) {

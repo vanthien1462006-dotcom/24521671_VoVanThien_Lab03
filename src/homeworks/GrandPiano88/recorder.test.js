@@ -139,7 +139,7 @@ test('result is a frozen array of frozen events without startedAt', () => {
   assert.ok(Object.isFrozen(take))
   for (const event of take) {
     assert.ok(Object.isFrozen(event))
-    assert.deepEqual(Object.keys(event).sort(), [
+    assert.deepEqual(Object.keys(event).toSorted(), [
       'deltaMs',
       'durationMs',
       'freqHz',
