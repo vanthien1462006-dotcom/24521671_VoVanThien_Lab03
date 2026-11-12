@@ -7,6 +7,10 @@ import styles from './DrumMachine.module.css'
 
 export function DrumMachine() {
   const headingId = useId()
+  const sessionId = useId()
+  const shortcutsId = useId()
+  const [sessionName, setSessionName] = useState('')
+  const [shortcutsOn, setShortcutsOn] = useState(true)
   const [synth] = useState(() => createDrumSynth())
   const [activePadIds, setActivePadIds] = useState(() => new Set())
   const [hits, setHits] = useState([])
@@ -36,12 +40,32 @@ export function DrumMachine() {
     })
   }, [])
 
-  useDrumKeyboard(PAD_BY_CODE, triggerPad, true, releasePad)
+  useDrumKeyboard(PAD_BY_CODE, triggerPad, shortcutsOn, releasePad)
 
   return (
     <section className={styles.drumKit} aria-labelledby={headingId}>
       <h2 id={headingId}>HW1 Production Studio Drum Kit</h2>
       <p>Play with the keys W, A, S, D, J, K, L or press a pad.</p>
+      <p className={styles.field}>
+        <label htmlFor={sessionId}>Session name</label>
+        <input
+          id={sessionId}
+          type="text"
+          value={sessionName}
+          onChange={(e) => setSessionName(e.target.value)}
+          autoComplete="off"
+        />
+      </p>
+      <p className={styles.field}>
+        <input
+          id={shortcutsId}
+          type="checkbox"
+          checked={shortcutsOn}
+          onChange={(e) => setShortcutsOn(e.target.checked)}
+        />
+        <label htmlFor={shortcutsId}>Keyboard shortcuts (W A S D J K L)</label>
+      </p>
+      {sessionName !== '' && <p>Session: {sessionName}</p>}
       <ul className={styles.pads} aria-label="Drum pads">
         {DRUM_PADS.map((pad) => (
           <li key={pad.id}>
