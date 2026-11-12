@@ -1,0 +1,26 @@
+.bonus {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  color: var(--color-text);
+}
+
+.analyzer {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-card-bg);
+}
+
+.phase {
+  margin: 0;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
