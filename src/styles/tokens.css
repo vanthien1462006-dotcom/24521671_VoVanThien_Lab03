@@ -53,4 +53,11 @@
   --color-skeleton-text: var(--color-tier-core-text);
   --color-alert-border: var(--color-accent);
   --skeleton-pulse-duration: 1.5s;
+
+  /* Drum kit (Homework 1) */
+  --pad-min-size: 5.5rem;
+  --color-pad-bg: var(--color-control-bg);
+  --color-pad-active-bg: var(--color-tier-core-bg);
+  --color-pad-active-text: var(--color-tier-core-text);
+  --color-pad-active-border: var(--color-accent);
 }
