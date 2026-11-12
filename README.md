@@ -255,3 +255,120 @@ grep -nE 'new AbortController\(\)|controller\.abort\(\)|AbortError' src/componen
 - The success article uses aria-live as in slide 23; a live region inserted together with its content may not be announced by every screen reader.
 - Packet loss is random (35%), so a page load can end in the error state.
 - oxlint reports one warning, react(set-state-in-effect), for setView(loadingView()) inside the effect. The line is kept on purpose: it is the slide 23 reference pattern, and moving LOADING into the event handlers would make the IDLE state unreachable.
+
+## App shell
+
+The page now shows one view at a time. The view comes from the URL hash.
+
+- Hash views: `#exercises` (the default) and `#hw1`. An unknown hash shows the exercises.
+- The view is read with `useSyncExternalStore`, subscribed to the `hashchange` event. There is no router package.
+- The page `<h1>` now lives in a `<header>` together with `<nav aria-label="Lab sections">`. The link of the current view has `aria-current="page"`.
+
+### Open a view
+
+- `npm run dev`, then open `http://localhost:5173/#exercises` or `http://localhost:5173/#hw1`.
+- For Lighthouse, build and serve the production bundle with `npm run build` and `npm run preview`, then run Lighthouse on each view by its URL with the hash, for example `http://localhost:4173/#hw1`. Run it once per view.
+
+## Homework 1: Production Studio Drum Kit
+
+`DrumMachine` is a seven-pad drum kit. It is played with the physical keys W, A, S, D, J, K, L (read through `e.code`) or with the pointer. The sounds are synthesized with the Web Audio API. A hit log in an `aria-live` output and a visual decibel meter serve deaf and hard-of-hearing users. It renders only in the `#hw1` view.
+
+### Source layout
+
+```
+src/
+  App.jsx                  SiteHeader plus <main>; DrumMachine for #hw1, the three exercises otherwise
+  shell/
+    resolveView.js / .test.js   frozen VIEWS and resolveView(hash), with tests
+    useHashView.js              useSyncExternalStore over hashchange
+    SiteHeader.jsx / .module.css   <header> with the h1 and the section nav
+  homeworks/
+    DrumMachine/
+      drum-machine.contract.js  JSDoc typedefs only
+      drumPads.js / .test.js    frozen DRUM_PADS and PAD_BY_CODE (Map keyed by e.code), with tests
+      shouldHandleKey.js / .test.js   pure shortcut guard, with tests
+      levels.js / .test.js      DB_FLOOR and toDecibels(samples), with tests
+      drumSynth.js / .test.js   Web Audio synth with an injectable context, with tests
+      useDrumKeyboard.js        window keydown, keyup and blur listeners
+      DrumMachine.jsx / .module.css   pads, session input, shortcut toggle, hit log
+      LevelMeter.jsx            decibel meter with its own requestAnimationFrame loop
+```
+
+The drum kit design tokens are in `src/styles/tokens.css`, in the "Drum kit (Homework 1)" group.
+
+### Constraints
+
+- Shortcuts read `e.code` through `PAD_BY_CODE`. No `keyCode`, `which` or `charCode`, and letters are never read from `e.key`.
+- `shouldHandleKey` ignores repeats, Ctrl, Alt and Meta combinations, and events whose target is an input, textarea, select or contenteditable element.
+- A checkbox turns the keyboard shortcuts off (WCAG 2.2 SC 2.1.4). While they are off, no listener is added.
+- The `AudioContext` is created lazily on the first play, resumed when suspended, closed when `DrumMachine` unmounts, and created only in `drumSynth.js`.
+- Every sound ramps its gain to 0.0001 with `exponentialRampToValueAtTime` before its source stops, so there is no click.
+- `requestAnimationFrame` appears only in `LevelMeter`, and its loop is cancelled in the effect cleanup.
+- The hit log is one `<output role="status" aria-live="polite">` with the last hit and the total, plus an `<ol>` of the last 8 hits, newest first.
+- Typing in the Session name input never plays a pad.
+
+### Pads
+
+| id | Label | Key |
+| --- | --- | --- |
+| kick | Kick | W |
+| snare | Snare | A |
+| hihat-closed | Closed Hi-Hat | S |
+| hihat-open | Open Hi-Hat | D |
+| clap | Clap | J |
+| tom-high | High Tom | K |
+| tom-low | Low Tom | L |
+
+### Text checks
+
+C1' and C8a to C8c are new. C2 to C4 are unchanged from Exercise 1. Run them from the repository root.
+
+| Check | Looks for | Expected |
+| --- | --- | --- |
+| C1' | `<div` in every `.jsx` file under `src/components`, `src/homeworks` and `src/shell` | prints nothing |
+| C8a | `keyCode`, `which` or `charCode` in every `.js` and `.jsx` file under `src/` | prints nothing |
+| C8b | `new AudioContext` in non-test files under `src/` | prints exactly 1 line (`drumSynth.js`) |
+| C8c | non-test files where the number of `addEventListener` lines differs from the number of `removeEventListener` lines | prints nothing |
+
+PowerShell:
+
+```powershell
+# C1'
+Get-ChildItem src\components, src\homeworks, src\shell -Recurse -Filter *.jsx | Select-String -Pattern '<div'
+# C8a
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern 'keyCode|\.which\b|charCode'
+# C8b
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike '*.test.js' | Select-String -Pattern 'new (window\.)?AudioContext'
+# C8c
+Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike '*.test.js' | ForEach-Object { $a = @(Select-String -Path $_.FullName -Pattern 'addEventListener').Count; $r = @(Select-String -Path $_.FullName -Pattern 'removeEventListener').Count; if ($a -ne $r) { "$($_.Name): add=$a remove=$r" } }
+```
+
+Git Bash:
+
+```sh
+# C1'
+grep -rn '<div' src/components src/homeworks src/shell --include='*.jsx'
+# C8a
+grep -rnE 'keyCode|\.which\b|charCode' src --include='*.jsx' --include='*.js'
+# C8b
+grep -rnE 'new (window\.)?AudioContext' src --include='*.jsx' --include='*.js' --exclude='*.test.js'
+# C8c
+for f in $(find src \( -name '*.jsx' -o -name '*.js' \) ! -name '*.test.js'); do a=$(grep -c addEventListener "$f"); r=$(grep -c removeEventListener "$f"); [ "$a" -ne "$r" ] && echo "$f: add=$a remove=$r"; done
+```
+
+### How to test
+
+These steps are done by hand in the browser at `http://localhost:5173/#hw1`.
+
+1. UniKey in Telex mode: turn UniKey on, press A or D, and check that the pad plays. To see the key code, run `addEventListener('keydown', (e) => console.log(e.code))` in the DevTools Console; it prints `KeyA` or `KeyD`.
+2. Hold one key for 2 to 3 seconds. Total hits increases by 1 only.
+3. Type "wasd" in the Session name input. No pad plays.
+4. Clear the Keyboard shortcuts checkbox, then press W, A, S, D, J, K and L. No pad plays.
+
+### Known limits
+
+- The Lab 2 drum kit was not reused; this homework was written from scratch.
+- Sounds are synthesized, not recorded samples.
+- aria-live announces only the latest hit; earlier hits are summarised by the total.
+- Audio starts only after the first click or key press (browser autoplay policy).
+- With UniKey in Telex mode, the W key reaches the page as a keydown event with an empty `code` (and `key` "ư"), so the Kick pad does not play. Switch UniKey to English mode or use the pointer. The other six pad keys are not affected.
