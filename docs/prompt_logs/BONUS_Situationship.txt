@@ -1,0 +1,2318 @@
+
+> /clear
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\HW3_PromptAI.txt in the IDE. This may or
+  may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md. Nhiệm vụ DUY NHẤT:
+  thêm Part 8 (Bonus Exercise) vào CUỐI TASK_DECOMPOSITION.md. Không sửa Part 1
+  đến 7, không sửa file khác, chưa viết code.
+
+  Thêm ĐÚNG nội dung giữa BEGIN và END (giữ nguyên chữ, kể cả tiếng Việt có
+  dấu):
+
+  ===== BEGIN =====
+  ## Part 8. Bonus Exercise: "Hẹn Hò Nhưng Không Yêu" Situationship FSM
+
+  ### 8.1 Overview
+  `SituationshipAnalyzer` (src/homeworks/BonusSituationship/) replaces the
+  boolean soup `isDating && !isLoved && !hasTitle` with a finite state machine
+  of four phases. Effort is asymmetric: Em's tries weigh 0.1, Ai đó's parts
+  weigh 50. Scores and the red flag are derived during render from raw inputs
+  and an immutable signal log. While the phase is DATING_NO_LOVE, a 5-second
+  reply timer (abortable) moves the phase to GHOSTED_EXIT; sending a message
+  restarts it, and unmount or Unbind cancels it. Source: slides 31 and 32.
+
+  ### 8.2 Contract
+  ```js
+  /**
+   * @typedef {'FRIENDS' | 'DATING_NO_LOVE' | 'OFFICIAL_LOVE' | 'GHOSTED_EXIT'}
+  RelationshipPhase
+   */
+
+  /**
+   * @typedef {'START_DATING' | 'CONFIRM_LOVE' | 'GHOST_TIMEOUT' | 'UNBIND' |
+  'RESET'} RelationshipEvent
+   */
+
+  /**
+   * @typedef {Object} EffortSignal
+   * @property {string} id           crypto.randomUUID()
+   * @property {'EM' | 'AI_DO'} actor
+   * @property {'EM' | 'AI_DO'} type Same value as actor (slide 32 log entry
+  shape).
+   * @property {number} steps
+   * @property {number} multiplier   0.1 for EM, 50 for AI_DO.
+   * @property {number} impact       steps × multiplier.
+   */
+
+  export {};
+  ```
+
+  ### 8.3 Invariants
+  1. The UI is `<article aria-label="Hẹn Hò Nhưng Không Yêu Analyzer"
+  lang="vi">` inside a section with `<h2>Bonus Exercise: Situationship
+  FSM</h2>`, rendered only in the `bonus` view.
+  2. Phase is one state value of RelationshipPhase, changed only through
+  `transition(phase, event)`. No isDating, isLoved or hasTitle anywhere.
+  3. Raw state: phase, myTries, rivalTries, signals. myImpact = myTries × 0.1,
+  rivalImpact = rivalTries × 50, isRedFlag = phase === 'DATING_NO_LOVE' &&
+  myImpact < rivalImpact, all derived during render. No effect synchronizes
+  derived values.
+  4. One effect, deps [phase, myTries]: only in DATING_NO_LOVE it creates an
+  AbortController, waits 5000 ms with the abortable delay, then applies
+  GHOST_TIMEOUT; its cleanup aborts. AbortError is ignored.
+  5. Signals are appended with [...prev, signal]; the list shows the last 10,
+  newest first, keyed by id.
+  6. Both number inputs have visible labels through useId, read valueAsNumber
+  and never store NaN or negative values.
+  7. `<output role="status" aria-live="polite">` shows '[RED-FLAG] Red Flag:
+  Hẹn hò nhưng không yêu — Giải phóng bộ nhớ!' or '[OK] Stable', and the phase.
+  8. A `<meter min="0" max="1">` shows Em's share of effort impact with a
+  visible label and a text value.
+  9. Only the short phrases of slides 31 and 32 are used; no song lyrics are
+  added.
+
+  ### 8.4 Expected results
+  transition(phase, event):
+  | phase | event | Expected |
+  | --- | --- | --- |
+  | FRIENDS | START_DATING | DATING_NO_LOVE |
+  | DATING_NO_LOVE | CONFIRM_LOVE | OFFICIAL_LOVE |
+  | DATING_NO_LOVE | GHOST_TIMEOUT | GHOSTED_EXIT |
+  | FRIENDS | UNBIND | GHOSTED_EXIT |
+  | DATING_NO_LOVE | UNBIND | GHOSTED_EXIT |
+  | OFFICIAL_LOVE | UNBIND | GHOSTED_EXIT |
+  | GHOSTED_EXIT | RESET | FRIENDS |
+  | OFFICIAL_LOVE | GHOST_TIMEOUT | OFFICIAL_LOVE |
+  | GHOSTED_EXIT | START_DATING | GHOSTED_EXIT |
+  | FRIENDS | CONFIRM_LOVE | FRIENDS |
+  | 'NOPE' | START_DATING | throws TypeError |
+
+  computeImpacts(myTries, rivalTries): (100, 1) → { myImpact: 10, rivalImpact:
+  50, emShare: 1/6 }; (500, 1) → { 50, 50, 0.5 }; (0, 0) → { 0, 0, 0 }.
+  isRedFlag(phase, myImpact, rivalImpact): ('DATING_NO_LOVE', 10, 50) → true;
+  ('DATING_NO_LOVE', 50, 50) → false; ('OFFICIAL_LOVE', 10, 50) → false;
+  ('FRIENDS', 10, 50) → false.
+  createSignal('EM', 1, () => 'id-1') → { id: 'id-1', actor: 'EM', type: 'EM',
+  steps: 1, multiplier: 0.1, impact: 0.1 } frozen; createSignal('AI_DO', 1, …)
+  impact 50; createSignal('X', 1, …) throws TypeError.
+  appendSignal(log, s) returns a new frozen array, input unchanged.
+  latestSignals(log, 10) returns at most 10, newest first.
+  sanitizeCount(valueAsNumber): NaN → 0; -3 → 0; 2.7 → 2; 42 → 42.
+
+  ### 8.5 Work breakdown structure
+  | ID | Task | File | Acceptance criteria | Commit message |
+  | --- | --- | --- | --- | --- |
+  | B-T01 | Write this WBS for the bonus | `TASK_DECOMPOSITION.md` | Part 8
+  appended. Parts 1 to 7 unchanged. 18 rows. | `docs(spec): add bonus
+  situationship task decomposition` |
+  | B-T02 | Add the bonus rules | `project-rules.md` | New section 20 appended.
+  Sections 1 to 19 unchanged except two renames in section 14: the evidence
+  folder `HW4_BonusSituationship` becomes `BONUS_Situationship`, and "(counted
+  as HW4)" is removed. | `docs(rules): add bonus fsm and ghosting rules` |
+  | B-T03 | Add the JSDoc contract |
+  `src/homeworks/BonusSituationship/situationship.contract.js` | Exactly the
+  code block of section 8.2. | `docs(bonus): add Situationship JSDoc contract`
+  |
+  | B-T04 | Model the state machine, test first |
+  `src/homeworks/BonusSituationship/situationshipModel.js`,
+  `src/homeworks/BonusSituationship/situationshipModel.test.js` | First run
+  fails. `PHASES`, `EFFORT_WEIGHTS`, `transition`, `computeImpacts`,
+  `isRedFlag`; transition, impact and red-flag rows of 8.4 pass. | `feat(fsm):
+  model HenHoKhongYeu state machine` |
+  | B-T05 | Add the signal helpers, test first |
+  `src/homeworks/BonusSituationship/situationshipModel.js`,
+  `src/homeworks/BonusSituationship/situationshipModel.test.js` |
+  `createSignal`, `appendSignal`, `latestSignals`, `sanitizeCount`; rows of 8.4
+  pass. | `feat(bonus): add immutable effort signal log helpers` |
+  | B-T06 | Add the analyzer with inputs |
+  `src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx`,
+  `src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css` |
+  Invariants 1 and 6; raw state phase, myTries, rivalTries. No effect yet. |
+  `feat(bonus): add situationship analyzer with labelled effort inputs` |
+  | B-T07 | Add the bonus view | `src/shell/resolveView.js`,
+  `src/shell/resolveView.test.js`, `src/App.jsx` | VIEWS gains `{ id: 'bonus',
+  label: 'Bonus Exercise' }`; test row; App branch. | `feat(shell): add bonus
+  view to navigation` |
+  | B-T08 | Add the derived red flag, meter and ghosting cleanup |
+  `src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx`,
+  `src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css` |
+  Invariants 3, 4, 7, 8. | `feat(ui): add derived red-flag meter & ghosting
+  cleanup` |
+  | B-T09 | Add signal buttons and the log |
+  `src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx`,
+  `src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css` |
+  Invariant 5; "Gửi tin nhắn" and "Ai đó một phần" buttons. | `feat(bonus): add
+  signal buttons and immutable log list` |
+  | B-T10 | Add transitions and unbind |
+  `src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx` | "Xác nhận yêu"
+  (only when not red flag), "Unbind & Free Memory", "Bắt đầu lại", "Bắt đầu
+  hẹn hò" buttons through transition; focus kept on a stable control. |
+  `feat(bonus): add phase transitions and unbind control` |
+  | B-T11 | Add the tokens | `src/styles/tokens.css` | Only additions, colors
+  as var() of existing tokens. | `style(bonus): add situationship tokens` |
+  | B-T12 | Add the responsive layout |
+  `src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css` | Mobile
+  first; no horizontal scroll at 375px and 320px. | `style(bonus): add
+  responsive 375px situationship layout` |
+  | B-T13 | Fix Lighthouse findings (conditional) | Files named by the finding
+  | Only if Lighthouse on `#bonus` reports an Accessibility finding. |
+  `fix(a11y): <finding>` |
+  | B-T14 | Document the bonus | `README.md` | New section after Homework 3.
+  Two existing Repository layout lines are renamed (`HW4_BonusSituationship/`
+  becomes `BONUS_Situationship/`, `(HW4, bonus)` becomes `(Bonus Exercise)`);
+  nothing else old changes. | `docs(readme): document bonus situationship` |
+  | B-T15 | Record AI failures (conditional) | `AI_FAILURE_AUDIT.md` | Only
+  real defects supplied by the author. | `docs(audit): record bonus ai
+  failures` |
+  | B-T16 | Sync the commits metric | `src/components/DeveloperCard.jsx` | Only
+  `metrics.commits`, value from the author. | `fix(ex1): sync commits metric
+  after bonus` |
+  | B-T17 | Final audit | No file changes | Checks pass; log matches Parts 1 to
+  8. | (no commit) |
+  | B-T18 | Archive bonus evidence | `docs/evidence/BONUS_Situationship/*.png`,
+  `docs/prompt_logs/BONUS_Situationship.txt` | Copied, names unchanged. |
+  `docs(evidence): archive bonus screenshots and prompt log` |
+  ===== END =====
+
+  Kiểm tra: npm run build; git diff chỉ thêm ở cuối file; Part 8 có đúng 18
+  hàng; hai commit message bắt buộc của slide 32 xuất hiện đúng từng ký tự.
+
+  Commit:
+  git add TASK_DECOMPOSITION.md
+  git commit -m "docs(spec): add bonus situationship task decomposition"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file, ran 4 shell commands (ctrl+o to expand)
+
+● Đang kiểm tra kiểu xuống dòng của file (file đang lẫn CRLF và LF) để nối Part
+  8 cho khớp.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Lines 1–756 dùng CRLF, Part 7 dùng LF; Part 8 sẽ nối bằng LF giống Part 7.
+
+  Made 1 scratchpad edit +84 (ctrl+o to expand)
+
+● Bash(node -e "const fs=require('fs');const p=fs.readFileSync(process.argv[1],'
+      utf8').replace(/\r\n/g,'\n');fs.appendFileSync('TASK_DECOMPOSITION.md',p)"
+      "C:/Users/US…)
+  ⎿  Updated TASK_DECOMPOSITION.md (+83 -0)
+       924  | H3-T25 | Sync the commits metric | `src/components/Develope
+            rCard.jsx` | Only `metrics.commits`, value from the author. |
+             `fix(ex1): sync commits metric after hw3` |
+       925  | H3-T26 | Final audit | No file changes | Checks pass; log m
+            atches Parts 1 to 7. | (no commit) |
+       926  | H3-T27 | Archive Homework 3 evidence | `docs/evidence/HW3_K
+            raftonPubgVnArena/*.png`, `docs/prompt_logs/HW3_KraftonPubgVn
+            Arena.txt` | Copied, names unchanged. | `docs(evidence): arch
+            ive hw3 screenshots and prompt log` |
+       927 +                                                             
+       928 +## Part 8. Bonus Exercise: "Hẹn Hò Nhưng Không Yêu" Situation
+           +ship FSM                                                     
+       929 +                                                             
+       930 +### 8.1 Overview                                             
+       931 +`SituationshipAnalyzer` (src/homeworks/BonusSituationship/) r
+           +eplaces the boolean soup `isDating && !isLoved && !hasTitle` 
+           +with a finite state machine of four phases. Effort is asymmet
+           +ric: Em's tries weigh 0.1, Ai đó's parts weigh 50. Scores and
+           + the red flag are derived during render from raw inputs and a
+           +n immutable signal log. While the phase is DATING_NO_LOVE, a 
+           +5-second reply timer (abortable) moves the phase to GHOSTED_E
+           +XIT; sending a message restarts it, and unmount or Unbind can
+           +cels it. Source: slides 31 and 32.                           
+       932 +                                                             
+       933 +### 8.2 Contract                                             
+       934 +```js                                                        
+       935 +/**                                                          
+       936 + * @typedef {'FRIENDS' | 'DATING_NO_LOVE' | 'OFFICIAL_LOVE' |
+           + 'GHOSTED_EXIT'} RelationshipPhase                           
+       937 + */                                                          
+       938 +                                                             
+       939 +/**                                                          
+       940 + * @typedef {'START_DATING' | 'CONFIRM_LOVE' | 'GHOST_TIMEOUT
+           +' | 'UNBIND' | 'RESET'} RelationshipEvent                    
+       941 + */                                                          
+       942 +                                                             
+       943 +/**                                                          
+       944 + * @typedef {Object} EffortSignal                            
+       945 + * @property {string} id           crypto.randomUUID()       
+       946 + * @property {'EM' | 'AI_DO'} actor                          
+       947 + * @property {'EM' | 'AI_DO'} type Same value as actor (slide
+           + 32 log entry shape).                                        
+       948 + * @property {number} steps                                  
+       949 + * @property {number} multiplier   0.1 for EM, 50 for AI_DO. 
+       950 + * @property {number} impact       steps × multiplier.       
+       951 + */                                                          
+       952 +                                                             
+       953 +export {};                                                   
+       954 +```                                                          
+       955 +                                                             
+       956 +### 8.3 Invariants                                           
+       957 +1. The UI is `<article aria-label="Hẹn Hò Nhưng Không Yêu Ana
+           +lyzer" lang="vi">` inside a section with `<h2>Bonus Exercise:
+           + Situationship FSM</h2>`, rendered only in the `bonus` view. 
+       958 +2. Phase is one state value of RelationshipPhase, changed onl
+           +y through `transition(phase, event)`. No isDating, isLoved or
+           + hasTitle anywhere.                                          
+       959 +3. Raw state: phase, myTries, rivalTries, signals. myImpact =
+           + myTries × 0.1, rivalImpact = rivalTries × 50, isRedFlag = ph
+           +ase === 'DATING_NO_LOVE' && myImpact < rivalImpact, all deriv
+           +ed during render. No effect synchronizes derived values.     
+       960 +4. One effect, deps [phase, myTries]: only in DATING_NO_LOVE 
+           +it creates an AbortController, waits 5000 ms with the abortab
+           +le delay, then applies GHOST_TIMEOUT; its cleanup aborts. Abo
+           +rtError is ignored.                                          
+       961 +5. Signals are appended with [...prev, signal]; the list show
+           +s the last 10, newest first, keyed by id.                    
+       962 +6. Both number inputs have visible labels through useId, read
+           + valueAsNumber and never store NaN or negative values.       
+       963 +7. `<output role="status" aria-live="polite">` shows '[RED-FL
+           +AG] Red Flag: Hẹn hò nhưng không yêu — Giải phóng bộ nhớ!' or
+           + '[OK] Stable', and the phase.                               
+     … 46 more lines (ctrl+o to expand)
+
+● Diff chỉ thêm 83 dòng ở cuối, 0 dòng xóa, đúng 18 hàng B-T. Giờ chạy build,
+  lint, test.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Mình đã thêm Part 8 vào cuối TASK_DECOMPOSITION.md và commit 3b96ac8 —
+  docs(spec): add bonus situationship task decomposition. Chưa push.
+
+  File thay đổi: chỉ TASK_DECOMPOSITION.md (+83 dòng, 0 dòng xóa).
+
+  Kết quả kiểm tra:
+  - git diff: chỉ có một hunk, nằm sau dòng cuối cũ (926). Part 1 đến 7 không
+    đổi. git show --stat HEAD chỉ có đúng file này.
+  - Nội dung chép nguyên văn khối BEGIN–END, giữ dấu tiếng Việt và các ký tự ×,
+    →, …, —.
+  - Part 8 có đúng 18 hàng, từ B-T01 đến B-T18.
+  - Hai commit message ở hàng B-T04 và B-T08 có mặt đúng từng ký tự, mỗi câu một
+    lần:
+    - feat(fsm): model HenHoKhongYeu state machine
+    - feat(ui): add derived red-flag meter & ghosting cleanup
+  - npm run build: thành công.
+  - npm run lint: không có lỗi. Có 1 cảnh báo set-state-in-effect trong
+    PubgMatchTelemetry.jsx; file này không thuộc task nên mình không sửa.
+  - npm test: 288/288 test đạt.
+
+  Về kiểu xuống dòng: dòng 1–756 của file dùng CRLF, còn từ cuối Part 6 đến hết
+  Part 7 dùng LF. Mình nối Part 8 bằng LF cho giống Part 7. Git có báo "LF will
+  be replaced by CRLF", nhưng do core.autocrlf=true nên đây chỉ là cảnh báo, nội
+  dung không bị ảnh hưởng.
+
+  Chưa kiểm tra:
+  - Mình không có slide 31 và 32. Hai commit message "bắt buộc" ở trên là mình
+    suy từ prompt, chưa đối chiếu với slide.
+  - Không chạy Lighthouse và không mở trình duyệt, vì task này chỉ sửa tài liệu.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 8, B-T02). Chỉ
+  làm B-T02. Tôi cho phép sửa project-rules.md; KHÔNG sửa mục 1 đến 19, NGOẠI
+  LỆ duy nhất là đổi tên bài bonus ở mục 14 (hai dòng, đổi đúng như sau, không
+  đổi gì khác):
+  (a) dòng "Homeworks live in src/homeworks/<Name>/ ...": đổi cụm "plus
+  BonusSituationship for the optional bonus (counted as HW4)." thành "plus
+  BonusSituationship for the optional Bonus Exercise."
+  (b) dòng "docs/ has two folders ...": đổi "or HW4_BonusSituationship." thành
+  "or BONUS_Situationship."
+
+  Thêm vào CUỐI "## 20. Bonus rules: finite state machine and ghosting timer"
+  (giữ nguyên chữ):
+  - A relationship phase is one state value changed only by a pure
+  transition(phase, event) function. Unknown pairs return the current phase;
+  unknown phases throw. Never model it with several booleans.
+  - Scores and flags are derived during render from raw inputs and the signal
+  log.
+  - Timers that wait for a reply use an abortable promise; the effect cleanup
+  aborts it on phase change, input change and unmount.
+  - Signal logs are append-only: [...prev, signal], each signal with id from
+  crypto.randomUUID().
+  - Vietnamese UI text is wrapped in an element with lang="vi". Only short
+  phrases from the slides are used; no song lyrics are added.
+
+  Kiểm tra: git diff --numstat project-rules.md phải có đúng 2 dòng xóa (hai
+  dòng đổi tên ở mục 14) và phần còn lại chỉ thêm ở cuối; git diff -U0 cho thấy
+  hai dòng bị sửa chỉ khác đúng các cụm trên; npm run build.
+
+  Commit:
+  git add project-rules.md
+  git commit -m "docs(rules): add bonus fsm and ghosting rules"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(node -e "
+      const fs=require('fs');let s=fs.readFileSync('project-rules.md','utf8');…)
+  ⎿  Updated project-rules.md (+9 -2)
+      115  - The root holds the three documents required by slide 34: pro
+           ject-rules.md, TASK_DECOMPOSITION.md and AI_FAILURE_AUDIT.md (
+           the last one only once a real AI defect exists), plus Agent.md
+           , README.md and the Vite config files.
+      116  - TASK_DECOMPOSITION.md is the single WBS of the whole lab, on
+           e Part per assignment. Every commit maps to exactly one row.
+      117  - A row is committed before the commit it describes. A new ass
+           ignment starts with a docs(spec) commit that adds its Part bef
+           ore any code. An unplanned change first gets its own row in a 
+           docs(spec) commit. The WBS is never edited afterwards to match
+            a commit already made.
+      118 -- In-class exercise components live in src/components/. Homewo
+          -rks live in src/homeworks/<Name>/ with the exact slide 34 name
+          -s DrumMachine, GrandPiano88, KraftonPubgVnArena, plus BonusSit
+          -uationship for the optional bonus (counted as HW4). Each folde
+          -r is created when its assignment starts.                      
+      118 +- In-class exercise components live in src/components/. Homewo
+          +rks live in src/homeworks/<Name>/ with the exact slide 34 name
+          +s DrumMachine, GrandPiano88, KraftonPubgVnArena, plus BonusSit
+          +uationship for the optional Bonus Exercise. Each folder is cre
+          +ated when its assignment starts.                              
+      119  - src/ contains source code, styles and tests only. Screenshot
+           s, logs and other evidence never go in src/.
+      120 -- docs/ has two folders: docs/evidence/<Folder>/ for screensho
+          -ts and docs/prompt_logs/<Folder>.txt for the AI prompt log, on
+          -e per assignment. <Folder> is EX1_DeveloperCard, EX2_Scientist
+          -Directory, EX3_PubgMatchTelemetry, HW1_DrumMachine, HW2_GrandP
+          -iano88, HW3_KraftonPubgVnArena or HW4_BonusSituationship. Scre
+          -enshot names follow <code>-NN-<what>.png, for example ex2-05-p
+          -rofiler-one-commit.png.                                       
+      120 +- docs/ has two folders: docs/evidence/<Folder>/ for screensho
+          +ts and docs/prompt_logs/<Folder>.txt for the AI prompt log, on
+          +e per assignment. <Folder> is EX1_DeveloperCard, EX2_Scientist
+          +Directory, EX3_PubgMatchTelemetry, HW1_DrumMachine, HW2_GrandP
+          +iano88, HW3_KraftonPubgVnArena or BONUS_Situationship. Screens
+          +hot names follow <code>-NN-<what>.png, for example ex2-05-prof
+          +iler-one-commit.png.                                          
+      121  - Evidence and prompt logs are added only in docs(evidence) co
+           mmits, copied from the author's working folders outside the re
+           po. The AI never edits, regenerates or deletes evidence files 
+           or prompt logs.
+      122  
+      123  ## 15. Exercise 2 rules: forms, lists and focus
+     ...
+      218  ### Sample data
+      219  - Numbers, prices and stock that are not official are labelled
+            "Sample data, not official PVS results or prices." in the UI 
+           and in the README.
+      220  - Money is formatted with Intl.NumberFormat('vi-VN', { style: 
+           'currency', currency: 'VND' }).
+      221 +                                                              
+      222 +## 20. Bonus rules: finite state machine and ghosting timer   
+      223 +- A relationship phase is one state value changed only by a pu
+          +re transition(phase, event) function. Unknown pairs return the
+          + current phase; unknown phases throw. Never model it with seve
+          +ral booleans.                                                 
+      224 +- Scores and flags are derived during render from raw inputs a
+          +nd the signal log.                                            
+      225 +- Timers that wait for a reply use an abortable promise; the e
+          +ffect cleanup aborts it on phase change, input change and unmo
+          +unt.                                                          
+      226 +- Signal logs are append-only: [...prev, signal], each signal 
+          +with id from crypto.randomUUID().                             
+      227 +- Vietnamese UI text is wrapped in an element with lang="vi". 
+          +Only short phrases from the slides are used; no song lyrics ar
+          +e added.                                                      
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T02 và commit bef4663 — docs(rules): add bonus fsm and
+  ghosting rules. Chưa push.
+
+  File thay đổi: chỉ project-rules.md (9 dòng thêm, 2 dòng xóa).
+
+  Kết quả kiểm tra:
+  - git diff --numstat cho 9 2. Hai dòng xóa là hai dòng đổi tên ở mục 14. Bảy
+    dòng thêm gồm hai dòng thay thế và năm dòng mới ở cuối file (tiêu đề mục 20
+    cùng bốn gạch đầu dòng…). Chính xác hơn: tiêu đề và 5 gạch đầu dòng là 6
+    dòng, cộng 1 dòng trống, cộng 2 dòng thay thế là 9.
+  - git diff -U0 --word-diff cho thấy hai dòng bị sửa chỉ khác đúng hai cụm bạn
+    nêu:
+    - "bonus (counted as HW4)." thành "Bonus Exercise."
+    - "HW4_BonusSituationship." thành "BONUS_Situationship."
+  - Mục 20 được thêm vào cuối file, đúng nguyên văn.
+  - Mục 1 đến 13 và 15 đến 19 không đổi.
+  - git show --stat HEAD chỉ liệt kê project-rules.md.
+  - npm run build: thành công.
+
+  Chưa kiểm tra:
+  - Mình không chạy npm run lint và npm test, vì task này chỉ sửa tài liệu.
+  - Git vẫn báo cảnh báo "LF will be replaced by CRLF". Đây chỉ là cảnh báo do
+    core.autocrlf=true, nội dung file không bị ảnh hưởng.
+
+> /model sonnet
+  ⎿  Set model to claude-sonnet-5-5
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 8, mục 8.2).
+  Chỉ làm B-T03.
+  Tạo src/homeworks/BonusSituationship/situationship.contract.js GIỐNG HỆT khối
+  code mục 8.2.
+  Kiểm tra: diff rỗng; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+  Commit:
+  git add src/homeworks/BonusSituationship/situationship.contract.js
+  git commit -m "docs(bonus): add Situationship JSDoc contract"
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(ls src/homeworks; ls src/homeworks/*/ | grep contract; node -e "
+      const fs=require('fs');…)
+  ⎿  Created src\homeworks\BonusSituationship\situationship.contract.js
+     (+19 -0)
+       1 +/**                                                            
+       2 + * @typedef {'FRIENDS' | 'DATING_NO_LOVE' | 'OFFICIAL_LOVE' | '
+         +GHOSTED_EXIT'} RelationshipPhase                               
+       3 + */                                                            
+       4 +                                                               
+       5 +/**                                                            
+       6 + * @typedef {'START_DATING' | 'CONFIRM_LOVE' | 'GHOST_TIMEOUT' 
+         +| 'UNBIND' | 'RESET'} RelationshipEvent                        
+       7 + */                                                            
+       8 +                                                               
+       9 +/**                                                            
+      10 + * @typedef {Object} EffortSignal                              
+      11 + * @property {string} id           crypto.randomUUID()         
+      12 + * @property {'EM' | 'AI_DO'} actor                            
+      13 + * @property {'EM' | 'AI_DO'} type Same value as actor (slide 3
+         +2 log entry shape).                                            
+      14 + * @property {number} steps                                    
+      15 + * @property {number} multiplier   0.1 for EM, 50 for AI_DO.   
+      16 + * @property {number} impact       steps × multiplier.         
+      17 + */                                                            
+      18 +                                                               
+      19 +export {};                                                     
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Mình đã làm xong B-T03 và commit b04bc00 — docs(bonus): add Situationship
+  JSDoc contract. Chưa push.
+
+  File thay đổi: chỉ situationship.contract.js
+  (src/homeworks/BonusSituationship/situationship.contract.js), file mới, 19
+  dòng.
+
+  Kết quả kiểm tra:
+  - File được trích tự động từ khối code ở mục 8.2 của TASK_DECOMPOSITION.md.
+    diff giữa khối trích và file cho kết quả rỗng.
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết (set-state-in-effect trong
+    PubgMatchTelemetry.jsx).
+  - git show --stat HEAD chỉ liệt kê file này.
+
+  Chưa kiểm tra:
+  - Mình không chạy npm test, vì file chỉ chứa JSDoc nên không có logic để test.
+  - Git vẫn báo cảnh báo "LF will be replaced by CRLF". Đây chỉ là cảnh báo do
+    core.autocrlf=true, nội dung file không bị ảnh hưởng.
+
+> Đọc Agent.md, project-rules.md (mục 20) và TASK_DECOMPOSITION.md (Part 8, mục
+  8.4, B-T04). Chỉ làm B-T04. Test trước; báo lần thất bại đầu tiên. CHƯA làm
+  helper signal (B-T05).
+
+  Phạm vi file: src/homeworks/BonusSituationship/situationshipModel.test.js rồi
+  situationshipModel.js.
+  - export const PHASES = Object.freeze(['FRIENDS', 'DATING_NO_LOVE',
+  'OFFICIAL_LOVE', 'GHOSTED_EXIT'])
+  - export const EFFORT_WEIGHTS = Object.freeze({ EM: 0.1, AI_DO: 50 })
+  - const TRANSITIONS = Object.freeze({ FRIENDS: { START_DATING:
+  'DATING_NO_LOVE', UNBIND: 'GHOSTED_EXIT' }, DATING_NO_LOVE: { CONFIRM_LOVE:
+  'OFFICIAL_LOVE', GHOST_TIMEOUT: 'GHOSTED_EXIT', UNBIND: 'GHOSTED_EXIT' },
+  OFFICIAL_LOVE: { UNBIND: 'GHOSTED_EXIT' }, GHOSTED_EXIT: { RESET: 'FRIENDS' }
+  }) (mỗi object con cũng freeze)
+  - export function transition(phase, event): phase không thuộc PHASES → throw
+  TypeError; trả TRANSITIONS[phase][event] ?? phase.
+  - export function computeImpacts(myTries, rivalTries): myImpact = myTries *
+  EFFORT_WEIGHTS.EM; rivalImpact = rivalTries * EFFORT_WEIGHTS.AI_DO; total =
+  cả hai; emShare = total === 0 ? 0 : myImpact / total.
+  - export function isRedFlag(phase, myImpact, rivalImpact) { return phase ===
+  'DATING_NO_LOVE' && myImpact < rivalImpact }
+  - Test: 11 dòng transition, 3 dòng computeImpacts (so sánh số thực sai số
+  1e-9), 4 dòng isRedFlag.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C13 không in gì.
+
+  Commit (ĐÚNG message bắt buộc của slide 32):
+  git add src/homeworks/BonusSituationship/situationshipModel.js
+  src/homeworks/BonusSituationship/situationshipModel.test.js
+  git commit -m "feat(fsm): model HenHoKhongYeu state machine"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Listed 1 directory (ctrl+o to expand)
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/BonusSi
+      tuationship && cat > situationshipModel.test.js <<'EOF'
+      import { test } from 'node:test…)
+  ⎿  Created src\homeworks\BonusSituationship\situationshipModel.test.js
+     (+71 -0)
+       1 +import { test } from 'node:test'                               
+       2 +import assert from 'node:assert/strict'                        
+       3 +import {                                                       
+       4 +  PHASES,                                                      
+       5 +  EFFORT_WEIGHTS,                                              
+       6 +  transition,                                                  
+       7 +  computeImpacts,                                              
+       8 +  isRedFlag,                                                   
+       9 +} from './situationshipModel.js'                               
+      10 +                                                               
+      11 +function near(actual, expected) {                              
+      12 +  assert.ok(Math.abs(actual - expected) < 1e-9, `expected ${exp
+         +ected}, got ${actual}`)                                        
+      13 +}                                                              
+      14 +                                                               
+      15 +test('PHASES and EFFORT_WEIGHTS are frozen constants', () => { 
+      16 +  assert.deepEqual(PHASES, ['FRIENDS', 'DATING_NO_LOVE', 'OFFIC
+         +IAL_LOVE', 'GHOSTED_EXIT'])                                    
+      17 +  assert.ok(Object.isFrozen(PHASES))                           
+      18 +  assert.deepEqual(EFFORT_WEIGHTS, { EM: 0.1, AI_DO: 50 })     
+      19 +  assert.ok(Object.isFrozen(EFFORT_WEIGHTS))                   
+      20 +})                                                             
+      21 +                                                               
+      22 +const TRANSITION_ROWS = [                                      
+      23 +  ['FRIENDS', 'START_DATING', 'DATING_NO_LOVE'],               
+      24 +  ['DATING_NO_LOVE', 'CONFIRM_LOVE', 'OFFICIAL_LOVE'],         
+      25 +  ['DATING_NO_LOVE', 'GHOST_TIMEOUT', 'GHOSTED_EXIT'],         
+      26 +  ['FRIENDS', 'UNBIND', 'GHOSTED_EXIT'],                       
+      27 +  ['DATING_NO_LOVE', 'UNBIND', 'GHOSTED_EXIT'],                
+      28 +  ['OFFICIAL_LOVE', 'UNBIND', 'GHOSTED_EXIT'],                 
+      29 +  ['GHOSTED_EXIT', 'RESET', 'FRIENDS'],                        
+      30 +  ['OFFICIAL_LOVE', 'GHOST_TIMEOUT', 'OFFICIAL_LOVE'],         
+      31 +  ['GHOSTED_EXIT', 'START_DATING', 'GHOSTED_EXIT'],            
+      32 +  ['FRIENDS', 'CONFIRM_LOVE', 'FRIENDS'],                      
+      33 +]                                                              
+      34 +                                                               
+      35 +for (const [phase, event, expected] of TRANSITION_ROWS) {      
+      36 +  test(`transition(${phase}, ${event}) -> ${expected}`, () => {
+      37 +    assert.equal(transition(phase, event), expected)           
+      38 +  })                                                           
+      39 +}                                                              
+      40 +                                                               
+     … 31 more lines (ctrl+o to expand)
+
+● Lần thất bại đầu tiên: ERR_MODULE_NOT_FOUND vì chưa có situationshipModel.js.
+  Giờ viết cài đặt.
+
+● Bash(cat > src/homeworks/BonusSituationship/situationshipModel.js <<'EOF'
+      /** @typedef {import('./situationship.contract.js').RelationshipPhase}
+      RelationshipPhase */…)
+  ⎿  Created src\homeworks\BonusSituationship\situationshipModel.js (+52
+     -0)
+       1 +/** @typedef {import('./situationship.contract.js').Relationshi
+         +pPhase} RelationshipPhase */                                   
+       2 +/** @typedef {import('./situationship.contract.js').Relationshi
+         +pEvent} RelationshipEvent */                                   
+       3 +                                                               
+       4 +export const PHASES = Object.freeze(['FRIENDS', 'DATING_NO_LOVE
+         +', 'OFFICIAL_LOVE', 'GHOSTED_EXIT'])                           
+       5 +                                                               
+       6 +export const EFFORT_WEIGHTS = Object.freeze({ EM: 0.1, AI_DO: 5
+         +0 })                                                           
+       7 +                                                               
+       8 +const TRANSITIONS = Object.freeze({                            
+       9 +  FRIENDS: Object.freeze({ START_DATING: 'DATING_NO_LOVE', UNBI
+         +ND: 'GHOSTED_EXIT' }),                                         
+      10 +  DATING_NO_LOVE: Object.freeze({                              
+      11 +    CONFIRM_LOVE: 'OFFICIAL_LOVE',                             
+      12 +    GHOST_TIMEOUT: 'GHOSTED_EXIT',                             
+      13 +    UNBIND: 'GHOSTED_EXIT',                                    
+      14 +  }),                                                          
+      15 +  OFFICIAL_LOVE: Object.freeze({ UNBIND: 'GHOSTED_EXIT' }),    
+      16 +  GHOSTED_EXIT: Object.freeze({ RESET: 'FRIENDS' }),           
+      17 +})                                                             
+      18 +                                                               
+      19 +/**                                                            
+      20 + * Pure transition function. Unknown events leave the phase unc
+         +hanged.                                                        
+      21 + * @param {RelationshipPhase} phase                            
+      22 + * @param {RelationshipEvent} event                            
+      23 + * @returns {RelationshipPhase}                                
+      24 + */                                                            
+      25 +export function transition(phase, event) {                     
+      26 +  if (!PHASES.includes(phase)) {                               
+      27 +    throw new TypeError(`Unknown relationship phase: ${String(p
+         +hase)}`)                                                       
+      28 +  }                                                            
+      29 +  return TRANSITIONS[phase][event] ?? phase                    
+      30 +}                                                              
+      31 +                                                               
+      32 +/**                                                            
+      33 + * @param {number} myTries                                     
+      34 + * @param {number} rivalTries                                  
+      35 + * @returns {{ myImpact: number, rivalImpact: number, emShare: 
+         +number }}                                                      
+      36 + */                                                            
+      37 +export function computeImpacts(myTries, rivalTries) {          
+      38 +  const myImpact = myTries * EFFORT_WEIGHTS.EM                 
+      39 +  const rivalImpact = rivalTries * EFFORT_WEIGHTS.AI_DO        
+      40 +  const total = myImpact + rivalImpact                         
+     … 12 more lines (ctrl+o to expand)
+  ⎿  (timeout 3m 20s)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T04 và commit 13ce564 — feat(fsm): model HenHoKhongYeu
+  state machine. Chưa push.
+
+  File thay đổi (2 file mới):
+  - situationshipModel.test.js
+    (src/homeworks/BonusSituationship/situationshipModel.test.js)
+  - situationshipModel.js
+    (src/homeworks/BonusSituationship/situationshipModel.js)
+
+  Lần chạy đầu thất bại (test viết trước): npm test báo ERR_MODULE_NOT_FOUND vì
+  chưa có situationshipModel.js. Tổng cộng 289 test, 288 đạt, 1 lỗi (chính là
+  file test mới).
+
+  Sau khi cài đặt:
+  - npm test: 307/307 đạt. Con số này gồm 288 test cũ và 19 test mới (1 test cho
+    hằng số, 11 dòng transition, 3 dòng computeImpacts, 4 dòng isRedFlag).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - Không có console.log, isDating, isLoved hay hasTitle trong thư mục
+    BonusSituationship.
+  - git show --stat HEAD chỉ liệt kê hai file trên.
+
+  Cần bạn xác nhận: mình không tìm thấy "C13" ở đâu trong Agent.md,
+  project-rules.md, TASK_DECOMPOSITION.md hay README.md. Mình đoán đây là kiểm
+  tra cấm console.log và các biến boolean, và đã chạy grep cho các mẫu đó (không
+  in gì). Nếu C13 là một kiểm tra khác, bạn cho mình biết để chạy lại.
+
+  Chưa kiểm tra: không chạy Lighthouse hay trình duyệt, vì chưa có UI. Cảnh báo
+  "LF will be replaced by CRLF" của Git chỉ do core.autocrlf=true.
+
+> Đọc Agent.md, project-rules.md (mục 5, 20) và TASK_DECOMPOSITION.md (Part 8,
+  mục 8.4, B-T05). Chỉ làm B-T05. Test trước.
+
+  Phạm vi file: src/homeworks/BonusSituationship/situationshipModel.js,
+  situationshipModel.test.js.
+  - export function createSignal(actor, steps, makeId = () =>
+  crypto.randomUUID()): actor không có trong EFFORT_WEIGHTS → throw TypeError;
+  multiplier = EFFORT_WEIGHTS[actor]; trả Object.freeze({ id: makeId(), actor,
+  type: actor, steps, multiplier, impact: steps * multiplier }).
+  - export function appendSignal(log, signal) { return Object.freeze([...log,
+  signal]) }
+  - export function latestSignals(log, limit = 10) { return
+  log.slice(-limit).toReversed() }
+  - export function sanitizeCount(value) { return Number.isNaN(value) ? 0 :
+  Math.max(0, Math.floor(value)) }
+  - Test: các dòng createSignal/appendSignal/latestSignals/sanitizeCount mục
+  8.4 (log đầu vào frozen để chứng minh không mutate; latestSignals với 12 phần
+  tử trả 10, phần tử đầu là phần tử cuối của log).
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/BonusSituationship/situationshipModel.js
+  src/homeworks/BonusSituationship/situationshipModel.test.js
+  git commit -m "feat(bonus): add immutable effort signal log helpers"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/BonusSi
+      tuationship && node -e "
+      const fs=require('fs');let s=fs.readFileSync('situationshipMod…)  ⎿  Updated src\homeworks\BonusSituationship\situationshipModel.test.js
+     (+84 -0)
+       6    transition,
+       7    computeImpacts,
+       8    isRedFlag,
+       9 +  createSignal,                                                
+      10 +  appendSignal,                                                
+      11 +  latestSignals,                                               
+      12 +  sanitizeCount,                                               
+      13  } from './situationshipModel.js'
+      14  
+      15  function near(actual, expected) {
+     ...
+       73      assert.equal(isRedFlag(phase, myImpact, rivalImpact), expe
+           cted)
+       74    })
+       75  }
+       76 +                                                              
+       77 +test('createSignal builds a frozen EM signal with weight 0.1',
+          + () => {                                                      
+       78 +  const signal = createSignal('EM', 1, () => 'id-1')          
+       79 +  assert.deepEqual(signal, {                                  
+       80 +    id: 'id-1',                                               
+       81 +    actor: 'EM',                                              
+       82 +    type: 'EM',                                               
+       83 +    steps: 1,                                                 
+       84 +    multiplier: 0.1,                                          
+       85 +    impact: 0.1,                                              
+       86 +  })                                                          
+       87 +  assert.ok(Object.isFrozen(signal))                          
+       88 +})                                                            
+       89 +                                                              
+       90 +test('createSignal builds an AI_DO signal with impact 50', () 
+          +=> {                                                          
+       91 +  const signal = createSignal('AI_DO', 1, () => 'id-2')       
+       92 +  assert.equal(signal.multiplier, 50)                         
+       93 +  assert.equal(signal.impact, 50)                             
+       94 +  assert.equal(signal.type, 'AI_DO')                          
+       95 +})                                                            
+       96 +                                                              
+       97 +test('createSignal uses crypto.randomUUID by default', () => {
+       98 +  const signal = createSignal('EM', 2)                        
+       99 +  assert.match(signal.id, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4
+          +}-[0-9a-f]{4}-[0-9a-f]{12}$/)                                 
+      100 +  near(signal.impact, 0.2)                                    
+      101 +})                                                            
+      102 +                                                              
+     … 53 more lines (ctrl+o to expand)
+
+● Bash làm hỏng dấu escape trong template string, nên mình khôi phục file và
+  viết lại bằng Edit.
+
+● Bash(git checkout --
+      src/homeworks/BonusSituationship/situationshipModel.test.js && git status
+      --short && tail -5 src/homeworks/BonusSituationship/situationshipModel…)
+  ⎿  Updated src\homeworks\BonusSituationship\situationshipModel.test.js
+     (+71 -155)
+  ⎿  (a git step in this command can move the working tree, so these may be
+     its changes, not edits) (ctrl+o to expand)
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src\homeworks\BonusSituationship\situationshipModel.test.js)
+  ⎿  Added 4 lines
+       6    transition,
+       7    computeImpacts,
+       8    isRedFlag,
+       9 +  createSignal,                                                
+      10 +  appendSignal,                                                
+      11 +  latestSignals,                                               
+      12 +  sanitizeCount,                                               
+      13  } from './situationshipModel.js'
+      14  
+      15  function near(actual, expected) {
+
+● Bash(cat >> src/homeworks/BonusSituationship/situationshipModel.test.js
+      <<'EOF'…)
+  ⎿  Updated src\homeworks\BonusSituationship\situationshipModel.test.js
+     (+81 -0)
+       73      assert.equal(isRedFlag(phase, myImpact, rivalImpact), expe
+           cted)
+       74    })
+       75  }
+       76 +                                                              
+       77 +test('createSignal builds a frozen EM signal with weight 0.1',
+          + () => {                                                      
+       78 +  const signal = createSignal('EM', 1, () => 'id-1')          
+       79 +  assert.deepEqual(signal, {                                  
+       80 +    id: 'id-1',                                               
+       81 +    actor: 'EM',                                              
+       82 +    type: 'EM',                                               
+       83 +    steps: 1,                                                 
+       84 +    multiplier: 0.1,                                          
+       85 +    impact: 0.1,                                              
+       86 +  })                                                          
+       87 +  assert.ok(Object.isFrozen(signal))                          
+       88 +})                                                            
+       89 +                                                              
+       90 +test('createSignal builds an AI_DO signal with impact 50', () 
+          +=> {                                                          
+       91 +  const signal = createSignal('AI_DO', 1, () => 'id-2')       
+       92 +  assert.equal(signal.multiplier, 50)                         
+       93 +  assert.equal(signal.impact, 50)                             
+       94 +  assert.equal(signal.type, 'AI_DO')                          
+       95 +})                                                            
+       96 +                                                              
+       97 +test('createSignal uses crypto.randomUUID by default', () => {
+       98 +  const signal = createSignal('EM', 2)                        
+       99 +  assert.match(signal.id, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4
+          +}-[0-9a-f]{4}-[0-9a-f]{12}$/)                                 
+      100 +  near(signal.impact, 0.2)                                    
+      101 +})                                                            
+      102 +                                                              
+      103 +test('createSignal rejects an unknown actor with TypeError', (
+          +) => {                                                        
+      104 +  assert.throws(() => createSignal('X', 1, () => 'id-3'), Type
+          +Error)                                                        
+      105 +  assert.throws(() => createSignal('toString', 1, () => 'id-4'
+          +), TypeError)                                                 
+      106 +})                                                            
+      107 +                                                              
+      108 +test('appendSignal returns a new frozen array and leaves the i
+          +nput unchanged', () => {                                      
+      109 +  const first = createSignal('EM', 1, () => 'a')              
+      110 +  const second = createSignal('AI_DO', 1, () => 'b')          
+      111 +  const log = Object.freeze([first])                          
+      112 +  const next = appendSignal(log, second)                      
+     … 44 more lines (ctrl+o to expand)
+
+● Lần thất bại đầu: does not provide an export named 'appendSignal'. Giờ cài
+  đặt.
+
+● Bash(cat >> src/homeworks/BonusSituationship/situationshipModel.js <<'EOF'…)
+  ⎿  Updated src\homeworks\BonusSituationship\situationshipModel.js (+45
+     -0)
+      50  export function isRedFlag(phase, myImpact, rivalImpact) {
+      51    return phase === 'DATING_NO_LOVE' && myImpact < rivalImpact
+      52  }
+      53 +                                                               
+      54 +/**                                                            
+      55 + * @param {'EM' | 'AI_DO'} actor                               
+      56 + * @param {number} steps                                       
+      57 + * @param {() => string} [makeId]                              
+      58 + * @returns {import('./situationship.contract.js').EffortSignal
+         +}                                                              
+      59 + */                                                            
+      60 +export function createSignal(actor, steps, makeId = () => crypt
+         +o.randomUUID()) {                                              
+      61 +  if (!Object.hasOwn(EFFORT_WEIGHTS, actor)) {                 
+      62 +    throw new TypeError(`Unknown effort actor: ${String(actor)}
+         +`)                                                             
+      63 +  }                                                            
+      64 +  const multiplier = EFFORT_WEIGHTS[actor]                     
+      65 +  return Object.freeze({                                       
+      66 +    id: makeId(),                                              
+      67 +    actor,                                                     
+      68 +    type: actor,                                               
+      69 +    steps,                                                     
+      70 +    multiplier,                                                
+      71 +    impact: steps * multiplier,                                
+      72 +  })                                                           
+      73 +}                                                              
+      74 +                                                               
+      75 +/**                                                            
+      76 + * @param {readonly import('./situationship.contract.js').Effor
+         +tSignal[]} log                                                 
+      77 + * @param {import('./situationship.contract.js').EffortSignal} 
+         +signal                                                         
+      78 + */                                                            
+      79 +export function appendSignal(log, signal) {                    
+      80 +  return Object.freeze([...log, signal])                       
+      81 +}                                                              
+      82 +                                                               
+      83 +/**                                                            
+      84 + * @param {readonly import('./situationship.contract.js').Effor
+         +tSignal[]} log                                                 
+      85 + * @param {number} [limit]                                     
+      86 + */                                                            
+      87 +export function latestSignals(log, limit = 10) {               
+      88 +  return log.slice(-limit).toReversed()                        
+      89 +}                                                              
+     … 8 more lines (ctrl+o to expand)
+  ⎿  (timeout 3m 20s)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T05 và commit 753e3cd — feat(bonus): add immutable effort
+  signal log helpers. Chưa push.
+
+  File thay đổi: situationshipModel.js
+  (src/homeworks/BonusSituationship/situationshipModel.js) (+45 dòng) và
+  situationshipModel.test.js
+  (src/homeworks/BonusSituationship/situationshipModel.test.js) (+85 dòng). git
+  show --stat HEAD chỉ liệt kê hai file này.
+
+  Lần thất bại đầu tiên (test viết trước): SyntaxError: The requested module
+  './situationshipModel.js' does not provide an export named 'appendSignal'. Lúc
+  đó 289 test, 288 đạt, 1 lỗi (file test).
+
+  Sau khi cài đặt:
+  - npm test: 318/318 đạt (11 test mới).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+
+  Hai điểm cần lưu ý:
+  - Kiểm tra actor: mình dùng Object.hasOwn(EFFORT_WEIGHTS, actor) thay vì in,
+    để các chuỗi như 'toString' không lọt qua nhờ prototype. Có thêm một assert
+    test cho trường hợp này.
+  - latestSignals(log, 0): slice(-0) tương đương slice(0) nên sẽ trả về cả log
+    thay vì mảng rỗng. Mình giữ nguyên công thức bạn đưa, và UI chỉ dùng giới
+    hạn 10 nên không ảnh hưởng. Nếu muốn chặn trường hợp này, đó là một thay đổi
+    riêng.
+
+  Chưa kiểm tra: chưa có UI nên chưa dùng thử trên trình duyệt. Cảnh báo "LF
+  will be replaced by CRLF" của Git chỉ do core.autocrlf=true.
+
+> Đọc Agent.md, project-rules.md (mục 3, 4, 20) và TASK_DECOMPOSITION.md (Part
+  8, Invariants 1, 6, B-T06). Chỉ làm B-T06. CHƯA làm output red flag, meter,
+  timer (B-T08), nút signal (B-T09), nút chuyển phase (B-T10). CHƯA sửa App.jsx
+  (B-T07).
+
+  Phạm vi file: src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx,
+  SituationshipAnalyzer.module.css (tối thiểu, chỉ token).
+  - export function SituationshipAnalyzer()
+  - const headingId = useId(); const myId = useId(); const rivalId = useId()
+  - const [phase] = useState('DATING_NO_LOVE'); const [myTries, setMyTries] =
+  useState(100); const [rivalTries, setRivalTries] = useState(1)
+    (setPhase thêm ở B-T08, state signals thêm ở B-T09: không khai báo biến
+  chưa dùng.)
+  - JSX: <section className={styles.bonus} aria-labelledby={headingId}><h2
+  id={headingId}>Bonus Exercise: Situationship FSM</h2>
+    <article className={styles.analyzer} aria-label="Hẹn Hò Nhưng Không Yêu
+  Analyzer" lang="vi">
+      <p className={styles.phase}>Phase: <strong>{phase}</strong></p>
+      <p className={styles.field}><label htmlFor={myId}>Em cố (số
+  lần)</label><input id={myId} type="number" min="0" step="1" value={myTries}
+  onChange={(e) => setMyTries(sanitizeCount(e.target.valueAsNumber))} /></p>
+      <p className={styles.field}><label htmlFor={rivalId}>Ai đó (số
+  phần)</label><input id={rivalId} type="number" min="0" step="1"
+  value={rivalTries} onChange={(e) =>
+  setRivalTries(sanitizeCount(e.target.valueAsNumber))} /></p>
+    </article></section>
+  - Không '<div', không style=.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C13.
+
+  Commit:
+  git add src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx
+  src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css
+  git commit -m "feat(bonus): add situationship analyzer with labelled effort
+  inputs"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/BonusSi
+      tuationship && cat > SituationshipAnalyzer.jsx <<'EOF'
+      import { useId, useState } from…)
+  ⎿  Created src\homeworks\BonusSituationship\SituationshipAnalyzer.jsx
+     (+45 -0)
+       1 +import { useId, useState } from 'react'                        
+       2 +import { sanitizeCount } from './situationshipModel.js'        
+       3 +import styles from './SituationshipAnalyzer.module.css'        
+       4 +                                                               
+       5 +export function SituationshipAnalyzer() {                      
+       6 +  const headingId = useId()                                    
+       7 +  const myId = useId()                                         
+       8 +  const rivalId = useId()                                      
+       9 +  const [phase] = useState('DATING_NO_LOVE')                   
+      10 +  const [myTries, setMyTries] = useState(100)                  
+      11 +  const [rivalTries, setRivalTries] = useState(1)              
+      12 +                                                               
+      13 +  return (                                                     
+      14 +    <section className={styles.bonus} aria-labelledby={headingI
+         +d}>                                                            
+      15 +      <h2 id={headingId}>Bonus Exercise: Situationship FSM</h2>
+      16 +      <article className={styles.analyzer} aria-label="Hẹn Hò N
+         +hưng Không Yêu Analyzer" lang="vi">                            
+      17 +        <p className={styles.phase}>                           
+      18 +          Phase: <strong>{phase}</strong>                      
+      19 +        </p>                                                   
+      20 +        <p className={styles.field}>                           
+      21 +          <label htmlFor={myId}>Em cố (số lần)</label>         
+      22 +          <input                                               
+      23 +            id={myId}                                          
+      24 +            type="number"                                      
+      25 +            min="0"                                            
+      26 +            step="1"                                           
+      27 +            value={myTries}                                    
+      28 +            onChange={(e) => setMyTries(sanitizeCount(e.target.
+         +valueAsNumber))}                                               
+      29 +          />                                                   
+      30 +        </p>                                                   
+      31 +        <p className={styles.field}>                           
+      32 +          <label htmlFor={rivalId}>Ai đó (số phần)</label>     
+      33 +          <input                                               
+      34 +            id={rivalId}                                       
+      35 +            type="number"                                      
+      36 +            min="0"                                            
+      37 +            step="1"                                           
+      38 +            value={rivalTries}                                 
+      39 +            onChange={(e) => setRivalTries(sanitizeCount(e.targ
+         +et.valueAsNumber))}                                            
+      40 +          />                                                   
+     … 5 more lines (ctrl+o to expand)
+  ⎿  Created
+     src\homeworks\BonusSituationship\SituationshipAnalyzer.module.css (+26
+     -0)
+       1 +.bonus {                                                       
+       2 +  display: grid;                                               
+       3 +  gap: var(--space-4);                                         
+       4 +  min-width: 0;                                                
+       5 +  color: var(--color-text);                                    
+       6 +}                                                              
+       7 +                                                               
+       8 +.analyzer {                                                    
+       9 +  display: grid;                                               
+      10 +  gap: var(--space-3);                                         
+      11 +  min-width: 0;                                                
+      12 +  padding: var(--space-4);                                     
+      13 +  border: var(--control-border-width) solid var(--color-border)
+         +;                                                              
+      14 +  border-radius: var(--radius-lg);                             
+      15 +  background-color: var(--color-card-bg);                      
+      16 +}                                                              
+      17 +                                                               
+      18 +.phase {                                                       
+      19 +  margin: 0;                                                   
+      20 +}                                                              
+      21 +                                                               
+      22 +.field {                                                       
+      23 +  display: grid;                                               
+      24 +  gap: var(--space-1);                                         
+      25 +  margin: 0;                                                   
+      26 +}                                                              
+  ⎿  (timeout 3m 20s)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T06 và commit b321b31 — feat(bonus): add situationship
+  analyzer with labelled effort inputs. Chưa push.
+
+  File thay đổi (2 file mới): SituationshipAnalyzer.jsx
+  (src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx) và
+  SituationshipAnalyzer.module.css
+  (src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css). git show
+  --stat HEAD chỉ liệt kê hai file này.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 318/318 đạt. Không thêm test mới vì task này chỉ có JSX và CSS.
+  - npm run lint: exit 0, đúng 1 warning đã biết (set-state-in-effect ở
+    PubgMatchTelemetry.jsx:17).
+  - Tìm trong .jsx và .css: không có <div, http://, style=, console.log,
+    isDating, isLoved, hasTitle, <b> hay <i>.
+  - Mã đúng như bạn mô tả: useId cho heading và hai input, phase chỉ đọc, hai
+    input đọc valueAsNumber qua sanitizeCount. CSS chỉ dùng token đã có và không
+    thêm token mới.
+
+  Chưa kiểm tra:
+  - Mình không tìm thấy định nghĩa của C1', C3 và C13 trong tài liệu nào của
+    repo. Mình thay bằng grep các mẫu bị cấm ở trên (<div, style=, console.log,
+    boolean cũ…). Nếu ba mã đó là các kiểm tra cụ thể khác, bạn gửi lại nội dung
+    để mình chạy lại.
+  - Chưa mở trình duyệt. Component chưa được gắn vào App.jsx (việc của B-T07),
+    nên chưa xem được trên màn hình và chưa đo Lighthouse hay độ rộng 375px.
+  - Cảnh báo "LF will be replaced by CRLF" của Git chỉ do core.autocrlf=true.
+
+> Đọc Agent.md, project-rules.md (mục 17 App shell) và TASK_DECOMPOSITION.md
+  (Part 8, B-T07). Chỉ làm B-T07. Test trước.
+  Phạm vi: src/shell/resolveView.js, src/shell/resolveView.test.js,
+  src/App.jsx.
+  - VIEWS thêm Object.freeze({ id: 'bonus', label: 'Bonus Exercise' }); test
+  '#bonus' → 'bonus', VIEWS.length = số view hiện có + 1 (báo con số).
+  - App: if (view === 'bonus') return <SituationshipAnalyzer />.
+    Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning
+  đã biết.
+    Commit:
+    git add src/shell/resolveView.js src/shell/resolveView.test.js src/App.jsx
+    git commit -m "feat(shell): add bonus view to navigation"
+    Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(node -e "
+      const fs=require('fs');const f='src/shell/resolveView.test.js';let
+      s=fs.readFileSync(f,'utf8');…)
+  ⎿  Updated src\shell\resolveView.test.js (+4 -2)
+       9    ['#hw1', 'hw1'],
+      10    ['#hw2', 'hw2'],
+      11    ['#hw3', 'hw3'],
+      12 +  ['#bonus', 'bonus'],                                         
+      13    ['hw1', 'hw1'],
+      14    ['#HW1', 'exercises'],
+      15    ['#hw9', 'exercises'],
+     ...
+      33    assert.equal(new Set(ids).size, ids.length)
+      34  })
+      35  
+      35 -test('VIEWS lists exercises, hw1, hw2 and hw3 in that order', (
+         -) => {                                                         
+      36 -  assert.equal(VIEWS.length, 4)                                
+      36 +test('VIEWS lists exercises, hw1, hw2, hw3 and bonus in that or
+         +der', () => {                                                  
+      37 +  assert.equal(VIEWS.length, 5)                                
+      38    assert.deepEqual(
+      39      VIEWS.map((v) => [v.id, v.label]),
+      40      [
+     ...
+      42        ['hw1', 'HW1 Drum Kit'],
+      43        ['hw2', 'HW2 Piano 88'],
+      44        ['hw3', 'HW3 PUBG VN Arena'],
+      45 +      ['bonus', 'Bonus Exercise'],                             
+      46      ],
+      47    )
+      48  })
+
+● Hai test thất bại như mong đợi. Giờ cài đặt.
+
+● Bash(node -e "
+      const fs=require('fs');…)
+  ⎿  Updated src\App.jsx (+2 -0)
+       4  import { DrumMachine } from './homeworks/DrumMachine/DrumMachin
+          e.jsx'
+       5  import { GrandPiano88 } from './homeworks/GrandPiano88/GrandPia
+          no88.jsx'
+       6  import { KraftonPubgVnArena } from './homeworks/KraftonPubgVnAr
+          ena/KraftonPubgVnArena.jsx'
+       7 +import { SituationshipAnalyzer } from './homeworks/BonusSituati
+         +onship/SituationshipAnalyzer.jsx'                              
+       8  import { SiteHeader } from './shell/SiteHeader.jsx'
+       9  import { useHashView } from './shell/useHashView.js'
+      10  
+     ...
+      12    if (view === 'hw1') return <DrumMachine />
+      13    if (view === 'hw2') return <GrandPiano88 />
+      14    if (view === 'hw3') return <KraftonPubgVnArena />
+      15 +  if (view === 'bonus') return <SituationshipAnalyzer />       
+      16    return (
+      17      <>
+      18        <DeveloperCard />
+  ⎿  Updated src\shell\resolveView.js (+1 -0)
+      3    Object.freeze({ id: 'hw1', label: 'HW1 Drum Kit' }),
+      4    Object.freeze({ id: 'hw2', label: 'HW2 Piano 88' }),
+      5    Object.freeze({ id: 'hw3', label: 'HW3 PUBG VN Arena' }),
+      6 +  Object.freeze({ id: 'bonus', label: 'Bonus Exercise' }),      
+      7  ])
+      8  
+      9  /**
+  ⎿  (timeout 3m 20s)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T07 và commit 66589a8 — feat(shell): add bonus view to
+  navigation. Chưa push.
+
+  File thay đổi: resolveView.js (src/shell/resolveView.js) (+1),
+  resolveView.test.js (src/shell/resolveView.test.js) (+4, −2), App.jsx
+  (src/App.jsx) (+2). git show --stat HEAD chỉ liệt kê ba file này.
+
+  Số view: trước đó có 4 view (exercises, hw1, hw2, hw3), giờ là 5 với { id:
+  'bonus', label: 'Bonus Exercise' }.
+
+  Test viết trước: sau khi sửa test, npm test có 2 test thất bại như mong đợi
+  (319 test, 317 đạt):
+  - resolveView("#bonus") -> bonus
+  - Test thứ tự VIEWS (kỳ vọng length 5 và có hàng bonus)
+
+  Test cũ khẳng định VIEWS.length bằng 4 nên mình phải sửa nó thành 5 và đổi tên
+  cho đúng. Đây là bước bắt buộc của việc thêm view, không phải thay đổi ngoài
+  phạm vi.
+
+  Sau khi cài đặt:
+  - npm test: 319/319 đạt.
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - Diff của App.jsx chỉ gồm một dòng import và một dòng if (view === 'bonus').
+
+  Chưa kiểm tra:
+  - Mình không mở trình duyệt để xem #bonus hiển thị thật và không kiểm tra liên
+    kết nav. Mình chỉ xác nhận build, lint và logic resolveView bằng test. Mình
+    cũng chưa mở SiteHeader.jsx để xác nhận nó tự đọc VIEWS (grep hw3 trong
+    SiteHeader.jsx và useHashView.js không có kết quả, nên có vẻ nó không
+    hardcode).
+  - Cảnh báo "LF will be replaced by CRLF" của Git chỉ do core.autocrlf=true.
+
+> Đọc Agent.md, project-rules.md (mục 5, 6, 20) và TASK_DECOMPOSITION.md (Part
+  8, Invariants 3, 4, 7, 8, B-T08). Chỉ làm B-T08.
+
+  Phạm vi file: src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx,
+  SituationshipAnalyzer.module.css.
+  - Đổi const [phase] = useState(...) thành const [phase, setPhase] =
+  useState('DATING_NO_LOVE').
+  - Derived khi render: const { myImpact, rivalImpact, emShare } =
+  computeImpacts(myTries, rivalTries); const redFlag = isRedFlag(phase,
+  myImpact, rivalImpact)
+  - Effect (theo slide 32, thêm AbortController theo slide 31):
+    useEffect(() => {
+      if (phase !== 'DATING_NO_LOVE') return undefined
+      const controller = new AbortController()
+      delay(5000, controller.signal)
+    .then(() => setPhase((p) => transition(p, 'GHOST_TIMEOUT')))
+    .catch((err) => { if (err.name !== 'AbortError') throw err })
+      return () => controller.abort()
+    }, [phase, myTries])
+    (delay import từ '../GrandPiano88/replay.js'. myTries có trong deps để mỗi
+  lần "cố" thêm thì đặt lại hạn 5 giây, như slide 32.)
+  - JSX thêm (trong article, dưới phase):
+    <output className={redFlag ? styles.redFlag : styles.stable} role="status"
+  aria-live="polite">{redFlag ? '[RED-FLAG] Red Flag: Hẹn hò nhưng không yêu —
+  Giải phóng bộ nhớ!' : '[OK] Stable'}</output>
+    <p className={styles.meterRow}><label htmlFor={meterId}>Em's share of
+  effort impact</label> <meter id={meterId} min={0} max={1} low={0.5}
+  optimum={1} value={emShare} /> <span>Em: {myImpact.toFixed(1)} · Ai đó:
+  {rivalImpact.toFixed(1)}</span></p>
+    (meterId = useId(). Nhãn tiếng Anh nằm trong article lang="vi": bọc nhãn và
+  span trong <span lang="en"> cho đúng ngôn ngữ.)
+  - Nếu lint báo set-state-in-effect hoặc warning mới thì DỪNG và báo (setPhase
+  nằm trong callback .then nên không phải đồng bộ).
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C13; C14 ≥ 2 dòng.
+
+  Commit (ĐÚNG message bắt buộc của slide 32):
+  git add src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx
+  src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css
+  git commit -m "feat(ui): add derived red-flag meter & ghosting cleanup"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/BonusSi
+      tuationship && node -e "
+      const fs=require('fs');let s=fs.readFileSync('SituationshipAna…)
+  ⎿  Updated src\homeworks\BonusSituationship\SituationshipAnalyzer.jsx
+     (+39 -3)
+       1 -import { useId, useState } from 'react'                        
+       2 -import { sanitizeCount } from './situationshipModel.js'        
+       1 +import { useEffect, useId, useState } from 'react'             
+       2 +import { delay } from '../GrandPiano88/replay.js'              
+       3 +import { computeImpacts, isRedFlag, sanitizeCount, transition }
+         + from './situationshipModel.js'                                
+       4  import styles from './SituationshipAnalyzer.module.css'
+       5  
+       6 +const GHOST_DELAY_MS = 5000                                    
+       7 +                                                               
+       8  export function SituationshipAnalyzer() {
+       9    const headingId = useId()
+      10    const myId = useId()
+      11    const rivalId = useId()
+       9 -  const [phase] = useState('DATING_NO_LOVE')                   
+      12 +  const meterId = useId()                                      
+      13 +  const [phase, setPhase] = useState('DATING_NO_LOVE')         
+      14    const [myTries, setMyTries] = useState(100)
+      15    const [rivalTries, setRivalTries] = useState(1)
+      16  
+      17 +  const { myImpact, rivalImpact, emShare } = computeImpacts(myT
+         +ries, rivalTries)                                              
+      18 +  const redFlag = isRedFlag(phase, myImpact, rivalImpact)      
+      19 +                                                               
+      20 +  useEffect(() => {                                            
+      21 +    if (phase !== 'DATING_NO_LOVE') return undefined           
+      22 +    const controller = new AbortController()                   
+      23 +    delay(GHOST_DELAY_MS, controller.signal)                   
+      24 +      .then(() => setPhase((p) => transition(p, 'GHOST_TIMEOUT'
+         +)))                                                            
+      25 +      .catch((err) => {                                        
+      26 +        if (err.name !== 'AbortError') throw err               
+      27 +      })                                                       
+      28 +    return () => controller.abort()                            
+      29 +  }, [phase, myTries])                                         
+      30 +                                                               
+      31    return (
+      32      <section className={styles.bonus} aria-labelledby={headingI
+          d}>
+      33        <h2 id={headingId}>Bonus Exercise: Situationship FSM</h2>
+     ...
+      35          <p className={styles.phase}>
+      36            Phase: <strong>{phase}</strong>
+      37          </p>
+      38 +        <output                                                
+     … 20 more lines (ctrl+o to expand)
+  ⎿  Updated
+     src\homeworks\BonusSituationship\SituationshipAnalyzer.module.css (+29
+     -0)
+      24    gap: var(--space-1);
+      25    margin: 0;
+      26  }
+      27 +                                                               
+      28 +.stable,                                                       
+      29 +.redFlag {                                                     
+      30 +  display: block;                                              
+      31 +  padding: var(--space-3);                                     
+      32 +  border: var(--control-border-width) solid var(--color-border)
+         +;                                                              
+      33 +  border-radius: var(--radius-md);                             
+      34 +  overflow-wrap: anywhere;                                     
+      35 +}                                                              
+      36 +                                                               
+      37 +.stable {                                                      
+      38 +  background-color: var(--color-tier-core-bg);                 
+      39 +  color: var(--color-tier-core-text);                          
+      40 +}                                                              
+      41 +                                                               
+      42 +.redFlag {                                                     
+      43 +  border-width: var(--focus-ring-width);                       
+      44 +  background-color: var(--color-tier-awareness-bg);            
+      45 +  color: var(--color-tier-awareness-text);                     
+      46 +  font-weight: 700;                                            
+      47 +}                                                              
+      48 +                                                               
+      49 +.meterRow {                                                    
+      50 +  display: flex;                                               
+      51 +  flex-wrap: wrap;                                             
+      52 +  align-items: center;                                         
+      53 +  gap: var(--space-2);                                         
+      54 +  margin: 0;                                                   
+      55 +}                                                              
+  ⎿  (timeout 3m 20s)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Mình đã làm xong B-T08 và commit bcd7c1e — feat(ui): add derived red-flag
+  meter & ghosting cleanup. Chưa push.
+
+  File thay đổi: SituationshipAnalyzer.jsx
+  (src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx) (+42, −3) và
+  SituationshipAnalyzer.module.css
+  (src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css) (+29). git
+  show --stat HEAD chỉ liệt kê hai file này.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 319/319 đạt.
+  - npm run lint: exit 0, đúng 1 warning đã biết (set-state-in-effect ở
+    PubgMatchTelemetry.jsx:17). Không có warning mới nào, kể cả với deps [phase,
+    myTries] và setPhase nằm trong .then.
+  - Grep không thấy <div, style=, console.log, isDating, isLoved, hasTitle.
+  - redFlag, myImpact, rivalImpact, emShare đều được tính khi render. Không có
+    useState hay effect nào đồng bộ giá trị dẫn xuất.
+  - Effect có đủ AbortController, controller.abort() trong cleanup và bỏ qua
+    AbortError.
+  - Nhãn và span tiếng Anh của meter được bọc lang="en" như bạn dặn.
+
+  Chưa kiểm tra:
+  - C13 và C14: các mã này không có định nghĩa trong tài liệu repo. Mình đoán
+    C13 là grep các mẫu bị cấm ở trên (không in gì). Với C14 "≥ 2 dòng", mình
+    đoán là số dòng liên quan đến abort: có 3 dòng (new AbortController(), kiểm
+    tra AbortError, controller.abort()). Nếu bạn định nghĩa khác, hãy gửi lại để
+    mình chạy lại.
+  - Hành vi thật: chưa mở trình duyệt, nên chưa thấy 5 giây sau phase chuyển
+    sang GHOSTED_EXIT, và chưa xem meter, output ở 375px. Chưa kiểm tra trong
+    React Profiler.
+  - Màu của .stable và .redFlag: mình dùng lại token có sẵn (tier-core và
+    tier-awareness), chưa đo độ tương phản. Token riêng cho bonus thuộc B-T11.
+  - Hành vi cần biết: trạng thái khởi tạo là DATING_NO_LOVE. Hiện chưa có nút
+    chuyển phase (B-T10), nên khi hết 5 giây phase về GHOSTED_EXIT và không có
+    cách quay lại ngoài tải lại trang. Đây là đúng phạm vi của task này.
+
+> Đọc Agent.md, project-rules.md (mục 5, 20) và TASK_DECOMPOSITION.md (Part 8,
+  Invariant 5, B-T09). Chỉ làm B-T09.
+
+  Phạm vi file: src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx,
+  SituationshipAnalyzer.module.css.
+  - Thêm const [signals, setSignals] = useState(() => Object.freeze([]))
+  - function sendMessage() { setSignals((prev) => appendSignal(prev,
+  createSignal('EM', 1))); setMyTries((t) => t + 1) }
+  - function rivalPart() { setSignals((prev) => appendSignal(prev,
+  createSignal('AI_DO', 1))); setRivalTries((t) => t + 1) }
+  - Nút: <button type="button" onClick={sendMessage}>Gửi tin nhắn</button>
+  <button type="button" onClick={rivalPart}>Ai đó một phần</button> (trong <p
+  className={styles.actions}>)
+  - Log: <h3>Signal log</h3><ol className={styles.log} aria-label="Last 10
+  signals, newest first">{latestSignals(signals).map((s) => <li
+  key={s.id}>{s.actor === 'EM' ? 'Em cố trăm lần' : 'Ai đó một phần'}:
+  +{s.impact.toFixed(1)}</li>)}</ol>  (nếu rỗng: <p>Chưa có tín hiệu.</p>)
+  - Không useEffect mới.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3.
+
+  Commit:
+  git add src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx
+  src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css
+  git commit -m "feat(bonus): add signal buttons and immutable log list"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/BonusSi
+      tuationship && node -e "
+      const fs=require('fs');let s=fs.readFileSync('SituationshipAna…)
+  ⎿  Updated src\homeworks\BonusSituationship\SituationshipAnalyzer.jsx
+     (+42 -1)
+       1  import { useEffect, useId, useState } from 'react'
+       2  import { delay } from '../GrandPiano88/replay.js'
+       3 -import { computeImpacts, isRedFlag, sanitizeCount, transition }
+         - from './situationshipModel.js'                                
+       3 +import {                                                       
+       4 +  appendSignal,                                                
+       5 +  computeImpacts,                                              
+       6 +  createSignal,                                                
+       7 +  isRedFlag,                                                   
+       8 +  latestSignals,                                               
+       9 +  sanitizeCount,                                               
+      10 +  transition,                                                  
+      11 +} from './situationshipModel.js'                               
+      12  import styles from './SituationshipAnalyzer.module.css'
+      13  
+      14  const GHOST_DELAY_MS = 5000
+     ...
+      21    const [phase, setPhase] = useState('DATING_NO_LOVE')
+      22    const [myTries, setMyTries] = useState(100)
+      23    const [rivalTries, setRivalTries] = useState(1)
+      24 +  const [signals, setSignals] = useState(() => Object.freeze([]
+         +))                                                             
+      25  
+      26    const { myImpact, rivalImpact, emShare } = computeImpacts(myT
+          ries, rivalTries)
+      27    const redFlag = isRedFlag(phase, myImpact, rivalImpact)
+     ...
+      37      return () => controller.abort()
+      38    }, [phase, myTries])
+      39  
+      40 +  function sendMessage() {                                     
+      41 +    setSignals((prev) => appendSignal(prev, createSignal('EM', 
+         +1)))                                                           
+      42 +    setMyTries((t) => t + 1)                                   
+      43 +  }                                                            
+      44 +                                                               
+      45 +  function rivalPart() {                                       
+      46 +    setSignals((prev) => appendSignal(prev, createSignal('AI_DO
+         +', 1)))                                                        
+      47 +    setRivalTries((t) => t + 1)                                
+      48 +  }                                                            
+      49 +                                                               
+      50 +  const recent = latestSignals(signals)                        
+      51 +                                                               
+      52    return (
+      53      <section className={styles.bonus} aria-labelledby={headingI
+          d}>
+      54        <h2 id={headingId}>Bonus Exercise: Situationship FSM</h2>
+     … 26 more lines (ctrl+o to expand)
+  ⎿  Updated
+     src\homeworks\BonusSituationship\SituationshipAnalyzer.module.css (+13
+     -0)
+      53    gap: var(--space-2);
+      54    margin: 0;
+      55  }
+      56 +                                                               
+      57 +.actions {                                                     
+      58 +  display: flex;                                               
+      59 +  flex-wrap: wrap;                                             
+      60 +  gap: var(--space-2);                                         
+      61 +  margin: 0;                                                   
+      62 +}                                                              
+      63 +                                                               
+      64 +.log {                                                         
+      65 +  margin: 0;                                                   
+      66 +  padding-left: var(--space-5);                                
+      67 +  overflow-wrap: anywhere;                                     
+      68 +}                                                              
+  ⎿  (timeout 3m 20s)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T09 và commit 3d79f73 — feat(bonus): add signal buttons and
+  immutable log list. Chưa push.
+
+  File thay đổi: SituationshipAnalyzer.jsx
+  (src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx) (+43, −1) và
+  SituationshipAnalyzer.module.css
+  (src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css) (+13). git
+  show --stat HEAD chỉ liệt kê hai file này.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 319/319 đạt. Không có test mới, vì task này chỉ thêm UI.
+  - npm run lint: exit 0, đúng 1 warning đã biết (set-state-in-effect ở
+    PubgMatchTelemetry.jsx:17).
+  - Grep không thấy <div, style=, console.log, isDating, isLoved, hasTitle.
+  - Chỉ còn 1 useEffect( trong file, tức là không thêm effect mới.
+  - Log nối bằng appendSignal ([...prev, signal]), hiển thị 10 mục mới nhất xếp
+    theo thứ tự mới nhất trước, key={s.id}. Khi rỗng hiện "Chưa có tín hiệu."
+
+  Chưa kiểm tra:
+  - C1' và C3 không có định nghĩa trong tài liệu repo. Mình thay bằng grep các
+    mẫu cấm ở trên. Nếu hai mã đó là kiểm tra khác, bạn gửi lại nội dung để mình
+    chạy.
+  - Chưa mở trình duyệt, nên chưa bấm thử hai nút, chưa xem log ở 375px, và chưa
+    xem việc bấm "Gửi tin nhắn" có đặt lại hạn 5 giây như thiết kế (về mặt
+    code, myTries nằm trong deps của effect nên sẽ đặt lại). Chưa kiểm tra bằng
+    React Profiler.
+
+  Một điểm cần biết: createSignal được gọi bên trong hàm cập nhật của
+  setSignals. Trong StrictMode hàm này chạy hai lần, nên có thể sinh hai UUID
+  nhưng chỉ một cái được dùng, không ảnh hưởng kết quả. Nếu bạn muốn hàm cập
+  nhật thuần tuý hơn, có thể tạo signal ở ngoài rồi truyền vào. Mình giữ nguyên
+  theo mô tả của bạn.
+> Đọc Agent.md, project-rules.md (mục 16 focus, 20) và TASK_DECOMPOSITION.md
+  (Part 8, B-T10). Chỉ làm B-T10.
+
+  Phạm vi file: src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx.
+  - function apply(event) { setPhase((p) => transition(p, event)) }
+  - Nút (trong <p className={styles.actions}>), chỉ hiện khi transition có tác
+  dụng:
+    phase 'FRIENDS': "Bắt đầu hẹn hò" → apply('START_DATING')
+    phase 'DATING_NO_LOVE' và !redFlag: "Xác nhận yêu" → apply('CONFIRM_LOVE')
+    phase khác 'GHOSTED_EXIT': "Unbind & Free Memory" → apply('UNBIND')  (nhãn
+  đúng slide 32, bọc <span lang="en">)
+    phase 'GHOSTED_EXIT': "Bắt đầu lại" → apply('RESET')
+  - Focus: nút vừa bấm có thể biến mất. Trong cùng handler, chuyển focus tới ô
+  "Em cố (số lần)" (ref) — không dùng useEffect. Nếu lint báo react(refs) thì
+  dừng và báo.
+  - Không sửa effect của B-T08 (đổi phase → cleanup tự abort timer).
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C13, C14.
+
+  Commit:
+  git add src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx
+  git commit -m "feat(bonus): add phase transitions and unbind control"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd /c/Users/USER/Documents/Lab3_WEB_TH/lab3-react19/src/homeworks/BonusSi
+      tuationship && node -e "
+      const fs=require('fs');let s=fs.readFileSync('SituationshipAna…)
+  ⎿  Updated src\homeworks\BonusSituationship\SituationshipAnalyzer.jsx
+     (+28 -1)
+      1 -import { useEffect, useId, useState } from 'react'              
+      1 +import { useEffect, useId, useRef, useState } from 'react'      
+      2  import { delay } from '../GrandPiano88/replay.js'
+      3  import {
+      4    appendSignal,
+     ...
+      18    const myId = useId()
+      19    const rivalId = useId()
+      20    const meterId = useId()
+      21 +  const myInputRef = useRef(null)                              
+      22    const [phase, setPhase] = useState('DATING_NO_LOVE')
+      23    const [myTries, setMyTries] = useState(100)
+      24    const [rivalTries, setRivalTries] = useState(1)
+     ...
+      38      return () => controller.abort()
+      39    }, [phase, myTries])
+      40  
+      41 +  function apply(event) {                                      
+      42 +    setPhase((p) => transition(p, event))                      
+      43 +    myInputRef.current?.focus()                                
+      44 +  }                                                            
+      45 +                                                               
+      46    function sendMessage() {
+      47      setSignals((prev) => appendSignal(prev, createSignal('EM', 
+          1)))
+      48      setMyTries((t) => t + 1)
+     ...
+      84            <label htmlFor={myId}>Em cố (số lần)</label>
+      85            <input
+      86              id={myId}
+      87 +            ref={myInputRef}                                   
+      88              type="number"
+      89              min="0"
+      90              step="1"
+     ...
+      110            <button type="button" onClick={rivalPart}>
+      111              Ai đó một phần
+      112            </button>
+      113 +          {phase === 'FRIENDS' && (                           
+      114 +            <button type="button" onClick={() => apply('START_
+          +DATING')}>                                                    
+      115 +              Bắt đầu hẹn hò                                  
+      116 +            </button>                                         
+      117 +          )}                                                  
+      118 +          {phase === 'DATING_NO_LOVE' && !redFlag && (        
+      119 +            <button type="button" onClick={() => apply('CONFIR
+          +M_LOVE')}>                                                    
+     … 16 more lines (ctrl+o to expand)
+  ⎿  (timeout 3m 20s)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T10 và commit 8aec5e5 — feat(bonus): add phase transitions
+  and unbind control. Chưa push.
+
+  File thay đổi: chỉ SituationshipAnalyzer.jsx
+  (src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx) (+28, −1). git
+  show --stat HEAD chỉ liệt kê file này.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 319/319 đạt.
+  - npm run lint: exit 0, đúng 1 warning đã biết. Lint không báo react(refs),
+    nên không phải dừng.
+  - Grep không thấy <div, style=, console.log, isDating, isLoved, hasTitle.
+  - Vẫn chỉ 1 useEffect( và effect của B-T08 không bị sửa. Cả ba dòng abort vẫn
+    còn: new AbortController(), kiểm tra AbortError, controller.abort().
+
+  Hành vi theo code:
+  - apply(event) gọi setPhase((p) => transition(p, event)) rồi
+    myInputRef.current?.focus() trong cùng handler, không dùng effect.
+  - Bốn nút hiện theo điều kiện bạn nêu. "Unbind & Free Memory" nằm trong <span
+    lang="en">.
+
+  Chưa kiểm tra:
+  - C1', C3, C13, C14: các mã này không có định nghĩa trong tài liệu repo. Mình
+    thay bằng grep mẫu cấm và đếm dòng abort ở trên. Nếu chúng là kiểm tra khác,
+    bạn gửi lại nội dung để mình chạy.
+  - Trình duyệt: chưa mở trình duyệt, nên chưa bấm thử từng nút, chưa xác nhận
+    focus thật sự về ô "Em cố (số lần)", và chưa xem timer bị hủy khi bấm
+    Unbind.
+  - Điều cần bạn xem: khi phase là OFFICIAL_LOVE, chỉ còn nút "Unbind & Free
+    Memory"; từ GHOSTED_EXIT có "Bắt đầu lại" để về FRIENDS, rồi "Bắt đầu hẹn
+    hò" để vào lại DATING_NO_LOVE. Điều này khớp bảng chuyển trạng thái 8.4.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 8,
+  B-T11). Chỉ làm B-T11.
+  Phạm vi: src/styles/tokens.css, chỉ THÊM nhóm "/* Situationship (Bonus) */":
+    --color-red-flag-bg: var(--color-skeleton);
+    --color-red-flag-border: var(--color-alert-border);
+    --color-stable-bg: var(--color-tier-core-bg);
+    --color-stable-text: var(--color-tier-core-text);
+  Báo tương phản chữ thường (--color-text) trên --color-red-flag-bg và
+  --color-stable-text trên --color-stable-bg (>= 4.5:1);
+  --color-red-flag-border trên --color-card-bg (>= 3:1).
+  Kiểm tra: npm run build; C4 không in gì.
+  Commit:
+  git add src/styles/tokens.css
+  git commit -m "style(bonus): add situationship tokens"
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(node -e "
+      const fs=require('fs');let
+      s=fs.readFileSync('src/styles/tokens.css','utf8');…)
+  ⎿  Updated src\styles\tokens.css (+6 -0)
+      81    --color-notice-text: var(--color-tier-awareness-text);
+      82    --color-claim-bg: var(--color-accent);
+      83    --color-claim-text: var(--color-card-bg);
+      84 +                                                               
+      85 +  /* Situationship (Bonus) */                                  
+      86 +  --color-red-flag-bg: var(--color-skeleton);                  
+      87 +  --color-red-flag-border: var(--color-alert-border);          
+      88 +  --color-stable-bg: var(--color-tier-core-bg);                
+      89 +  --color-stable-text: var(--color-tier-core-text);            
+      90  }
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T11 và commit f17575e — style(bonus): add situationship
+  tokens. Chưa push.
+
+  File thay đổi: chỉ tokens.css (src/styles/tokens.css) (+6, −0): một dòng
+  trống, dòng chú thích /* Situationship (Bonus) */ và bốn token bạn nêu. git
+  show --stat HEAD chỉ liệt kê file này.
+
+  Tương tỉ độ tương phản (mình tính bằng công thức WCAG từ giá trị hex trong
+  tokens.css, trong phiên này):
+
+  ┌────────────────────────────────┬─────────────┬─────────┬────────┬──────┐
+  │              Cặp               │     Màu     │  Tỉ lệ  │ Ngưỡng │ Kết  │
+  │                                │             │         │        │ quả  │
+  ├────────────────────────────────┼─────────────┼─────────┼────────┼──────┤
+  │ --color-text trên              │ #0f172a     │         │        │      │
+  │ --color-red-flag-bg            │ trên        │ 14.63:1 │ ≥ 4.5  │ Đạt  │
+  │                                │ #dbeafe     │         │        │      │
+  ├────────────────────────────────┼─────────────┼─────────┼────────┼──────┤
+  │ --color-stable-text trên       │ #1e3a8a     │         │        │      │
+  │ --color-stable-bg              │ trên        │ 8.49:1  │ ≥ 4.5  │ Đạt  │
+  │                                │ #dbeafe     │         │        │      │
+  ├────────────────────────────────┼─────────────┼─────────┼────────┼──────┤
+  │ --color-red-flag-border trên   │ #1d4ed8     │         │        │      │
+  │ --color-card-bg                │ trên        │ 6.70:1  │ ≥ 3    │ Đạt  │
+  │                                │ #ffffff     │         │        │      │
+  └────────────────────────────────┴─────────────┴─────────┴────────┴──────┘
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - C4 không có định nghĩa trong tài liệu repo. Mình đoán đó là kiểm tra cấm màu
+    hex, rgb(), hsl() ngoài tokens.css (mục 7). Grep trong CSS của
+    BonusSituationship không in gì.
+
+  Lưu ý:
+  - Bốn token mới mới chỉ được khai báo. SituationshipAnalyzer.module.css vẫn
+    đang dùng các token cũ (tier-core, tier-awareness), nên chưa có gì đổi trên
+    màn hình. Việc nối chúng vào CSS thuộc B-T12.
+  - Token --color-red-flag-bg trỏ tới --color-skeleton, cùng màu xanh nhạt với
+    --color-stable-bg. Hai trạng thái sẽ chỉ khác nhau ở viền và độ đậm, không
+    khác màu nền. Mình chỉ làm theo mô tả của bạn; nếu muốn hai trạng thái dễ
+    phân biệt hơn, CSS ở B-T12 cần dựa vào viền hoặc kiểu chữ chứ không chỉ màu.
+  - Chưa mở trình duyệt hay chạy Lighthouse. Cảnh báo "LF will be replaced by
+    CRLF" chỉ do core.autocrlf=true.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 8,
+  B-T12). Chỉ làm B-T12. Tham khảo (không sửa) DrumMachine.module.css.
+  Phạm vi: src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css.
+  Không sửa JSX.
+  - .bonus, .analyzer: kiểu thẻ như .drumKit.
+  - .redFlag: nền var(--color-red-flag-bg); viền trái 0.25rem solid
+  var(--color-red-flag-border); font-weight 700; padding. .stable: nền
+  var(--color-stable-bg); chữ var(--color-stable-text); padding. (Khác nhau cả
+  bằng chữ và viền, không chỉ màu.)
+  - .field: grid; gap; input min-height var(--control-min-height); width 100%;
+  max-width 12rem.
+  - .actions: flex wrap; gap; nút min-height var(--control-min-height).
+  - .meterRow: flex wrap; meter width 100% max 16rem. .log:
+  padding-inline-start var(--space-5).
+  - Không nowrap, không mã màu.
+    Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning
+  đã biết; C4; git diff --stat chỉ 1 file.
+    Commit:
+    git add src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css
+    git commit -m "style(bonus): add responsive 375px situationship layout"
+    Không push. Báo cáo bằng tiếng Việt: nêu rõ chưa kiểm tra trình duyệt.
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Bash(cat > src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css
+      <<'EOF'
+      /* Mobile first: the base rules fit 375px and also 320px. Nothing here
+      forces ho…)
+  ⎿  Updated
+     src\homeworks\BonusSituationship\SituationshipAnalyzer.module.css (+62
+     -18)
+       1 -.bonus {                                                       
+       2 -  display: grid;                                               
+       3 -  gap: var(--space-4);                                         
+       4 -  min-width: 0;                                                
+       5 -  color: var(--color-text);                                    
+       6 -}                                                              
+       1 +/* Mobile first: the base rules fit 375px and also 320px. Nothi
+         +ng here forces horizontal page scroll. */                      
+       2  
+       3 +.bonus,                                                        
+       4  .analyzer {
+       5    display: grid;
+       6 +  grid-template-columns: minmax(0, 1fr);                       
+       7    gap: var(--space-3);
+       8 +  width: 100%;                                                 
+       9    min-width: 0;
+      10 +  max-width: var(--card-max-width);                            
+      11    padding: var(--space-4);
+      12    border: var(--control-border-width) solid var(--color-border)
+          ;
+      13    border-radius: var(--radius-lg);
+      14    background-color: var(--color-card-bg);
+      15 +  color: var(--color-text);                                    
+      16  }
+      17  
+      18 -.phase {                                                       
+      19 -  margin: 0;                                                   
+      18 +.analyzer {                                                    
+      19 +  padding: var(--space-3);                                     
+      20  }
+      21  
+      22 -.field {                                                       
+      23 -  display: grid;                                               
+      24 -  gap: var(--space-1);                                         
+      22 +.bonus h2 {                                                    
+      23 +  font-size: var(--font-size-lg);                              
+      24 +  line-height: 1.2;                                            
+      25 +  overflow-wrap: anywhere;                                     
+      26 +}                                                              
+      27 +                                                               
+      28 +.analyzer h3 {                                                 
+      29 +  font-size: var(--font-size-md);                              
+     … 84 more lines (ctrl+o to expand)
+  ⎿  (timeout 3m 20s)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T12 và commit d6d957e — style(bonus): add responsive 375px
+  situationship layout. Chưa push.
+
+  Chưa kiểm tra bằng trình duyệt. Mình chưa mở trang #bonus, chưa đo ở 375px hay
+  320px, chưa xác nhận không có thanh cuộn ngang, chưa nhìn thấy focus ring và
+  chưa chạy Lighthouse. CSS này chỉ được xác nhận qua build, lint và grep.
+
+  File thay đổi: chỉ SituationshipAnalyzer.module.css
+  (src/homeworks/BonusSituationship/SituationshipAnalyzer.module.css) (+62,
+  −18). JSX không đổi. git diff --stat chỉ có 1 file, git show --stat HEAD cũng
+  vậy.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 319/319 đạt.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - C4: không có định nghĩa trong tài liệu repo. Mình đoán đó là kiểm tra cấm
+    màu hex, rgb(), hsl() và nowrap; grep cho các mẫu này trong CSS của
+    BonusSituationship không in gì.
+
+  Nội dung CSS:
+  - .bonus và .analyzer dùng kiểu thẻ như .drumKit.
+  - .redFlag có viền trái 0.25rem, chữ đậm 700, nền --color-red-flag-bg. .stable
+    dùng --color-stable-bg và --color-stable-text. Hai trạng thái khác nhau cả
+    bằng viền và độ đậm chữ, không chỉ màu.
+  - Input rộng 100% tối đa 12rem, cao tối thiểu --control-min-height. Nút trong
+    .actions cũng cao tối thiểu --control-min-height. Meter rộng 100% tối đa
+    16rem.
+
+  Hai điểm mình tự quyết, bạn xem lại nếu không muốn:
+  - Vì .analyzer nằm trong .bonus và cả hai đều là thẻ, mình giảm padding của
+    .analyzer xuống --space-3 để tránh mất quá nhiều chiều ngang ở 375px. Thẻ
+    lồng nhau vẫn có hai viền.
+  - Mình đặt viền, nền và chữ cho nút và input vì chưa thấy style chung cho
+    button trong src/styles/ (grep chỉ thấy :focus-visible trong reset.css).
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 8, B-T14). Chỉ
+  làm B-T14. Tôi cho phép sửa README.md, và CHỈ README.md.
+
+  PHẦN 1: đổi tên đúng hai dòng trong "## Repository layout", không đổi gì khác
+  trong phần cũ:
+  (a) dòng bắt đầu bằng "docs/evidence/": đổi "HW4_BonusSituationship/" thành
+  "BONUS_Situationship/".
+  (b) dòng bắt đầu bằng "src/homeworks/": đổi "BonusSituationship (HW4, bonus)"
+  thành "BonusSituationship (Bonus Exercise)".
+
+  PHẦN 2: thêm vào CUỐI README.md (sau toàn bộ phần Homework 3) mục dưới đây,
+  bằng tiếng Anh, giữ nguyên chữ (kể cả tiếng Việt có dấu). Đừng dùng heredoc
+  dài trong shell; dùng công cụ Edit/Write hoặc ghi qua file tạm rồi kiểm tra
+  phần cuối file không bị cắt.
+
+  ---- BEGIN README SECTION ----
+  ## Bonus Exercise: Hẹn Hò Nhưng Không Yêu Situationship FSM
+
+  `SituationshipAnalyzer` models a relationship as a finite state machine with
+  four phases (FRIENDS, DATING_NO_LOVE, OFFICIAL_LOVE, GHOSTED_EXIT). The red
+  flag is derived during render from the phase and two effort counters, never
+  stored. A 5 second ghosting timer is an abortable promise, and the effect
+  cleanup aborts it. Every effort signal is appended to an immutable log.
+
+  ### Source layout
+
+  ```
+  src/
+    shell/resolveView.js             VIEWS gains { id: 'bonus', label: 'Bonus
+  Exercise' } (and resolveView.test.js)
+    App.jsx                          renders SituationshipAnalyzer for the
+  bonus view
+    styles/tokens.css                "Situationship (Bonus)" token group
+    homeworks/
+      BonusSituationship/
+        situationship.contract.js    JSDoc typedefs only
+        situationshipModel.js / .test.js   PHASES, EFFORT_WEIGHTS, transition,
+  computeImpacts, isRedFlag, createSignal, appendSignal, latestSignals,
+  sanitizeCount, with tests
+        SituationshipAnalyzer.jsx    the component: inputs, meter, buttons,
+  ghost timer, signal log
+        SituationshipAnalyzer.module.css   mobile-first layout
+  ```
+
+  The view id `#bonus` lives in `src/shell/resolveView.js`. The abortable
+  `delay` is imported from `src/homeworks/GrandPiano88/replay.js`.
+
+  ### Constraints
+
+  - The phase is one value changed only by the pure `transition(phase, event)`.
+  An unknown phase and event pair returns the current phase, and an unknown
+  phase throws a TypeError. There are no boolean flags for the relationship
+  (check C13).
+  - Transitions: FRIENDS + START_DATING gives DATING_NO_LOVE; DATING_NO_LOVE +
+  CONFIRM_LOVE gives OFFICIAL_LOVE; DATING_NO_LOVE + GHOST_TIMEOUT gives
+  GHOSTED_EXIT; FRIENDS, DATING_NO_LOVE and OFFICIAL_LOVE + UNBIND give
+  GHOSTED_EXIT; GHOSTED_EXIT + RESET gives FRIENDS.
+  - Weights: `myImpact = myTries * 0.1` and `rivalImpact = rivalTries * 50`.
+  The start values 100 and 1 give 10 against 50.
+  - `isRedFlag(phase, myImpact, rivalImpact)` is true only in DATING_NO_LOVE
+  when `myImpact` is below `rivalImpact`. It is computed during render. "Xác
+  nhận yêu" is offered only when it is not a red flag.
+  - The meter shows Em's share of the total impact (0 when both are 0).
+  - One effect with deps `[phase, myTries]` starts the 5 second wait only in
+  DATING_NO_LOVE. It creates an `AbortController`, and the cleanup aborts it,
+  so a new try, a phase change or leaving the page cancels the old timer (check
+  C14).
+  - The signal log is immutable: each signal is a frozen object with an id from
+  `crypto.randomUUID`, appended as `[...log, signal]`. The list shows the last
+  10, newest first.
+  - The Vietnamese UI text is inside an element with `lang="vi"`, English
+  phrases carry `lang="en"`, the result is an `<output role="status"
+  aria-live="polite">`, and the two number inputs have labels linked with
+  `useId`.
+
+  ### Text checks
+
+  C13, C14 and C15 apply to this exercise. Run them from the repository root.
+
+  | Check | Looks for | Expected |
+  | --- | --- | --- |
+  | C13 | `isDating`, `isLoved` or `hasTitle` in
+  `src/homeworks/BonusSituationship/` | prints nothing |
+  | C14 | `new AbortController()` and `.abort()` in `SituationshipAnalyzer.jsx`
+  | prints 2 lines |
+  | C15 | the two required commit messages in `git log` | prints 2 lines |
+
+  PowerShell:
+
+  ```powershell
+  # C13
+  Get-ChildItem src\homeworks\BonusSituationship -Include *.js,*.jsx -Recurse |
+  Select-String -Pattern 'isDating|isLoved|hasTitle'
+  # C14
+  Select-String -Path
+  src\homeworks\BonusSituationship\SituationshipAnalyzer.jsx -Pattern 'new
+  AbortController\(\)|\.abort\(\)'
+  # C15
+  git --no-pager log --oneline | Select-String -Pattern 'feat\(fsm\): model
+  HenHoKhongYeu state machine|feat\(ui\): add derived red-flag meter & ghosting
+  cleanup'
+  ```
+
+  Git Bash:
+
+  ```sh
+  # C13
+  grep -rnE 'isDating|isLoved|hasTitle' src/homeworks/BonusSituationship
+  --include='*.js' --include='*.jsx'
+  # C14
+  grep -nE 'new AbortController\(\)|\.abort\(\)'
+  src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx
+  # C15
+  git --no-pager log --oneline | grep -E 'feat\(fsm\): model HenHoKhongYeu
+  state machine|feat\(ui\): add derived red-flag meter & ghosting cleanup'
+  ```
+
+  ### How to test
+
+  These steps are done by hand in the browser at
+  `http://localhost:5173/#bonus`.
+
+  1. Open the page. The phase is DATING_NO_LOVE, the red-flag text is shown,
+  the meter is low and the numbers read "Em: 10.0 · Ai đó: 50.0". There is no
+  "Xác nhận yêu" button.
+  2. Wait 5 seconds without touching anything. The phase becomes GHOSTED_EXIT,
+  the text is "[OK] Stable", and only "Bắt đầu lại" remains next to the signal
+  buttons.
+  3. Timer reset: reload and click "Gửi tin nhắn" every 3 seconds for about 15
+  seconds. The phase stays DATING_NO_LOVE and the signal log grows, newest
+  first.
+  4. Set "Em cố (số lần)" to 500. The text becomes "[OK] Stable", and "Xác nhận
+  yêu" appears. Click it within 5 seconds, before the ghosting timer fires, to
+  reach OFFICIAL_LOVE (no timer runs there).
+  5. Click "Unbind & Free Memory". The phase becomes GHOSTED_EXIT at once. "Bắt
+  đầu lại" gives FRIENDS, and "Bắt đầu hẹn hò" gives DATING_NO_LOVE, which
+  starts the timer again.
+  6. Unmount: reload, and within 5 seconds click HW1 in the nav. Wait 6
+  seconds. The Console stays clean.
+
+  ### Known limits
+
+  - Phase names and weights follow the slide 32 reference code (FRIENDS /
+  DATING_NO_LOVE / OFFICIAL_LOVE / GHOSTED_EXIT, 0.1 against 50), not the
+  alternative names and multipliers in the text of slide 31.
+  - "Dừng Lại" in slide 32 is implemented as the "Unbind & Free Memory" button.
+  - Only short phrases from the slides are used; no song lyrics.
+  - Only `phase` and `myTries` restart the 5 second timer, as in slide 32. "Ai
+  đó một phần" changes the numbers and the log but does not restart it.
+  - The signal buttons stay enabled in GHOSTED_EXIT, so the log can still grow
+  there until "Bắt đầu lại" is clicked.
+  - `transition` reads events from a plain object, so an event named like an
+  `Object.prototype` property (`constructor`, `toString`) returns that property
+  instead of the current phase. The page only sends the five known events, so
+  this cannot happen from the UI.
+  - Reloading the page resets the phase, the counters and the log; nothing is
+  stored.
+  ---- END README SECTION ----
+
+  Kiểm tra (chạy và dán kết quả vào báo cáo):
+  1. git diff --numstat README.md: đúng 2 dòng xóa (hai dòng đổi tên), phần còn
+  lại chỉ thêm; git diff -U0 README.md cho thấy hai dòng cũ chỉ khác đúng các
+  cụm trong PHẦN 1. Nếu README đang dùng CRLF thì giữ nguyên CRLF; số dòng xóa
+  phải vẫn là 2, không phải cả file.
+  2. Select-String -Path README.md -Pattern 'HW4' không in gì.
+  3. Phần cuối README.md khớp mục trên (không bị cắt ở "Known limits").
+  4. npm run build thành công.
+  5. Chạy C13, C14, C15 (PowerShell, ba lệnh trong mục) và dán đầu ra: C13
+  trống, C14 2 dòng, C15 2 dòng.
+
+  Commit (chỉ khi mọi kiểm tra đạt):
+  git add README.md
+  git commit -m "docs(readme): document bonus situationship"
+
+  Không push. Không báo điểm hay số liệu Lighthouse. Báo cáo bằng tiếng Việt.
+
+  Made 1 scratchpad edit +86, ran 2 shell commands (ctrl+o to expand)
+
+● Bash(S="C:/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/f8c643f7-96a3
+      -4fcd-ae8e-b580e2515459/scratchpad/readme-bonus.md" && node -e "
+      const fs=require('fs')…)
+  ⎿  Updated README.md (+87 -2)
+      21  
+      22  ```
+      23  project-rules.md, TASK_DECOMPOSITION.md, AI_FAILURE_AUDIT.md (a
+          dded once a real AI defect exists)
+      24 -docs/evidence/     screenshots, one folder per assignment (EX1_
+         -DeveloperCard/ ... HW4_BonusSituationship/)                    
+      24 +docs/evidence/     screenshots, one folder per assignment (EX1_
+         +DeveloperCard/ ... BONUS_Situationship/)                       
+      25  docs/prompt_logs/  AI prompt log, one file per assignment (EX1_
+          DeveloperCard.txt ...)
+      26  src/components/    in-class exercises: DeveloperCard (EX1), Sci
+          entistDirectory (EX2), PubgMatchTelemetry (EX3)
+      27 -src/homeworks/     DrumMachine (HW1), GrandPiano88 (HW2), Kraft
+         -onPubgVnArena (HW3), BonusSituationship (HW4, bonus)           
+      27 +src/homeworks/     DrumMachine (HW1), GrandPiano88 (HW2), Kraft
+         +onPubgVnArena (HW3), BonusSituationship (Bonus Exercise)       
+      28  src/contracts/ src/utils/ src/styles/
+      29  ```
+      30  
+     ...
+      651  - Kill-feed rows rely on `content-visibility`; browsers withou
+           t it render every row normally.
+      652  - The Lab 2 code (anti-drift timer, virtual scroller) was not 
+           reused; this homework was written from scratch.
+      653  - The mock server is in memory only; there is no real network 
+           or server, and claim IDs come from `crypto.randomUUID`, which 
+           needs localhost or HTTPS.
+      654 +                                                              
+      655 +## Bonus Exercise: Hẹn Hò Nhưng Không Yêu Situationship FSM   
+      656 +                                                              
+      657 +`SituationshipAnalyzer` models a relationship as a finite stat
+          +e machine with four phases (FRIENDS, DATING_NO_LOVE, OFFICIAL_
+          +LOVE, GHOSTED_EXIT). The red flag is derived during render fro
+          +m the phase and two effort counters, never stored. A 5 second 
+          +ghosting timer is an abortable promise, and the effect cleanup
+          + aborts it. Every effort signal is appended to an immutable lo
+          +g.                                                            
+      658 +                                                              
+      659 +### Source layout                                             
+      660 +                                                              
+      661 +```                                                           
+      662 +src/                                                          
+      663 +  shell/resolveView.js             VIEWS gains { id: 'bonus', 
+          +label: 'Bonus Exercise' } (and resolveView.test.js)           
+      664 +  App.jsx                          renders SituationshipAnalyz
+          +er for the bonus view                                         
+      665 +  styles/tokens.css                "Situationship (Bonus)" tok
+          +en group                                                      
+      666 +  homeworks/                                                  
+      667 +    BonusSituationship/                                       
+      668 +      situationship.contract.js    JSDoc typedefs only        
+      669 +      situationshipModel.js / .test.js   PHASES, EFFORT_WEIGHT
+          +S, transition, computeImpacts, isRedFlag, createSignal, append
+          +Signal, latestSignals, sanitizeCount, with tests              
+      670 +      SituationshipAnalyzer.jsx    the component: inputs, mete
+          +r, buttons, ghost timer, signal log                           
+      671 +      SituationshipAnalyzer.module.css   mobile-first layout  
+      672 +```                                                           
+      673 +                                                              
+      674 +The view id `#bonus` lives in `src/shell/resolveView.js`. The 
+          +abortable `delay` is imported from `src/homeworks/GrandPiano88
+          +/replay.js`.                                                  
+      675 +                                                              
+      676 +### Constraints                                               
+      677 +                                                              
+      678 +- The phase is one value changed only by the pure `transition(
+          +phase, event)`. An unknown phase and event pair returns the cu
+          +rrent phase, and an unknown phase throws a TypeError. There ar
+          +e no boolean flags for the relationship (check C13).          
+     … 60 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mọi kiểm tra đều đạt, giờ commit README.md.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã làm xong B-T14 và commit e88a97b: docs(readme): document bonus
+  situationship. Chưa push.
+
+  File thay đổi: chỉ README.md, thêm 87 dòng và xóa 2 dòng. git show --stat HEAD
+  chỉ liệt kê file này.
+
+  Kết quả các kiểm tra:
+  1. git diff --numstat README.md cho 87  2. README dùng LF nên số dòng xóa
+     không bị tính cả file. git diff -U0 --word-diff cho thấy hai dòng cũ chỉ
+     khác đúng hai cụm:
+     - HW4_BonusSituationship/) thành BONUS_Situationship/) (dòng 24)
+     - (HW4, bonus) thành (Bonus Exercise) (dòng 27)
+
+     Phần còn lại là một hunk thêm ở cuối file, sau phần Homework 3.
+  2. Select-String -Path README.md -Pattern 'HW4' không in gì.
+  3. Phần cuối README.md khớp mục gốc: mình so sánh phần đuôi của README với
+     file nguồn bằng diff và kết quả là TAIL_MATCH. File kết thúc đúng ở dòng
+     "Reloading the page resets…", không bị cắt ở "Known limits". Mình ghi mục
+     này qua công cụ Write vào file tạm rồi nối vào README, không dùng heredoc.
+  4. npm run build: thành công.
+  5. C13, C14, C15 (PowerShell):
+     - C13: không in gì.
+     - C14: 2 dòng, SituationshipAnalyzer.jsx:32 (new AbortController()) và :38
+       (controller.abort()).
+     - C15: 2 dòng, bcd7c1e feat(ui): add derived red-flag meter & ghosting
+       cleanup và 13ce564 feat(fsm): model HenHoKhongYeu state machine.
+
+  Chưa kiểm tra:
+  - Sáu bước trong "How to test" là thủ công. Mình chưa chạy trong trình duyệt
+    và không đo Lighthouse. Mình đối chiếu từng bước với code (ví dụ: ở 100 và 1
+    thì 10 < 50 nên không có nút "Xác nhận yêu"; ở 500 thì 50 không nhỏ hơn 50
+    nên có nút) nhưng chưa thấy kết quả thật trên màn hình.
+  - Mục "Known limits" về Object.prototype mô tả đúng cách transition đọc
+    TRANSITIONS[phase][event]. Mình không viết test riêng cho trường hợp này.
+  - Mình bỏ qua B-T13 (sửa lỗi Lighthouse có điều kiện) vì bạn không yêu cầu và
+    chưa có kết quả Lighthouse nào.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 8, B-T16). Chỉ
+  làm B-T16. Tôi cho phép sửa đúng một file: src/components/DeveloperCard.jsx.
+
+  Trước khi sửa: chạy git rev-list --count HEAD. Kết quả phải là 142. Nếu khác
+  142, DỪNG và báo tôi, không sửa gì.
+
+  Việc cần làm: trong DeveloperCard.jsx đổi giá trị mặc định metrics.commits từ
+  129 thành 144 (giá trị do tôi cung cấp: 142 commit hiện có cộng 2 cho chính
+  commit này và commit evidence B-T18). Không đổi gì khác trong file.
+
+  Kiểm tra (chạy và dán kết quả):
+  1. git diff --numstat: chỉ DeveloperCard.jsx, 1 dòng thêm và 1 dòng xóa.
+  2. Select-String -Path src\components\DeveloperCard.jsx -Pattern 'commits:
+  144' in đúng 1 dòng; 'commits: 129' không còn.
+  3. npm test: không test nào fail. npm run build thành công. npm run lint exit
+  0 với đúng 1 warning đã biết (PubgMatchTelemetry.jsx:17).
+
+  Commit (chỉ khi mọi kiểm tra đạt):
+  git add src/components/DeveloperCard.jsx
+  git commit -m "fix(ex1): sync commits metric after bonus"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đúng 142, tiếp tục.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Update(src\components\DeveloperCard.jsx)
+  ⎿  Added 1 line, removed 1 line
+      11    fullName = 'Võ Văn Thiện',
+      12    role = 'Student at the University of Information Technology –
+           VNU-HCM',
+      13    avatarUrl = 'https://images.unsplash.com/photo-1534528741775-
+          53994a69daeb?w=240',
+      14 -  metrics = { commits: 129, vdomNodes: 0, a11yScore: 100 },    
+      14 +  metrics = { commits: 144, vdomNodes: 0, a11yScore: 100 },    
+      15    skills = [
+      16      { id: 'sk-1', name: 'React 19 createRoot + StrictMode', tie
+          r: 'Core' },
+      17      { id: 'sk-2', name: 'Hooks: useState, useEffect, useId', ti
+          er: 'Core' },
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Mình đã làm xong B-T16 và commit 78de62b: fix(ex1): sync commits metric after
+  bonus. Chưa push.
+
+  Điều kiện trước khi sửa: git rev-list --count HEAD cho 142, đúng như bạn yêu
+  cầu, nên mình tiếp tục.
+
+  File thay đổi: chỉ DeveloperCard.jsx (src/components/DeveloperCard.jsx), dòng
+  14: commits: 129 thành commits: 144. Không đổi gì khác.
+
+  Kết quả kiểm tra:
+  1. git diff --numstat cho 1  1  src/components/DeveloperCard.jsx. Đúng 1 dòng
+     thêm và 1 dòng xóa, chỉ một file.
+  2. Select-String ... 'commits: 144' in đúng 1 dòng (dòng 14). Select-String
+     ... 'commits: 129' không in gì.
+  3. npm test: 319/319 đạt, 0 lỗi. npm run build: thành công. npm run lint: exit
+     0, đúng 1 warning đã biết (PubgMatchTelemetry.jsx:17:5,
+     set-state-in-effect).
+
+  Về con số 144: sau commit này git rev-list --count HEAD là 143. Giá trị 144 là
+  con số bạn đưa, tính cả commit evidence B-T18 sẽ đến sau, nên hiện tại thẻ
+  hiển thị trước một commit so với thực tế. Nó chỉ khớp khi commit B-T18 được
+  tạo, và chỉ khớp nếu không có commit nào chen vào giữa.
+
+  Chưa kiểm tra: chưa mở trang Exercise 1 để xem thẻ hiển thị 144. Cảnh báo "LF
+  will be replaced by CRLF" của Git chỉ do core.autocrlf=true.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 8, B-T17). Chỉ
+  làm B-T17. KHÔNG sửa file nào, KHÔNG stage, KHÔNG commit, KHÔNG push. Chỉ
+  chạy lệnh đọc và báo kết quả thật (không báo số liệu nào chưa chạy).
+
+  Chạy từng lệnh dưới đây trong lab3-react19 rồi dán đầu ra:
+
+  1. git status --short  (kỳ vọng: không in gì)
+  2. git rev-list --count HEAD  (kỳ vọng: 143)
+  3. git rev-list --count origin/main..HEAD  (kỳ vọng: 83; chỉ báo số, không
+  push)
+  4. git --no-pager log --format='%h %s' 4262303..HEAD  (kỳ vọng: đúng 14
+  commit; từ cũ đến mới phải đúng thứ tự và đúng từng ký tự như sau):
+     1. docs(spec): add bonus situationship task decomposition
+     2. docs(rules): add bonus fsm and ghosting rules
+     3. docs(bonus): add Situationship JSDoc contract
+     4. feat(fsm): model HenHoKhongYeu state machine
+     5. feat(bonus): add immutable effort signal log helpers
+     6. feat(bonus): add situationship analyzer with labelled effort inputs
+     7. feat(shell): add bonus view to navigation
+     8. feat(ui): add derived red-flag meter & ghosting cleanup
+     9. feat(bonus): add signal buttons and immutable log list
+     10. feat(bonus): add phase transitions and unbind control
+     11. style(bonus): add situationship tokens
+     12. style(bonus): add responsive 375px situationship layout
+     13. docs(readme): document bonus situationship
+     14. fix(ex1): sync commits metric after bonus
+         (git log in thứ tự mới đến cũ; hãy đảo lại khi so sánh, ví dụ thêm
+  --reverse.)
+  5. Các hàng B-T01 đến B-T18 trong Part 8 của TASK_DECOMPOSITION.md: xác nhận
+  14 commit trên khớp cột Commit của các hàng B-T01 đến B-T12, B-T14 và B-T16,
+  và B-T13, B-T15 là hàng có điều kiện không có commit (Lighthouse
+  Accessibility là 100, không có lỗi AI mới), B-T17 không có commit, B-T18 chưa
+  làm.
+  6. git --no-pager log --oneline 3b96ac8..HEAD -- TASK_DECOMPOSITION.md
+  AI_FAILURE_AUDIT.md  (kỳ vọng: không in gì: WBS không bị sửa sau B-T01 và
+  audit chưa đổi).
+  7. Select-String -Path src\components\DeveloperCard.jsx -Pattern 'commits: '
+  (kỳ vọng: đúng một dòng, commits: 144).
+  8. Get-ChildItem src -Recurse -Include .js,.jsx | Select-String -Pattern
+  '\.sort\('  (kỳ vọng: không in gì).
+  9. git --no-pager log --format='%an %ae' 4262303..HEAD | Sort-Object -Unique
+  (chỉ để xem tác giả của 14 commit có nhất quán không).
+  10. npm run build; npm run lint; npm test (chỉ báo: build thành công, lint
+  exit 0 và số cảnh báo, số test pass và fail đúng như đầu ra).
+
+  Báo cáo: mỗi mục một dòng "đạt" hoặc "không đạt" kèm đầu ra thật. Nếu có mục
+  không đạt, DỪNG và báo, không tự sửa. Báo cáo bằng tiếng Việt.
+
+  Searched for 1 pattern, ran 2 shell commands (ctrl+o to expand)
+
+● Mình đã chạy hết 10 mục và mọi mục đều đạt. Mình không sửa, không stage, không
+  commit, không push.
+
+  ┌─────┬────────────────┬──────────────────────────────────────────────────┐
+  │  #  │    Kết quả     │                   Đầu ra thật                    │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 1   │ Đạt            │ git status --short không in gì                   │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 2   │ Đạt            │ 143                                              │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 3   │ Đạt            │ 83 (chỉ đếm, không push)                         │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 4   │ Đạt            │ Đúng 14 commit; thứ tự và từng ký tự khớp danh   │
+  │     │                │ sách của bạn (xem dưới)                          │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │     │ Đạt (có một    │                                                  │
+  │ 5   │ phần dựa vào   │ Xem dưới                                         │
+  │     │ lời bạn)       │                                                  │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 6   │ Đạt            │ Không in gì                                      │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 7   │ Đạt            │ Đúng 1 dòng: DeveloperCard.jsx:14:  metrics = {  │
+  │     │                │ commits: 144, vdomNodes: 0, a11yScore: 100 },    │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 8   │ Đạt            │ .sort( không in gì                               │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 9   │ Đạt            │ 1 tác giả duy nhất: Võ Văn Thiện                 │
+  │     │                │ vanthien1462006@gmail.com                        │
+  ├─────┼────────────────┼──────────────────────────────────────────────────┤
+  │ 10  │ Đạt            │ Xem dưới                                         │
+  └─────┴────────────────┴──────────────────────────────────────────────────┘
+
+  Mục 4 (từ cũ đến mới, dùng --reverse):
+  3b96ac8 docs(spec): add bonus situationship task decomposition
+  bef4663 docs(rules): add bonus fsm and ghosting rules
+  b04bc00 docs(bonus): add Situationship JSDoc contract
+  13ce564 feat(fsm): model HenHoKhongYeu state machine
+  753e3cd feat(bonus): add immutable effort signal log helpers
+  b321b31 feat(bonus): add situationship analyzer with labelled effort inputs
+  66589a8 feat(shell): add bonus view to navigation
+  bcd7c1e feat(ui): add derived red-flag meter & ghosting cleanup
+  3d79f73 feat(bonus): add signal buttons and immutable log list
+  8aec5e5 feat(bonus): add phase transitions and unbind control
+  f17575e style(bonus): add situationship tokens
+  d6d957e style(bonus): add responsive 375px situationship layout
+  e88a97b docs(readme): document bonus situationship
+  78de62b fix(ex1): sync commits metric after bonus
+
+  Mục 5: mình đọc cột Commit của Part 8 bằng grep và đối chiếu từng hàng:
+  - B-T01 đến B-T12, B-T14 và B-T16 khớp từng ký tự với 14 commit trên, đúng thứ
+    tự.
+  - B-T13 (fix(a11y): <finding>) và B-T15 (docs(audit): record bonus ai
+    failures) không có commit tương ứng trong log. Hai hàng này có điều kiện,
+    nên điều đó hợp lệ.
+  - B-T17 ghi (no commit), và không có commit nào cho nó.
+  - B-T18 (docs(evidence): archive bonus screenshots and prompt log) chưa có
+    trong log, tức là chưa làm.
+  - Phần mình không tự kiểm chứng được: việc "Lighthouse Accessibility là 100,
+    không có lỗi AI mới" là lời bạn nói. Mình không chạy Lighthouse và không có
+    kết quả Lighthouse nào trong phiên này.
+
+  Mục 10:
+  - npm run build: ✓ built in 348ms.
+  - npm run lint: exit 0, 1 cảnh báo: src/components/PubgMatchTelemetry.jsx:17:5
+    react(set-state-in-effect).
+  - npm test: 319 test, 319 đạt, 0 lỗi, 0 bị hủy, 0 bỏ qua.
+
+  Hai điều cần lưu ý (không làm mục nào không đạt):
+  - Số commit hiện tại là 143 còn commits: 144 trong thẻ. Hai con số này lệch
+    nhau 1 cho đến khi commit B-T18 được tạo, đúng như đã nói ở bước trước.
+  - Mục 6 dùng khoảng 3b96ac8..HEAD nên không tính chính commit B-T01. Kết quả
+    rỗng chứng minh TASK_DECOMPOSITION.md và AI_FAILURE_AUDIT.md không bị sửa
+    sau B-T01.
+
+  Bước còn lại là B-T18 (lưu bằng chứng ảnh chụp và prompt log), cần ảnh chụp và
+  file log từ phía bạn.
