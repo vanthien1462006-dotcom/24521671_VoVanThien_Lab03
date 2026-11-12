@@ -413,3 +413,179 @@ export {};
 
 ### 4.7 Verification gate
 Before every commit: npm run build, npm run lint, npm test (when tests exist), C1 to C6 print nothing, C7 prints its three lines from E3-T09 on. Browser checks are done by the user with Network throttling Slow 3G.
+
+## Part 5. Homework 1: Production Studio Drum Kit (+ app shell)
+
+### 5.1 Overview
+`DrumMachine` (src/homeworks/DrumMachine/) is a seven-pad drum kit played with the physical keys W, A, S, D, J, K, L (read through `e.code`, safe with the Vietnamese UniKey IME) or with the pointer. Sounds are synthesized with the Web Audio API. A hit log in an `aria-live` output and a visual decibel meter serve deaf and hard-of-hearing users. The task also adds an app shell: a hash-driven nav that shows either the exercises or one homework. Source: slide 26.
+
+### 5.2 Contract
+```js
+/**
+ * @typedef {'kick' | 'snare' | 'hihat-closed' | 'hihat-open' | 'clap' | 'tom-high' | 'tom-low'} DrumPadId
+ */
+
+/**
+ * @typedef {Object} ToneRecipe
+ * @property {'tone'} kind
+ * @property {OscillatorType} wave
+ * @property {number} startHz
+ * @property {number} endHz
+ * @property {number} durationMs
+ * @property {number} gain      Peak gain, 0 to 1.
+ */
+
+/**
+ * @typedef {Object} NoiseRecipe
+ * @property {'noise'} kind
+ * @property {BiquadFilterType} filter
+ * @property {number} filterHz
+ * @property {number} durationMs
+ * @property {number} gain      Peak gain, 0 to 1.
+ */
+
+/**
+ * @typedef {ToneRecipe | NoiseRecipe} DrumRecipe
+ */
+
+/**
+ * @typedef {Object} DrumPad
+ * @property {DrumPadId} id
+ * @property {string} label     Visible name, for example 'Kick'.
+ * @property {string} code      KeyboardEvent.code, for example 'KeyW'.
+ * @property {string} keyLabel  Letter shown on the pad and in aria-keyshortcuts, for example 'W'.
+ * @property {DrumRecipe} recipe
+ */
+
+/**
+ * @typedef {Object} DrumHit
+ * @property {string} id        crypto.randomUUID()
+ * @property {DrumPadId} padId
+ * @property {string} label
+ * @property {string} keyLabel
+ */
+
+/**
+ * @typedef {Object} DrumSynth
+ * @property {(recipe: DrumRecipe) => void} play   Creates the AudioContext on first use.
+ * @property {() => AnalyserNode | null} getAnalyser
+ * @property {() => void} close                     Closes the context; a later play creates a new one.
+ */
+
+/**
+ * @typedef {Object} KeyGuardEvent
+ * @property {string} code
+ * @property {boolean} repeat
+ * @property {boolean} ctrlKey
+ * @property {boolean} altKey
+ * @property {boolean} metaKey
+ * @property {{ tagName?: string, isContentEditable?: boolean } | null} target
+ */
+
+export {};
+```
+
+### 5.3 Invariants
+1. DrumMachine is one `<section aria-labelledby>` with `<h2>HW1 Production Studio Drum Kit</h2>`, rendered only in the `hw1` view.
+2. Seven pads come from `DRUM_PADS` only. Each is `<button type="button" aria-pressed aria-keyshortcuts>` showing its label and key letter; the React key is the pad id.
+3. Shortcuts read `e.code` through `PAD_BY_CODE`. No `keyCode`, `which` or `charCode`; letters are never read from `e.key`.
+4. `shouldHandleKey` rejects repeats, Ctrl/Alt/Meta combinations, targets that are input, textarea, select or contenteditable, and everything when shortcuts are off.
+5. `useDrumKeyboard(padMap, onTriggerPad, isEnabled = true, onReleasePad)` adds keydown, keyup and blur listeners on window in one effect and removes all three in its cleanup. When disabled it adds none. `preventDefault` only for mapped keys.
+6. The AudioContext is created lazily on the first play, resumed when suspended, closed when DrumMachine unmounts, and created only inside drumSynth.js.
+7. Every sound ramps its gain to 0.0001 with `exponentialRampToValueAtTime` before its source stops.
+8. Pad active state is a Set of pad ids: added on keydown or pointerdown, removed on keyup, pointerup, pointerleave, pointercancel and window blur.
+9. Hit log: one `<output role="status" aria-live="polite">` (rule 4) with the last hit and the total; an `<ol>` with the last 8 hits, newest first, keyed by hit id. Updates are immutable.
+10. Level meter: `<meter min="-60" max="0">` with a visible label and a dBFS text value. Its requestAnimationFrame loop lives only in LevelMeter and is cancelled in cleanup.
+11. A labelled text input (Session name) and a labelled checkbox (Keyboard shortcuts, on by default). Typing in the input never plays a pad. Shortcuts can be turned off (WCAG 2.2 SC 2.1.4).
+12. Shell: the view comes from the URL hash through `useSyncExternalStore`; unknown hashes show the exercises; the current nav link has `aria-current="page"`.
+
+### 5.4 Drum pads
+| Order | id | label | code | keyLabel | recipe |
+| --- | --- | --- | --- | --- | --- |
+| 1 | kick | Kick | KeyW | W | tone, sine, 150 → 45 Hz, 400 ms, gain 0.9 |
+| 2 | snare | Snare | KeyA | A | noise, highpass 1500 Hz, 200 ms, gain 0.6 |
+| 3 | hihat-closed | Closed Hi-Hat | KeyS | S | noise, highpass 7000 Hz, 60 ms, gain 0.35 |
+| 4 | hihat-open | Open Hi-Hat | KeyD | D | noise, highpass 7000 Hz, 350 ms, gain 0.3 |
+| 5 | clap | Clap | KeyJ | J | noise, bandpass 1200 Hz, 150 ms, gain 0.6 |
+| 6 | tom-high | High Tom | KeyK | K | tone, sine, 220 → 160 Hz, 300 ms, gain 0.7 |
+| 7 | tom-low | Low Tom | KeyL | L | tone, sine, 140 → 90 Hz, 350 ms, gain 0.7 |
+
+### 5.5 Expected results of shouldHandleKey(event, isEnabled)
+Base event: `{ code: 'KeyW', repeat: false, ctrlKey: false, altKey: false, metaKey: false, target: { tagName: 'BUTTON' } }`.
+| Change from base | isEnabled | Expected |
+| --- | --- | --- |
+| none | true | true |
+| none | false | false |
+| repeat: true | true | false |
+| ctrlKey: true | true | false |
+| altKey: true | true | false |
+| metaKey: true | true | false |
+| target tagName 'INPUT' | true | false |
+| target tagName 'TEXTAREA' | true | false |
+| target tagName 'SELECT' | true | false |
+| target { tagName: 'P', isContentEditable: true } | true | false |
+| target null | true | true |
+
+### 5.6 Expected results of toDecibels(samples)
+`DB_FLOOR` is -60. RMS of the samples, 20·log10, rounded to an integer, clamped to [-60, 0].
+| samples | Expected |
+| --- | --- |
+| [] | -60 |
+| [0, 0, 0] | -60 |
+| [1, -1] | 0 |
+| [0.5, -0.5] | -6 |
+| [0.001, -0.001] | -60 |
+| [2, -2] | 0 |
+
+### 5.7 Expected results of createDrumSynth({ createContext, random })
+Tests use a fake AudioContext that records every call; `connect` returns its argument.
+| Case | Expected |
+| --- | --- |
+| created, nothing played | createContext not called; getAnalyser() is null |
+| play(kick recipe) | one context created; master gain → analyser → destination; one oscillator with type 'sine', frequency set to 150 then ramped to 45; start(t) and stop(t + 0.42) where t = currentTime |
+| gain envelope of any play | setValueAtTime(peak, t), then exponentialRampToValueAtTime(0.0001, t + durationMs/1000) recorded before stop |
+| play(snare recipe) | a buffer source with a buffer of round(sampleRate × 0.2) samples filled from `random`, a 'highpass' biquad at 1500 Hz, start and stop scheduled |
+| second play | the same context is reused |
+| context state 'suspended' | resume() is called |
+| play({ kind: 'unknown' }) | throws TypeError |
+| close() then play | the first context's close() called once; a new context is created |
+
+### 5.8 Expected results of resolveView(hash)
+| hash | Expected |
+| --- | --- |
+| '' | 'exercises' |
+| '#' | 'exercises' |
+| '#exercises' | 'exercises' |
+| '#hw1' | 'hw1' |
+| 'hw1' | 'hw1' |
+| '#HW1' | 'exercises' |
+| '#hw9' | 'exercises' |
+
+### 5.9 Work breakdown structure
+| ID | Task | File | Acceptance criteria | Commit message |
+| --- | --- | --- | --- | --- |
+| H1-T01 | Write this WBS for Homework 1 | `TASK_DECOMPOSITION.md` | Part 5 appended. Parts 1 to 4 unchanged. 22 rows. Commit lists one file. | `docs(spec): add hw1 task decomposition` |
+| H1-T02 | Add the Homework 1 and app shell rules | `project-rules.md` | New section 17 appended. Sections 1 to 16 unchanged. | `docs(rules): add hw1 keyboard, audio and shell rules` |
+| H1-T03 | Add the JSDoc contract | `src/homeworks/DrumMachine/drum-machine.contract.js` | Exactly the code block of section 5.2. No function, no logic. Build and lint pass. | `docs(hw1): add DrumMachine JSDoc contract` |
+| H1-T04 | Add the pad data, test first | `src/homeworks/DrumMachine/drumPads.js`, `src/homeworks/DrumMachine/drumPads.test.js` | First test run fails because the module is missing. Named exports `DRUM_PADS` (the seven pads of section 5.4 in order, array, pads and recipes frozen) and `PAD_BY_CODE` (a Map from code to pad built once at module level). Tests check count, unique ids and codes, the exact codes, recipe fields and frozen state. Build, lint, test pass. | `feat(hw1): add drum pad map keyed by e.code` |
+| H1-T05 | Add the shortcut guard, test first | `src/homeworks/DrumMachine/shouldHandleKey.js`, `src/homeworks/DrumMachine/shouldHandleKey.test.js` | First test run fails because the module is missing. Named export `shouldHandleKey(event, isEnabled)`. Every row of section 5.5 passes. Pure, no DOM access. Build, lint, test pass. | `feat(hw1): add repeat, modifier and input guard for shortcuts` |
+| H1-T06 | Add the decibel helper, test first | `src/homeworks/DrumMachine/levels.js`, `src/homeworks/DrumMachine/levels.test.js` | First test run fails because the module is missing. Named exports `DB_FLOOR` and `toDecibels(samples)`. Every row of section 5.6 passes. Build, lint, test pass. | `feat(hw1): add rms to decibel helper with unit tests` |
+| H1-T07 | Add the drum synth, test first | `src/homeworks/DrumMachine/drumSynth.js`, `src/homeworks/DrumMachine/drumSynth.test.js` | First test run fails because the module is missing. Named export `createDrumSynth({ createContext = () => new AudioContext(), random = Math.random } = {})` returning a DrumSynth. Master gain 0.8 into an analyser into the destination. Every row of section 5.7 passes with a fake context. `new AudioContext` appears only as that default. Build, lint, test pass. | `feat(hw1): add web audio drum synth with click-free envelopes` |
+| H1-T08 | Add the keyboard hook | `src/homeworks/DrumMachine/useDrumKeyboard.js` | `useDrumKeyboard(padMap, onTriggerPad, isEnabled = true, onReleasePad)` as invariant 5, using shouldHandleKey and `padMap.get(e.code)`. keyup releases the mapped pad; blur releases every pad in padMap. Deps honest. Build and lint pass (only the known warning). | `feat(hw1): add useDrumKeyboard hook with listener cleanup` |
+| H1-T09 | Build the pads | `src/homeworks/DrumMachine/DrumMachine.jsx`, `src/homeworks/DrumMachine/DrumMachine.module.css` | Named export DrumMachine. Invariants 1, 2, 3, 6, 8. Synth from `useState(() => createDrumSynth())`, closed in an effect cleanup. Handlers in useCallback. Pointer: pointerdown plays and presses; pointerup, pointerleave, pointercancel release. onClick plays only when `event.detail === 0`. CSS minimal. Build, lint, test pass. | `feat(hw1): build accessible drum pads with keyboard and pointer input` |
+| H1-T10 | Add the view resolver, test first | `src/shell/resolveView.js`, `src/shell/resolveView.test.js` | First test run fails because the module is missing. Named exports `VIEWS` (frozen: `{ id: 'exercises', label: 'Exercises 1–3' }`, `{ id: 'hw1', label: 'HW1 Drum Kit' }`) and `resolveView(hash)`. Every row of section 5.8 passes. Build, lint, test pass. | `feat(shell): add hash view resolver with unit tests` |
+| H1-T11 | Add the hash navigation | `src/shell/useHashView.js`, `src/shell/SiteHeader.jsx`, `src/shell/SiteHeader.module.css`, `src/App.jsx` | `useHashView()` uses useSyncExternalStore with a hashchange subscription. SiteHeader renders `<header>` with the existing h1 text and `<nav aria-label="Lab sections">` listing VIEWS as links with aria-current="page" on the current one. App renders SiteHeader and `<main>` with DrumMachine for 'hw1' and the three exercises otherwise. Exercises unchanged. Build, lint, test pass. | `feat(shell): add hash navigation between exercises and homeworks` |
+| H1-T12 | Add the hit log | `src/homeworks/DrumMachine/DrumMachine.jsx`, `src/homeworks/DrumMachine/DrumMachine.module.css` | Invariant 9. Build, lint, test pass. | `feat(hw1): add accessible hit log for deaf and hard-of-hearing users` |
+| H1-T13 | Add the level meter | `src/homeworks/DrumMachine/LevelMeter.jsx`, `src/homeworks/DrumMachine/DrumMachine.jsx`, `src/homeworks/DrumMachine/DrumMachine.module.css` | Invariant 10, using toDecibels and `synth.getAnalyser()`. State updates only when the rounded value changes. Build, lint, test pass. | `feat(hw1): add visual decibel meter driven by an analyser` |
+| H1-T14 | Add the session input and shortcut toggle | `src/homeworks/DrumMachine/DrumMachine.jsx`, `src/homeworks/DrumMachine/DrumMachine.module.css` | Invariant 11, labels through useId, the checkbox drives `isEnabled`. Build, lint, test pass. | `feat(hw1): add session name input and shortcut toggle` |
+| H1-T15 | Add the drum kit tokens | `src/styles/tokens.css` | Only additions in `:root`, colors only as var() of existing tokens. Build passes. C4 prints nothing. | `style(hw1): add drum kit tokens` |
+| H1-T16 | Add the responsive layout | `src/homeworks/DrumMachine/DrumMachine.module.css`, `src/shell/SiteHeader.module.css` | Mobile first, tokens only, no nowrap. Pads at least 44px. Pressed pads differ by more than color. JSX untouched. User confirms no horizontal scroll at 375px and 320px. | `style(hw1): add responsive 375px drum kit and header layout` |
+| H1-T17 | Fix Lighthouse findings (conditional) | Files named by the finding | Only if Lighthouse on `#hw1` reports an Accessibility finding. No commit otherwise. | `fix(a11y): <finding>` |
+| H1-T18 | Document the shell and Homework 1 | `README.md` | New sections "App shell" and "Homework 1" after Exercise 3. Earlier sections unchanged. Text checks C1', C8a to C8c. Known limits. No scores. | `docs(readme): document app shell and hw1` |
+| H1-T19 | Record AI failures (conditional) | `AI_FAILURE_AUDIT.md` | Only real Homework 1 defects supplied by the author, appended after the last entry. No commit if none. | `docs(audit): record hw1 ai failures` |
+| H1-T20 | Sync the commits metric | `src/components/DeveloperCard.jsx` | Only `metrics.commits` changes, to the number supplied by the author. Build, lint, test pass. | `fix(ex1): sync commits metric after hw1` |
+| H1-T21 | Final audit | No file changes | Checks pass; git log matches Parts 1 to 5. No commit. | (no commit) |
+| H1-T22 | Archive Homework 1 evidence | `docs/evidence/HW1_DrumMachine/*.png`, `docs/prompt_logs/HW1_DrumMachine.txt` | Copied from the author's folders, names unchanged. Commit count equals the card value. | `docs(evidence): archive hw1 screenshots and prompt log` |
+
+### 5.10 Verification gate
+Before every commit: npm run build, npm run lint (exactly the one known warning), npm test, C1' to C7 and C8a to C8c as described in the guide. Browser and audio checks are done by the user.
