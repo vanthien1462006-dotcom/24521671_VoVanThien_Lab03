@@ -50,6 +50,11 @@ function makeFakeContext(log, { state = 'running' } = {}) {
     destination: { id: 'destination', kind: 'destination' },
     oscillators,
     resumeCalls: 0,
+    closeCalls: 0,
+    close() {
+      ctx.closeCalls += 1
+      return Promise.resolve()
+    },
     createOscillator() {
       const osc = makeNode('osc')
       osc.frequency = makeParam(osc.id, 'frequency')
@@ -247,4 +252,84 @@ test('the context is created once and reused', () => {
   synth.noteOn(60, midiToFrequency(60))
   synth.noteOn(61, midiToFrequency(61))
   assert.equal(contexts.length, 1)
+})
+
+test('activeCount follows the number of sounding voices', () => {
+  const { synth } = setup()
+  assert.equal(synth.activeCount, 0)
+  synth.noteOn(60, midiToFrequency(60))
+  synth.noteOn(64, midiToFrequency(64))
+  assert.equal(synth.activeCount, 2)
+  synth.noteOff(60)
+  assert.equal(synth.activeCount, 1)
+})
+
+test('stopAll releases every voice, each ramp recorded before its stop', () => {
+  const { synth, log, contexts } = setup()
+  const midis = [60, 64, 67]
+  for (const midi of midis) synth.noteOn(midi, midiToFrequency(midi))
+  const before = log.length
+  synth.stopAll()
+
+  assert.equal(synth.voices.size, 0)
+  assert.equal(synth.activeCount, 0)
+  const released = log.slice(before)
+  for (const osc of contexts[0].oscillators) {
+    const gainId = log.find((e) => e.op === 'connect' && e.from === osc.id).to
+    const ramp = released.findIndex(
+      (e) =>
+        e.op === 'exponentialRampToValueAtTime' &&
+        e.owner === gainId &&
+        e.value === 0.0001,
+    )
+    const stop = released.findIndex((e) => e.op === 'stop' && e.owner === osc.id)
+    assert.ok(ramp >= 0, 'release ramp recorded')
+    assert.ok(stop >= 0, 'oscillator stop recorded')
+    assert.ok(ramp < stop, 'ramp is recorded before stop')
+  }
+})
+
+test('stopAll without a context or voices does nothing', () => {
+  const { synth, contexts } = setup()
+  assert.doesNotThrow(() => synth.stopAll())
+  assert.equal(contexts.length, 0)
+  assert.equal(synth.activeCount, 0)
+})
+
+test('close stops all voices, closes the context once and drops it', () => {
+  const { synth, contexts } = setup()
+  synth.noteOn(60, midiToFrequency(60))
+  synth.noteOn(64, midiToFrequency(64))
+  synth.close()
+
+  assert.equal(synth.voices.size, 0)
+  assert.equal(contexts[0].closeCalls, 1)
+  assert.equal(synth.ctx, null)
+})
+
+test('close then noteOn creates a new context; the old one closed exactly once', () => {
+  const { synth, contexts } = setup()
+  synth.noteOn(60, midiToFrequency(60))
+  synth.close()
+  synth.noteOn(60, midiToFrequency(60))
+
+  assert.equal(contexts.length, 2)
+  assert.equal(contexts[0].closeCalls, 1)
+  assert.equal(contexts[1].closeCalls, 0)
+  assert.equal(synth.ctx, contexts[1])
+  assert.ok(synth.voices.has(60))
+})
+
+test('close before any noteOn does not throw and creates no context', () => {
+  const { synth, contexts } = setup()
+  assert.doesNotThrow(() => synth.close())
+  assert.equal(contexts.length, 0)
+})
+
+test('calling close twice closes the context only once', () => {
+  const { synth, contexts } = setup()
+  synth.noteOn(60, midiToFrequency(60))
+  synth.close()
+  synth.close()
+  assert.equal(contexts[0].closeCalls, 1)
 })

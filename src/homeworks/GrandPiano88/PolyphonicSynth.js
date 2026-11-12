@@ -56,4 +56,21 @@ export class PolyphonicSynth {
     voice.osc.stop(t + STOP_SECONDS)
     this.voices.delete(midi)
   }
+
+  /** Number of voices that currently sound. */
+  get activeCount() {
+    return this.voices.size
+  }
+
+  /** Releases every voice with the click-free envelope. */
+  stopAll() {
+    for (const midi of [...this.voices.keys()]) this.noteOff(midi)
+  }
+
+  /** Stops all voices and closes the context; a later noteOn creates a new one. */
+  close() {
+    this.stopAll()
+    if (this.ctx) this.ctx.close()
+    this.ctx = null
+  }
 }
