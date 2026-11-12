@@ -149,3 +149,125 @@ test('DISMISS_ERROR with no error returns the same object', () => {
 test('an unknown action type throws TypeError', () => {
   assert.throws(() => arenaReducer(initialState(), { type: 'NOPE' }), TypeError)
 })
+
+function startedState() {
+  return deepFreezeState(arenaReducer(initialState(), { type: 'CLAIM_STARTED', crateId: 'a', claimId: 'c1' }))
+}
+
+test('CLAIM_REJECTED applies the server stock, clears pending, keeps owned empty and sets lastError', () => {
+  const started = startedState()
+  const next = arenaReducer(started, {
+    type: 'CLAIM_REJECTED',
+    crateId: 'a',
+    claimId: 'c1',
+    remainingStock: 0,
+    error: 'Looted Out',
+  })
+  assert.deepEqual(next.stock, { a: 0 })
+  assert.deepEqual(next.pending, {})
+  assert.deepEqual(next.owned, {})
+  assert.equal(next.lastError, 'Looted Out')
+  assert.notEqual(next, started)
+  assert.deepEqual(started.stock, { a: 1 })
+  assert.deepEqual(started.pending, { a: 'c1' })
+})
+
+test('CLAIM_REJECTED without remainingStock restores the stock from before the claim', () => {
+  const next = arenaReducer(startedState(), {
+    type: 'CLAIM_REJECTED',
+    crateId: 'a',
+    claimId: 'c1',
+    error: 'Looted Out',
+  })
+  assert.deepEqual(next.stock, { a: 2 })
+  assert.deepEqual(next.pending, {})
+  assert.equal(next.lastError, 'Looted Out')
+})
+
+test('CLAIM_REJECTED with a non-finite remainingStock restores the stock from before the claim', () => {
+  const next = arenaReducer(startedState(), {
+    type: 'CLAIM_REJECTED',
+    crateId: 'a',
+    claimId: 'c1',
+    remainingStock: NaN,
+    error: 'Looted Out',
+  })
+  assert.deepEqual(next.stock, { a: 2 })
+})
+
+test('CLAIM_REJECTED without an error message uses Claim failed', () => {
+  const next = arenaReducer(startedState(), { type: 'CLAIM_REJECTED', crateId: 'a', claimId: 'c1' })
+  assert.equal(next.lastError, 'Claim failed')
+})
+
+test('CLAIM_REJECTED with a claimId that is not pending returns the same object', () => {
+  const started = startedState()
+  const next = arenaReducer(started, {
+    type: 'CLAIM_REJECTED',
+    crateId: 'a',
+    claimId: 'other',
+    remainingStock: 0,
+    error: 'Looted Out',
+  })
+  assert.equal(next, started)
+})
+
+test('CLAIM_REJECTED when nothing is pending returns the same object', () => {
+  const state = initialState()
+  const next = arenaReducer(state, {
+    type: 'CLAIM_REJECTED',
+    crateId: 'a',
+    claimId: 'c1',
+    remainingStock: 0,
+    error: 'Looted Out',
+  })
+  assert.equal(next, state)
+})
+
+test('CLAIM_REJECTED keeps pending claims of other crates', () => {
+  const state = deepFreezeState({
+    stock: { a: 1, b: 1 },
+    pending: { a: 'c1', b: 'c2' },
+    owned: {},
+    lastError: null,
+  })
+  const next = arenaReducer(state, {
+    type: 'CLAIM_REJECTED',
+    crateId: 'a',
+    claimId: 'c1',
+    remainingStock: 0,
+    error: 'Looted Out',
+  })
+  assert.deepEqual(next.pending, { b: 'c2' })
+  assert.deepEqual(next.stock, { a: 0, b: 1 })
+})
+
+test('CLAIM_ABORTED restores the stock and clears pending without setting an error', () => {
+  const started = startedState()
+  const next = arenaReducer(started, { type: 'CLAIM_ABORTED', crateId: 'a', claimId: 'c1' })
+  assert.deepEqual(next.stock, { a: 2 })
+  assert.deepEqual(next.pending, {})
+  assert.equal(next.lastError, null)
+  assert.notEqual(next, started)
+  assert.deepEqual(started.stock, { a: 1 })
+})
+
+test('CLAIM_ABORTED with a claimId that is not pending returns the same object', () => {
+  const started = startedState()
+  const next = arenaReducer(started, { type: 'CLAIM_ABORTED', crateId: 'a', claimId: 'other' })
+  assert.equal(next, started)
+})
+
+test('after CLAIM_REJECTED the crate can be claimed again', () => {
+  const rejected = deepFreezeState(
+    arenaReducer(startedState(), {
+      type: 'CLAIM_REJECTED',
+      crateId: 'a',
+      claimId: 'c1',
+      error: 'Looted Out',
+    }),
+  )
+  const again = arenaReducer(rejected, { type: 'CLAIM_STARTED', crateId: 'a', claimId: 'c2' })
+  assert.deepEqual(again.pending, { a: 'c2' })
+  assert.deepEqual(again.stock, { a: 1 })
+})

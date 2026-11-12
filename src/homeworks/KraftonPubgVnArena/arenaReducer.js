@@ -43,6 +43,26 @@ export function arenaReducer(state, action) {
         owned: { ...state.owned, [crateId]: (state.owned[crateId] ?? 0) + 1 },
       }
     }
+    case 'CLAIM_REJECTED': {
+      const { crateId, claimId, remainingStock, error } = action
+      if (state.pending[crateId] !== claimId) return state
+      const restored = state.stock[crateId] + 1
+      return {
+        ...state,
+        stock: { ...state.stock, [crateId]: Number.isFinite(remainingStock) ? remainingStock : restored },
+        pending: Object.fromEntries(Object.entries(state.pending).filter(([id]) => id !== crateId)),
+        lastError: error ?? 'Claim failed',
+      }
+    }
+    case 'CLAIM_ABORTED': {
+      const { crateId, claimId } = action
+      if (state.pending[crateId] !== claimId) return state
+      return {
+        ...state,
+        stock: { ...state.stock, [crateId]: state.stock[crateId] + 1 },
+        pending: Object.fromEntries(Object.entries(state.pending).filter(([id]) => id !== crateId)),
+      }
+    }
     case 'DISMISS_ERROR':
       if (state.lastError === null) return state
       return { ...state, lastError: null }
