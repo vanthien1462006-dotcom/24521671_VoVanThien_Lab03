@@ -29,3 +29,17 @@ Logged 2026-11-12 16:36, task H1-T14 (WBS row H1-T14).
 **DevTools Proof:** Console screenshot `docs/evidence/HW1_DrumMachine/hw1-07-unikey-ecode.png` (added in H1-T22): `code:  | key: ư`, `code: KeyA | key: a`, `code: KeyD | key: d`. Detected by running a `keydown` listener in the Console with UniKey Telex on and pressing W, A, D.
 
 **Engineering Fix (Commit ea60b22):** `e.code` is kept, because the task requires it and project-rules section 17 forbids reading letters from `e.key`. The limit and the workaround (switch UniKey to English mode, or use the pointer) are documented under Known limits in the README.
+
+## Failure #03: H2-T17 UniKey Telex rewrites the W and S keys, so those piano notes have no code
+
+Logged 2026-11-12 20:21, task H2-T17 (WBS row H2-T17).
+
+**Prompt:** The Homework 2 guide, decision D4(b) and H2-T17: "Computer-keyboard piano ... `KeyA` C, `KeyW` C#, `KeyS` D ...". The guide and H2-T08 assume `e.code` reaches the page for all 13 keys, also with UniKey on. This is the same assumption as Failure #02.
+
+**AI Code:** `computerKeyToMidi(e.code, octave)` in `computerKeyMap.js` (H2-T08, commit 216fed7), called from the window `keydown` listener in `GrandPiano88.jsx` (H2-T17, commit 986cb6b). The code follows the task and project-rules section 17. The wrong part is the assumption that `e.code` is always filled.
+
+**Bug:** With UniKey in Vietnamese Telex mode, W and the tone key S reach the page as synthetic events with an empty `code`; UniKey also sends two `Backspace` events and the composed character (ă and a vowel with a tone mark). `computerKeyToMidi('')` returns null, so no note sounds. W alone is silent and plays only after several presses, and a melody C then D (A then S) loses the D. E, D, F, T, G, Y, H, U, J and K arrived as `KeyE`, `KeyD`, and so on, in the same run. It has the same root cause as Failure #02, with a wider effect.
+
+**DevTools Proof:** Console screenshot `docs/evidence/HW2_GrandPiano88/hw2-10b-unikey-ecode.png` (added in H2-T25): rows with an empty `code` for the keys UniKey rewrote and `code: KeyX` for the others. Detected by running a `keydown` listener in the Console with UniKey Telex on, pressing A W S E D F T G Y H U J K in order, then pressing W alone on the piano page and listening.
+
+**Engineering Fix (Commit 810c886):** `e.code` is kept, because the task requires it and project-rules section 17 forbids reading letters from `e.key`. The limit and the workaround (switch UniKey to English mode, or use the pointer or Enter and Space on a focused key) are documented under Known limits in the README (H2-T21). No code change.
