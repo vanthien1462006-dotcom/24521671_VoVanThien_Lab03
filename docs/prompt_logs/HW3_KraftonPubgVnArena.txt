@@ -1,0 +1,3660 @@
+
+> /clear
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\HW2_PromptAI.txt in the IDE. This may or
+  may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md. Nhiệm vụ DUY NHẤT:
+  thêm Part 7 (Homework 3) vào CUỐI TASK_DECOMPOSITION.md. Không sửa Part 1 đến
+  6, không sửa file khác, chưa viết code.
+
+  Thêm ĐÚNG nội dung giữa BEGIN và END (giữ nguyên chữ, không chép hai dòng
+  BEGIN/END):
+
+  ===== BEGIN =====
+  ## Part 7. Homework 3: KRAFTON x PUBG Vietnam Championship & Airdrop Arena
+
+  ### 7.1 Overview
+  `KraftonPubgVnArena` (src/homeworks/KraftonPubgVnArena/) shows PVS Finals
+  ticket and G-Coin crate airdrops with an anti-drift countdown
+  (`usePubgAirdropTimer`, resynced on `visibilitychange`), optimistic claims
+  with an in-flight lock and rollback on 409 Looted Out against an in-memory
+  mock server, a leaderboard of the Vietnamese squads te, ces, ge and agg
+  sorted by WWCD, placement points or kill points, and a filtered kill feed.
+  All numbers, prices and stock are sample data, labelled "Sample data, not
+  official PVS results or prices." Source: slides 29 and 30.
+
+  ### 7.2 Contract
+  ```js
+  /**
+   * @typedef {'WARMUP' | 'AIRDROP_LIVE' | 'LOOTED_OUT' | 'EXPIRED'} DropPhase
+   */
+
+  /**
+   * @typedef {Object} PubgCrateDrop
+   * @property {string} id
+   * @property {string} title           For example 'PVS Finals VIP Pass +
+  5,000 G-Coin'.
+   * @property {number} priceVnd        Formatted with
+  Intl.NumberFormat('vi-VN').
+   * @property {number} remainingStock
+   * @property {number} dropEpochMs
+   */
+
+  /**
+   * @typedef {'te' | 'ces' | 'ge' | 'agg'} PubgVnSquadId
+   */
+
+  /**
+   * @typedef {Object} PubgVnSquadStanding
+   * @property {PubgVnSquadId} squadId
+   * @property {string} squadName
+   * @property {number} wwcdCount       Winner Winner Chicken Dinner count.
+   * @property {number} placementPts
+   * @property {number} killPts
+   */
+
+  /**
+   * @typedef {'wwcd' | 'placement' | 'kills' | 'total'} StandingSortKey
+   */
+
+  /**
+   * @typedef {Object} KillFeedEvent
+   * @property {string} id
+   * @property {PubgVnSquadId} killerSquadId
+   * @property {PubgVnSquadId} victimSquadId
+   * @property {string} weapon
+   */
+
+  /**
+   * @typedef {Object} ClaimResponse
+   * @property {200 | 409} status
+   * @property {number} remainingStock  Server stock after the request.
+   * @property {string} [error]         'Looted Out' when status is 409.
+   */
+
+  /**
+   * @typedef {Object} ArenaState
+   * @property {Readonly<Record<string, number>>} stock     Crate id to
+  displayed stock.
+   * @property {Readonly<Record<string, string>>} pending   Crate id to
+  in-flight claimId.
+   * @property {Readonly<Record<string, number>>} owned     Crate id to
+  confirmed claims.
+   * @property {stri
+  ──── (101 lines hidden) ─────────────────────────────────────────────────────
+  nArena.module.css` | Invariants 4, 5, 6, 7, 11. | `feat(hw3): wire optimistic
+  claim with rollback and abort on unmount` |
+  | H3-T18 | Add the leaderboard |
+  `src/homeworks/KraftonPubgVnArena/Leaderboard.jsx`,
+  `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx`,
+  `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | Invariants
+  9 and 10 (filter form lives in KraftonPubgVnArena and is shared). |
+  `feat(hw3): add accessible leaderboard with filter and sort` |
+  | H3-T19 | Add the kill feed list |
+  `src/homeworks/KraftonPubgVnArena/KillFeed.jsx`,
+  `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx`,
+  `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | Invariants
+  10 and 12. | `feat(hw3): add filtered kill feed with content-visibility
+  rows` |
+  | H3-T20 | Add the arena tokens | `src/styles/tokens.css` | Only additions,
+  colors as var() of existing tokens. | `style(hw3): add arena tokens` |
+  | H3-T21 | Add the responsive layout |
+  `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | Mobile
+  first; kill-feed rows switch to `--feed-row-height`; table scrolls inside its
+  own labelled container if needed; page no horizontal scroll at 375px and
+  320px. | `style(hw3): add responsive 375px arena layout` |
+  | H3-T22 | Fix Lighthouse findings (conditional) | Files named by the finding
+  | Only if Lighthouse on `#hw3` reports an Accessibility finding. |
+  `fix(a11y): <finding>` |
+  | H3-T23 | Document Homework 3 | `README.md` | New section after Homework 2
+  including the sample-data sentence. No scores. | `docs(readme): document hw3
+  and sample data` |
+  | H3-T24 | Record AI failures | `AI_FAILURE_AUDIT.md` | Only real defects
+  supplied by the author, appended. Skipped with no commit only if there are
+  none. | `docs(audit): record hw3 ai failures` |
+  | H3-T25 | Sync the commits metric | `src/components/DeveloperCard.jsx` |
+  Only `metrics.commits`, value from the author. | `fix(ex1): sync commits
+  metric after hw3` |
+  | H3-T26 | Final audit | No file changes | Checks pass; log matches Parts 1
+  to 7. | (no commit) |
+  | H3-T27 | Archive Homework 3 evidence |
+  `docs/evidence/HW3_KraftonPubgVnArena/*.png`,
+  `docs/prompt_logs/HW3_KraftonPubgVnArena.txt` | Copied, names unchanged. |
+  `docs(evidence): archive hw3 screenshots and prompt log` |
+  ===== END =====
+
+  Kiểm tra: npm run build; git diff chỉ thêm ở cuối file; Part 7 có đúng 27
+  hàng.
+
+  Commit:
+  git add TASK_DECOMPOSITION.md
+  git commit -m "docs(spec): add hw3 task decomposition"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Tôi đọc ba file được yêu cầu trước.
+
+  Read 1 file, ran 2 shell commands (ctrl+o to expand)
+
+● Bash(cat >> TASK_DECOMPOSITION.md <<'EOF_PART7'…)
+  ⎿  Updated TASK_DECOMPOSITION.md (+131 -0)
+      754  | H2-T23 | Sync the commits metric | `src/components/Developer
+           Card.jsx` | Only `metrics.commits`, value from the author. | `
+           fix(ex1): sync commits metric after hw2` |
+      755  | H2-T24 | Final audit | No file changes | Checks pass; log ma
+           tches Parts 1 to 6. | (no commit) |
+      756  | H2-T25 | Archive Homework 2 evidence | `docs/evidence/HW2_Gr
+           andPiano88/*.png`, `docs/prompt_logs/HW2_GrandPiano88.txt` | C
+           opied with names unchanged. | `docs(evidence): archive hw2 scr
+           eenshots and prompt log` |
+      757 +                                                              
+      758 +## Part 7. Homework 3: KRAFTON x PUBG Vietnam Championship & A
+          +irdrop Arena                                                  
+      759 +                                                              
+      760 +### 7.1 Overview                                              
+      761 +`KraftonPubgVnArena` (src/homeworks/KraftonPubgVnArena/) shows
+          + PVS Finals ticket and G-Coin crate airdrops with an anti-drif
+          +t countdown (`usePubgAirdropTimer`, resynced on `visibilitycha
+          +nge`), optimistic claims with an in-flight lock and rollback o
+          +n 409 Looted Out against an in-memory mock server, a leaderboa
+          +rd of the Vietnamese squads te, ces, ge and agg sorted by WWCD
+          +, placement points or kill points, and a filtered kill feed. A
+          +ll numbers, prices and stock are sample data, labelled "Sample
+          + data, not official PVS results or prices." Source: slides 29 
+          +and 30.                                                       
+      762 +                                                              
+      763 +### 7.2 Contract                                              
+      764 +```js                                                         
+      765 +/**                                                           
+      766 + * @typedef {'WARMUP' | 'AIRDROP_LIVE' | 'LOOTED_OUT' | 'EXPIR
+          +ED'} DropPhase                                                
+      767 + */                                                           
+      768 +                                                              
+      769 +/**                                                           
+      770 + * @typedef {Object} PubgCrateDrop                            
+      771 + * @property {string} id                                      
+      772 + * @property {string} title           For example 'PVS Finals 
+          +VIP Pass + 5,000 G-Coin'.                                     
+      773 + * @property {number} priceVnd        Formatted with Intl.Numb
+          +erFormat('vi-VN').                                            
+      774 + * @property {number} remainingStock                          
+      775 + * @property {number} dropEpochMs                             
+      776 + */                                                           
+      777 +                                                              
+      778 +/**                                                           
+      779 + * @typedef {'te' | 'ces' | 'ge' | 'agg'} PubgVnSquadId       
+      780 + */                                                           
+      781 +                                                              
+      782 +/**                                                           
+      783 + * @typedef {Object} PubgVnSquadStanding                      
+      784 + * @property {PubgVnSquadId} squadId                          
+      785 + * @property {string} squadName                               
+      786 + * @property {number} wwcdCount       Winner Winner Chicken Di
+          +nner count.                                                   
+      787 + * @property {number} placementPts                            
+      788 + * @property {number} killPts                                 
+      789 + */                                                           
+      790 +                                                              
+      791 +/**                                                           
+      792 + * @typedef {'wwcd' | 'placement' | 'kills' | 'total'} Standin
+          +gSortKey                                                      
+      793 + */                                                           
+     … 94 more lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Heredoc bị cắt giữa chừng. Tôi hoàn tác phần ghi dở và dùng cách khác (Write
+  vào scratchpad rồi nối vào file).
+
+● Bash(git checkout -- TASK_DECOMPOSITION.md && git status --short && wc -l
+      TASK_DECOMPOSITION.md)
+  ⎿  1 file changed (binary, mode only or too large to show)
+  ⎿  (a git step in this command can move the working tree, so these may be
+     its changes, not edits) (ctrl+o to expand)
+
+  Made 1 scratchpad edit +171 (ctrl+o to expand)
+
+● Bash(cat "/c/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/cbffd563-07
+      49-4448-8d80-12a7373769b2/scratchpad/part7.md" >> TASK_DECOMPOSITION.md &&
+      git diff --s…)
+  ⎿  Updated TASK_DECOMPOSITION.md (+170 -0)
+      754  | H2-T23 | Sync the commits metric | `src/components/Developer
+           Card.jsx` | Only `metrics.commits`, value from the author. | `
+           fix(ex1): sync commits metric after hw2` |
+      755  | H2-T24 | Final audit | No file changes | Checks pass; log ma
+           tches Parts 1 to 6. | (no commit) |
+      756  | H2-T25 | Archive Homework 2 evidence | `docs/evidence/HW2_Gr
+           andPiano88/*.png`, `docs/prompt_logs/HW2_GrandPiano88.txt` | C
+           opied with names unchanged. | `docs(evidence): archive hw2 scr
+           eenshots and prompt log` |
+      757 +                                                              
+      758 +## Part 7. Homework 3: KRAFTON x PUBG Vietnam Championship & A
+          +irdrop Arena                                                  
+      759 +                                                              
+      760 +### 7.1 Overview                                              
+      761 +`KraftonPubgVnArena` (src/homeworks/KraftonPubgVnArena/) shows
+          + PVS Finals ticket and G-Coin crate airdrops with an anti-drif
+          +t countdown (`usePubgAirdropTimer`, resynced on `visibilitycha
+          +nge`), optimistic claims with an in-flight lock and rollback o
+          +n 409 Looted Out against an in-memory mock server, a leaderboa
+          +rd of the Vietnamese squads te, ces, ge and agg sorted by WWCD
+          +, placement points or kill points, and a filtered kill feed. A
+          +ll numbers, prices and stock are sample data, labelled "Sample
+          + data, not official PVS results or prices." Source: slides 29 
+          +and 30.                                                       
+      762 +                                                              
+      763 +### 7.2 Contract                                              
+      764 +```js                                                         
+      765 +/**                                                           
+      766 + * @typedef {'WARMUP' | 'AIRDROP_LIVE' | 'LOOTED_OUT' | 'EXPIR
+          +ED'} DropPhase                                                
+      767 + */                                                           
+      768 +                                                              
+      769 +/**                                                           
+      770 + * @typedef {Object} PubgCrateDrop                            
+      771 + * @property {string} id                                      
+      772 + * @property {string} title           For example 'PVS Finals 
+          +VIP Pass + 5,000 G-Coin'.                                     
+      773 + * @property {number} priceVnd        Formatted with Intl.Numb
+          +erFormat('vi-VN').                                            
+      774 + * @property {number} remainingStock                          
+      775 + * @property {number} dropEpochMs                             
+      776 + */                                                           
+      777 +                                                              
+      778 +/**                                                           
+      779 + * @typedef {'te' | 'ces' | 'ge' | 'agg'} PubgVnSquadId       
+      780 + */                                                           
+      781 +                                                              
+      782 +/**                                                           
+      783 + * @typedef {Object} PubgVnSquadStanding                      
+      784 + * @property {PubgVnSquadId} squadId                          
+      785 + * @property {string} squadName                               
+      786 + * @property {number} wwcdCount       Winner Winner Chicken Di
+          +nner count.                                                   
+      787 + * @property {number} placementPts                            
+      788 + * @property {number} killPts                                 
+      789 + */                                                           
+      790 +                                                              
+      791 +/**                                                           
+      792 + * @typedef {'wwcd' | 'placement' | 'kills' | 'total'} Standin
+          +gSortKey                                                      
+      793 + */                                                           
+     … 133 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã thêm Part 7 vào cuối TASK_DECOMPOSITION.md và commit 8cff2d7 với message
+  docs(spec): add hw3 task decomposition. Tôi chưa push.
+
+  Kiểm tra:
+  - git diff có 170 dòng thêm và 0 dòng xóa, nên Part 1–6 không đổi.
+  - Part 7 có đúng 27 hàng (H3-T01 đến H3-T27), và file có 7 tiêu đề ## Part.
+  - npm run build chạy thành công.
+  - Sau commit, working tree sạch.
+
+  Không chạy: npm run lint và npm test, vì task chỉ sửa tài liệu và lệnh bạn yêu
+  cầu chỉ có build. Tôi cũng không mở trình duyệt hay đối chiếu Part 7 với bản
+  guide gốc (section 0.2).
+
+  Có sự cố khi làm: lần đầu tôi ghi bằng heredoc thì nội dung bị cắt giữa chừng.
+  Tôi đã git checkout file về nguyên trạng trước khi ghi lại. Lần sau tôi ghi
+  nội dung vào file tạm trong scratchpad rồi nối vào cuối file.
+
+  Cảnh báo CRLF: Git báo "LF will be replaced by CRLF". Đây là cấu hình autocrlf
+  của Windows và không làm đổi nội dung.
+
+  Phạm vi: tôi không sửa file nào khác ngoài TASK_DECOMPOSITION.md và chưa viết
+  code.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 7, H3-T02). Chỉ
+  làm H3-T02. Tôi cho phép sửa project-rules.md; KHÔNG sửa mục 1 đến 18.
+
+  Thêm vào CUỐI "## 19. Homework 3 rules: anti-drift timer, optimistic claims
+  and sample data" (giữ nguyên chữ):
+
+  ### Anti-drift timer
+  - Countdowns are derived from a target epoch: remaining = Math.max(0,
+  targetEpochMs - (nowMs + serverOffsetMs)). Never count down by subtracting
+  from a stored value.
+  - Clock state holds the current time only; remaining time is computed during
+  render. The effect ticks the clock with setInterval and resyncs on
+  visibilitychange; it never sets state synchronously in its body.
+  - setInterval is allowed only in
+  src/homeworks/KraftonPubgVnArena/usePubgAirdropTimer.js (this homework asks
+  for it) and is cleared in the cleanup. This narrows the setInterval rule of
+  section 16.
+
+  ### Optimistic claims
+  - Claims update the UI before the server answers, through a pure reducer. A
+  pending claimId per crate locks further clicks. A 409 restores the optimistic
+  change and applies the server value.
+  - Buttons that are temporarily unavailable keep focus with aria-disabled and
+  a handler guard instead of the disabled attribute.
+  - Every pending request receives an AbortSignal and is aborted on unmount.
+
+  ### Sample data
+  - Numbers, prices and stock that are not official are labelled "Sample data,
+  not official PVS results or prices." in the UI and in the README.
+  - Money is formatted with Intl.NumberFormat('vi-VN', { style: 'currency',
+  currency: 'VND' }).
+
+  Kiểm tra: git diff chỉ thêm ở cuối; npm run build.
+
+  Commit:
+  git add project-rules.md
+  git commit -m "docs(rules): add hw3 timer, optimistic claim and sample data
+  rules"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Ghi vào scratchpad rồi nối vào cuối file (tránh lỗi heredoc lần trước).
+
+  Made 1 scratchpad edit +17 (ctrl+o to expand)
+
+● Bash(cat "/c/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/cbffd563-07
+      49-4448-8d80-12a7373769b2/scratchpad/rules19.md" >> project-rules.md &&
+      git diff --stat…)
+  ⎿  Updated project-rules.md (+16 -0)
+      202  - The UI mode is one state value: 'idle' | 'recording' | 'play
+           ing'.
+      203  - Recording stores { midi, freqHz, durationMs, deltaMs } in or
+           der. Replay is computed by a pure schedule function and awaite
+           d with an abortable delay.
+      204  - Stop and unmount abort the replay's AbortController, stop al
+           l voices and release every pressed key. AbortError is a normal
+            outcome.
+      205 +                                                              
+      206 +## 19. Homework 3 rules: anti-drift timer, optimistic claims a
+          +nd sample data                                                
+      207 +                                                              
+      208 +### Anti-drift timer                                          
+      209 +- Countdowns are derived from a target epoch: remaining = Math
+          +.max(0, targetEpochMs - (nowMs + serverOffsetMs)). Never count
+          + down by subtracting from a stored value.                     
+      210 +- Clock state holds the current time only; remaining time is c
+          +omputed during render. The effect ticks the clock with setInte
+          +rval and resyncs on visibilitychange; it never sets state sync
+          +hronously in its body.                                        
+      211 +- setInterval is allowed only in src/homeworks/KraftonPubgVnAr
+          +ena/usePubgAirdropTimer.js (this homework asks for it) and is 
+          +cleared in the cleanup. This narrows the setInterval rule of s
+          +ection 16.                                                    
+      212 +                                                              
+      213 +### Optimistic claims                                         
+      214 +- Claims update the UI before the server answers, through a pu
+          +re reducer. A pending claimId per crate locks further clicks. 
+          +A 409 restores the optimistic change and applies the server va
+          +lue.                                                          
+      215 +- Buttons that are temporarily unavailable keep focus with ari
+          +a-disabled and a handler guard instead of the disabled attribu
+          +te.                                                           
+      216 +- Every pending request receives an AbortSignal and is aborted
+          + on unmount.                                                  
+      217 +                                                              
+      218 +### Sample data                                               
+      219 +- Numbers, prices and stock that are not official are labelled
+          + "Sample data, not official PVS results or prices." in the UI 
+          +and in the README.                                            
+      220 +- Money is formatted with Intl.NumberFormat('vi-VN', { style: 
+          +'currency', currency: 'VND' }).                               
+
+● Đã thêm mục 19 vào cuối project-rules.md và commit d3a4dbf với message
+  docs(rules): add hw3 timer, optimistic claim and sample data rules. Tôi chưa
+  push.
+
+  Kiểm tra:
+  - git diff có 16 dòng thêm và 0 dòng xóa, nên mục 1–18 không đổi.
+  - Mục 19 giữ nguyên chữ của prompt, gồm ba tiểu mục: Anti-drift timer,
+    Optimistic claims và Sample data.
+  - npm run build chạy thành công.
+  - Sau commit, working tree sạch.
+
+  Không chạy: npm run lint và npm test, vì task chỉ sửa tài liệu và prompt chỉ
+  yêu cầu build.
+
+  Phạm vi: tôi không sửa file nào khác và chưa viết code.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 7, mục 7.2).
+  Chỉ làm H3-T03.
+  Tạo src/homeworks/KraftonPubgVnArena/pubg-vn-arena.contract.js GIỐNG HỆT khối
+  code mục 7.2 (trích từ file).
+  Kiểm tra: diff rỗng; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/pubg-vn-arena.contract.js
+  git commit -m "docs(hw3): add PUBG VN arena JSDoc contract"
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(mkdir -p src/homeworks/KraftonPubgVnArena && awk '/^### 7\.2 /{s=1;next}
+      /^### 7\.3 /{s=0} s&&/^```js/{c=1;next} s&&c&&/^```$/{c=0;next}
+      s&&c{print}' TASK_DECOM…)
+  ⎿  Created src\homeworks\KraftonPubgVnArena\pubg-vn-arena.contract.js
+     (+54 -0)
+       1 +/**                                                            
+       2 + * @typedef {'WARMUP' | 'AIRDROP_LIVE' | 'LOOTED_OUT' | 'EXPIRE
+         +D'} DropPhase                                                  
+       3 + */                                                            
+       4 +                                                               
+       5 +/**                                                            
+       6 + * @typedef {Object} PubgCrateDrop                             
+       7 + * @property {string} id                                       
+       8 + * @property {string} title           For example 'PVS Finals V
+         +IP Pass + 5,000 G-Coin'.                                       
+       9 + * @property {number} priceVnd        Formatted with Intl.Numbe
+         +rFormat('vi-VN').                                              
+      10 + * @property {number} remainingStock                           
+      11 + * @property {number} dropEpochMs                              
+      12 + */                                                            
+      13 +                                                               
+      14 +/**                                                            
+      15 + * @typedef {'te' | 'ces' | 'ge' | 'agg'} PubgVnSquadId        
+      16 + */                                                            
+      17 +                                                               
+      18 +/**                                                            
+      19 + * @typedef {Object} PubgVnSquadStanding                       
+      20 + * @property {PubgVnSquadId} squadId                           
+      21 + * @property {string} squadName                                
+      22 + * @property {number} wwcdCount       Winner Winner Chicken Din
+         +ner count.                                                     
+      23 + * @property {number} placementPts                             
+      24 + * @property {number} killPts                                  
+      25 + */                                                            
+      26 +                                                               
+      27 +/**                                                            
+      28 + * @typedef {'wwcd' | 'placement' | 'kills' | 'total'} Standing
+         +SortKey                                                        
+      29 + */                                                            
+      30 +                                                               
+      31 +/**                                                            
+      32 + * @typedef {Object} KillFeedEvent                             
+      33 + * @property {string} id                                       
+      34 + * @property {PubgVnSquadId} killerSquadId                     
+      35 + * @property {PubgVnSquadId} victimSquadId                     
+      36 + * @property {string} weapon                                   
+      37 + */                                                            
+      38 +                                                               
+      39 +/**                                                            
+      40 + * @typedef {Object} ClaimResponse                             
+     … 14 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã tạo pubg-vn-arena.contract.js
+  (src/homeworks/KraftonPubgVnArena/pubg-vn-arena.contract.js) và commit 1b5c6e9
+  với message docs(hw3): add PUBG VN arena JSDoc contract. Tôi chưa push.
+
+  Kiểm tra (đều chạy trong phiên này):
+  - File chứa đúng khối code của mục 7.2 (54 dòng). Tôi trích khối code từ
+    TASK_DECOMPOSITION.md bằng script rồi tạo file từ đó. Tôi trích lại lần hai
+    bằng cách khác và diff hai bên rỗng.
+  - npm run build chạy thành công.
+  - npm run lint trả exit 0 và có đúng 1 warning đã biết:
+    react(set-state-in-effect) ở src/components/PubgMatchTelemetry.jsx:17.
+  - Sau commit, working tree sạch.
+
+  Không chạy: npm test, vì task này không có test. Tôi cũng không xác nhận chữ
+  trong khối 7.2 khớp với bản guide gốc.
+
+  Phạm vi: tôi chỉ tạo file contract, không sửa file nào khác và chưa làm
+  H3-T04.
+
+> Đọc Agent.md, project-rules.md (mục 15 Lists and state, 19 Sample data) và
+  TASK_DECOMPOSITION.md (Part 7, mục 7.4, H3-T04). Chỉ làm H3-T04. Test trước;
+  báo lần thất bại đầu tiên. Dùng ĐÚNG số liệu dưới đây, không tự thêm.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/arenaData.test.js rồi
+  arenaData.js.
+
+  - export const SAMPLE_DATA_NOTICE = 'Sample data, not official PVS results or
+  prices.'
+  - export const DROP_WINDOW_MS = 600000
+  - export const SQUAD_STANDINGS = Object.freeze([...]) 4 object frozen theo
+  thứ tự:
+    { squadId: 'te', squadName: 'The Expendables', wwcdCount: 3, placementPts:
+  58, killPts: 47 }
+    { squadId: 'ces', squadName: 'Cerberus Esports', wwcdCount: 2,
+  placementPts: 61, killPts: 39 }
+    { squadId: 'ge', squadName: 'Genius Esports', wwcdCount: 2, placementPts:
+  44, killPts: 52 }
+    { squadId: 'agg', squadName: 'AGG', wwcdCount: 1, placementPts: 49,
+  killPts: 33 }
+  - export const CRATE_SEEDS = Object.freeze([...]) 4 object frozen:
+    { id: 'vip-pass', title: 'PVS Finals VIP Pass + 5,000 G-Coin', priceVnd:
+  1990000, remainingStock: 5, serverStock: 5, dropOffsetMs: 45000 }
+    { id: 'gcoin-600', title: 'G-Coin Contraband Crate (600 G-Coin)', priceVnd:
+  149000, remainingStock: 3, serverStock: 3, dropOffsetMs: -60000 }
+    { id: 'gcoin-last', title: 'G-Coin Contraband Crate (Last Crate)',
+  priceVnd: 149000, remainingStock: 1, serverStock: 0, dropOffsetMs: -60000 }
+    { id: 'early-bird', title: 'PVS Finals Early-Bird Pass', priceVnd: 990000,
+  remainingStock: 2, serverStock: 2, dropOffsetMs: -1200000 }
+  - export function buildSampleCrates(nowMs): trả Object.freeze(mảng
+  PubgCrateDrop frozen { id, title, priceVnd, remainingStock, dropEpochMs:
+  nowMs + dropOffsetMs }) (không có serverStock, dropOffsetMs).
+  - export function buildServerStock(): Object.freeze({ [id]: serverStock, ...
+  }).
+  - Test: đúng giá trị (deepEqual), id không trùng, squadId đúng 4 giá trị
+  te/ces/ge/agg, frozen, buildSampleCrates(1000) cho dropEpochMs 46000 với
+  vip-pass, buildServerStock()['gcoin-last'] === 0, SAMPLE_DATA_NOTICE chứa
+  'not official'.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C12 có dòng trong arenaData.js.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C12:   # phải in ít nhất 1 dòng (README chưa cần, sẽ kiểm ở H3-T23)
+    Select-String -Path src\homeworks\KraftonPubgVnArena\arenaData.js -Pattern
+  'not official'
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/arenaData.js
+  src/homeworks/KraftonPubgVnArena/arenaData.test.js
+  git commit -m "feat(hw3): add labelled sample crates and squad standings"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Style: no semicolons, single quotes. Viết test trước.
+
+● Write(src\homeworks\KraftonPubgVnArena\arenaData.test.js)
+  ⎿  Wrote 128 lines to src\homeworks\KraftonPubgVnArena\arenaData.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import {
+       4   SAMPLE_DATA_NOTICE,
+       5   DROP_WINDOW_MS,
+       6   SQUAD_STANDINGS,
+       7   CRATE_SEEDS,
+       8   buildSampleCrates,
+       9   buildServerStock,
+      10 } from './arenaData.js'
+     … +118 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lần thất bại đầu tiên đúng như mong đợi: ERR_MODULE_NOT_FOUND vì arenaData.js
+  chưa tồn tại. Giờ viết implementation.
+
+● Write(src\homeworks\KraftonPubgVnArena\arenaData.js)
+  ⎿  Wrote 70 lines to src\homeworks\KraftonPubgVnArena\arenaData.js
+       1 /** @typedef {import('./pubg-vn-arena.contract.js').PubgCrateDro
+         p} PubgCrateDrop */
+       2 /** @typedef {import('./pubg-vn-arena.contract.js').PubgVnSquadS
+         tanding} PubgVnSquadStanding */
+       3
+       4 export const SAMPLE_DATA_NOTICE = 'Sample data, not official PVS
+          results or prices.'
+       5
+       6 export const DROP_WINDOW_MS = 600000
+       7
+     … +63 lines (ctrl+o to expand)
+  Searched for 1 pattern, ran 2 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T04 và commit dc5078a với message feat(hw3): add labelled
+  sample crates and squad standings. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): chạy arenaData.test.js
+  (src/homeworks/KraftonPubgVnArena/arenaData.test.js) khi chưa có
+  implementation thì báo ERR_MODULE_NOT_FOUND, vì arenaData.js chưa tồn tại. Sau
+  khi viết arenaData.js (src/homeworks/KraftonPubgVnArena/arenaData.js) thì các
+  test đều qua.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 204 test, 204 pass, 0 fail (toàn bộ dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning (cái đã biết ở PubgMatchTelemetry.jsx).
+  - C12: Select-String in ra dòng 4 của arenaData.js chứa not official.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - arenaData.js export đúng 6 tên: SAMPLE_DATA_NOTICE, DROP_WINDOW_MS,
+    SQUAD_STANDINGS, CRATE_SEEDS, buildSampleCrates, buildServerStock. Số liệu,
+    tiêu đề và thứ tự giữ đúng như prompt.
+  - Mảng và từng object đều được Object.freeze.
+  - buildSampleCrates chỉ trả id, title, priceVnd, remainingStock, dropEpochMs,
+    không có serverStock hay dropOffsetMs. Ví dụ buildSampleCrates(1000) cho
+    vip-pass ra dropEpochMs 46000.
+  - Test kiểm tra đúng giá trị bằng deepEqual, id không trùng, squadId đúng 4
+    giá trị, tính frozen, buildServerStock()['gcoin-last'] === 0 và
+    SAMPLE_DATA_NOTICE chứa not official.
+
+  Không verify: chưa kiểm tra thủ công trên trình duyệt (chưa có UI). Dòng
+  README của quy tắc sample data sẽ kiểm ở H3-T23.
+
+  Phạm vi: tôi chỉ tạo hai file nêu trên và chưa làm H3-T05.
+
+> Đọc Agent.md, project-rules.md (mục 19 Anti-drift timer) và
+  TASK_DECOMPOSITION.md (Part 7, mục 7.5, H3-T05). Chỉ làm H3-T05. Test trước.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/airdropClock.test.js rồi
+  airdropClock.js.
+  - export function computeRemainingMs(targetEpochMs, nowMs, serverOffsetMs
+  = 0) { return Math.max(0, targetEpochMs - (nowMs + serverOffsetMs)) }
+  - export function formatCountdown(ms): tổng giây = Math.ceil(Math.max(0, ms)
+  / 1000); h, m, s; nếu h > 0 → ${h}:${mm}:${ss}, ngược lại ${mm}:${ss}
+  (padStart 2).
+  - Test: 4 dòng computeRemainingMs và 5 dòng formatCountdown của mục 7.5.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C10 không in gì.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C10:
+    Get-ChildItem src\homeworks\KraftonPubgVnArena -Recurse -Include .jsx,.js |
+  Select-String -Pattern '=>\s*\w+\s*-\s1\b|-=\s1000'
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/airdropClock.js
+  src/homeworks/KraftonPubgVnArena/airdropClock.test.js
+  git commit -m "feat(hw3): add anti-drift remaining time and countdown format"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\KraftonPubgVnArena\airdropClock.test.js)
+  ⎿  Wrote 47 lines to
+     src\homeworks\KraftonPubgVnArena\airdropClock.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { computeRemainingMs, formatCountdown } from './airdropCl
+         ock.js'
+       4
+       5 test('computeRemainingMs subtracts now from target', () => {
+       6   assert.equal(computeRemainingMs(10000, 4000, 0), 6000)
+       7 })
+       8
+       9 test('computeRemainingMs adds a positive server offset to now',
+     … +39 lines (~1 KB) (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\airdropClock.js)
+  ⎿  Wrote 25 lines to src\homeworks\KraftonPubgVnArena\airdropClock.js
+       1 /**
+       2  * Remaining time derived from a target epoch, so the value cann
+         ot drift.
+       3  * @param {number} targetEpochMs
+       4  * @param {number} nowMs
+       5  * @param {number} [serverOffsetMs]
+       6  * @returns {number}
+       7  */
+       8 export function computeRemainingMs(targetEpochMs, nowMs, serverO
+         ffsetMs = 0) {
+     … +17 lines (ctrl+o to expand)
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T05 và commit acc8e9d với message feat(hw3): add anti-drift
+  remaining time and countdown format. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): chạy airdropClock.test.js
+  (src/homeworks/KraftonPubgVnArena/airdropClock.test.js) khi chưa có
+  implementation thì báo ERR_MODULE_NOT_FOUND, vì airdropClock.js
+  (src/homeworks/KraftonPubgVnArena/airdropClock.js) chưa tồn tại.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 215 test, 215 pass, 0 fail (toàn dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - C10: không in dòng nào, tức là đạt.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - computeRemainingMs(targetEpochMs, nowMs, serverOffsetMs = 0) và
+    formatCountdown(ms) viết đúng theo công thức trong prompt.
+  - Test có 4 dòng computeRemainingMs và 5 dòng formatCountdown của mục 7.5.
+  - Tôi thêm 2 test ngoài mục 7.5: offset mặc định bằng 0 và formatCountdown với
+    số âm cho 00:00. Hai test này nằm trong hành vi mà prompt đã mô tả (= 0 và
+    Math.max(0, ms)), không thêm số liệu mới.
+
+  Không verify: chưa kiểm tra trên trình duyệt (chưa có UI).
+
+  Phạm vi: tôi chỉ tạo hai file nêu trên và chưa làm H3-T06.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 7, mục 7.5
+  getDropPhase, H3-T06). Chỉ làm H3-T06. Test trước.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/airdropClock.js,
+  airdropClock.test.js.
+  - export const DROP_PHASES = Object.freeze(['WARMUP', 'AIRDROP_LIVE',
+  'LOOTED_OUT', 'EXPIRED'])
+  - export function getDropPhase({ nowMs, dropEpochMs, remainingStock, windowMs
+  }): nowMs < dropEpochMs → 'WARMUP'; nowMs >= dropEpochMs + windowMs →
+  'EXPIRED'; remainingStock <= 0 → 'LOOTED_OUT'; còn lại 'AIRDROP_LIVE'.
+  - Test: 5 dòng mục 7.5.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/airdropClock.js
+  src/homeworks/KraftonPubgVnArena/airdropClock.test.js
+  git commit -m "feat(hw3): derive airdrop phase from clock and stock"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Update(src\homeworks\KraftonPubgVnArena\airdropClock.test.js)
+  ⎿  Added 1 line, removed 1 line
+      1  import { test } from 'node:test'
+      2  import assert from 'node:assert/strict'
+      3 -import { computeRemainingMs, formatCountdown } from './airdropCl
+        -ock.js'                                                         
+      3 +import { computeRemainingMs, formatCountdown, DROP_PHASES, getDr
+        +opPhase } from './airdropClock.js'                              
+      4  
+      5  test('computeRemainingMs subtracts now from target', () => {
+      6    assert.equal(computeRemainingMs(10000, 4000, 0), 6000)
+
+● Bash(cat >> src/homeworks/KraftonPubgVnArena/airdropClock.test.js <<'EOF'…)
+  ⎿  Updated src\homeworks\KraftonPubgVnArena\airdropClock.test.js (+19 -0)
+      45  test('formatCountdown clamps negative input to 00:00', () => {
+      46    assert.equal(formatCountdown(-5000), '00:00')
+      47  })
+      48 +                                                               
+      49 +test('DROP_PHASES lists the four phases and is frozen', () => {
+      50 +  assert.deepEqual(DROP_PHASES, ['WARMUP', 'AIRDROP_LIVE', 'LOO
+         +TED_OUT', 'EXPIRED'])                                          
+      51 +  assert.ok(Object.isFrozen(DROP_PHASES))                      
+      52 +})                                                             
+      53 +                                                               
+      54 +const phaseRows = [                                            
+      55 +  { nowMs: 999, remainingStock: 3, expected: 'WARMUP' },       
+      56 +  { nowMs: 1000, remainingStock: 3, expected: 'AIRDROP_LIVE' },
+      57 +  { nowMs: 1200, remainingStock: 0, expected: 'LOOTED_OUT' },  
+      58 +  { nowMs: 1500, remainingStock: 3, expected: 'EXPIRED' },     
+      59 +  { nowMs: 1500, remainingStock: 0, expected: 'EXPIRED' },     
+      60 +]                                                              
+      61 +                                                               
+      62 +for (const { nowMs, remainingStock, expected } of phaseRows) { 
+      63 +  test(`getDropPhase at ${nowMs} with stock ${remainingStock} i
+         +s ${expected}`, () => {                                        
+      64 +    assert.equal(getDropPhase({ nowMs, dropEpochMs: 1000, remai
+         +ningStock, windowMs: 500 }), expected)                         
+      65 +  })                                                           
+      66 +}                                                              
+
+● Lần thất bại đầu tiên: SyntaxError: ... does not provide an export named
+  'DROP_PHASES'. (Thay đổi trên file test chính là phần tôi vừa thêm.) Giờ thêm
+  implementation.
+
+● Bash(cat >> src/homeworks/KraftonPubgVnArena/airdropClock.js <<'EOF'…)
+  ⎿  Updated src\homeworks\KraftonPubgVnArena\airdropClock.js (+16 -0)
+      23    const ss = String(seconds).padStart(2, '0')
+      24    return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`
+      25  }
+      26 +                                                               
+      27 +/** @typedef {import('./pubg-vn-arena.contract.js').DropPhase} 
+         +DropPhase */                                                   
+      28 +                                                               
+      29 +export const DROP_PHASES = Object.freeze(['WARMUP', 'AIRDROP_LI
+         +VE', 'LOOTED_OUT', 'EXPIRED'])                                 
+      30 +                                                               
+      31 +/**                                                            
+      32 + * Phase of a crate drop, derived from the clock and the displa
+         +yed stock.                                                     
+      33 + * @param {{ nowMs: number, dropEpochMs: number, remainingStock
+         +: number, windowMs: number }} input                            
+      34 + * @returns {DropPhase}                                        
+      35 + */                                                            
+      36 +export function getDropPhase({ nowMs, dropEpochMs, remainingSto
+         +ck, windowMs }) {                                              
+      37 +  if (nowMs < dropEpochMs) return 'WARMUP'                     
+      38 +  if (nowMs >= dropEpochMs + windowMs) return 'EXPIRED'        
+      39 +  if (remainingStock <= 0) return 'LOOTED_OUT'                 
+      40 +  return 'AIRDROP_LIVE'                                        
+      41 +}                                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã làm xong H3-T06 và commit 1160d35 với message feat(hw3): derive airdrop
+  phase from clock and stock. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): khi airdropClock.test.js
+  (src/homeworks/KraftonPubgVnArena/airdropClock.test.js) đã import DROP_PHASES
+  và getDropPhase mà airdropClock.js
+  (src/homeworks/KraftonPubgVnArena/airdropClock.js) chưa có, Node báo
+  SyntaxError: The requested module './airdropClock.js' does not provide an
+  export named 'DROP_PHASES'.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 221 test, 221 pass, 0 fail (toàn dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - DROP_PHASES là mảng 4 phase được đóng băng.
+  - getDropPhase xét theo thứ tự: WARMUP, EXPIRED, LOOTED_OUT, rồi AIRDROP_LIVE.
+    Vì EXPIRED được xét trước, hai dòng 1500 trong mục 7.5 đều ra EXPIRED dù
+    stock là 3 hay 0.
+  - Test có 5 dòng của mục 7.5, cộng 1 test kiểm tra DROP_PHASES và tính frozen.
+  - Các test H3-T05 giữ nguyên, không sửa.
+
+  Không verify: chưa kiểm tra trên trình duyệt (chưa có UI).
+
+  Phạm vi: tôi chỉ sửa hai file nêu trên và chưa làm H3-T07.
+
+> Đọc Agent.md, project-rules.md (mục 19 Sample data) và TASK_DECOMPOSITION.md
+  (Part 7, mục 7.5 formatVnd, H3-T07). Chỉ làm H3-T07. Test trước.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/formatVnd.test.js rồi
+  formatVnd.js.
+  - const VND = new Intl.NumberFormat('vi-VN', { style: 'currency', currency:
+  'VND' }) (cấp module, tạo một lần)
+  - export function formatVnd(amount) { return VND.format(amount) }
+  - Test: so sánh sau khi .replace(/\u00a0/g, ' ') : 3 dòng mục 7.5. Báo chuỗi
+  thật mà Node in ra (kể cả ký tự khoảng trắng đặc biệt).
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/formatVnd.js
+  src/homeworks/KraftonPubgVnArena/formatVnd.test.js
+  git commit -m "feat(hw3): format prices in vietnamese dong"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\KraftonPubgVnArena\formatVnd.test.js)
+  ⎿  Wrote 20 lines to src\homeworks\KraftonPubgVnArena\formatVnd.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { formatVnd } from './formatVnd.js'
+       4
+       5 /** Intl puts a no-break space (U+00A0) before the currency sign
+         ; normalize it for comparison. */
+       6 function plain(text) {
+       7   return text.replace(/ /g, ' ')
+       8 }
+       9
+     … +11 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\formatVnd.js)
+  ⎿  Wrote 10 lines to src\homeworks\KraftonPubgVnArena\formatVnd.js
+       1 const VND = new Intl.NumberFormat('vi-VN', { style: 'currency',
+         currency: 'VND' })
+       2
+       3 /**
+       4  * Formats an amount in Vietnamese dong, for example 1990000 bec
+         omes '1.990.000 ₫'.
+       5  * @param {number} amount
+       6  * @returns {string}
+       7  */
+       8 export function formatVnd(amount) {
+     … +2 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T07 và commit e62eb5a với message feat(hw3): format prices in
+  vietnamese dong. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): chạy formatVnd.test.js
+  (src/homeworks/KraftonPubgVnArena/formatVnd.test.js) khi chưa có
+  implementation thì báo ERR_MODULE_NOT_FOUND, vì formatVnd.js
+  (src/homeworks/KraftonPubgVnArena/formatVnd.js) chưa tồn tại.
+
+  Chuỗi thật Node in ra (Node v24.14.1):
+
+  ┌─────────┬───────────────┬──────────────────────┐
+  │ amount  │ Chuỗi trả về  │        Ký tự         │
+  ├─────────┼───────────────┼──────────────────────┤
+  │ 1990000 │ "1.990.000 ₫" │ …0 U+00A0 ₫ (U+20AB) │
+  ├─────────┼───────────────┼──────────────────────┤
+  │ 149000  │ "149.000 ₫"   │ …0 U+00A0 ₫          │
+  ├─────────┼───────────────┼──────────────────────┤
+  │ 0       │ "0 ₫"         │ 0 U+00A0 ₫           │
+  └─────────┴───────────────┴──────────────────────┘
+
+  - Dấu phân cách hàng nghìn là dấu chấm thường (U+002E).
+  - Khoảng trắng giữa số và ₫ là no-break space (U+00A0), không phải dấu cách
+    thường. Vì vậy test thay \u00a0 bằng dấu cách trước khi so sánh, như prompt
+    yêu cầu.
+  - Hệ quả cho UI: formatVnd trả U+00A0 thật, nên các test về sau cần chuẩn hóa
+    chuỗi theo cách này.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 224 test, 224 pass, 0 fail (toàn dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - Sau commit, working tree sạch.
+
+  Nội dung: Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+  được tạo một lần ở cấp module, và formatVnd(amount) gọi format trên đối tượng
+  đó. Test có 3 dòng của mục 7.5.
+
+  Không verify: kết quả của Intl phụ thuộc dữ liệu ICU của Node/trình duyệt. Tôi
+  chỉ chạy trên Node v24.14.1 này, chưa kiểm tra trên trình duyệt.
+
+  Phạm vi: tôi chỉ tạo hai file nêu trên và chưa làm H3-T08.
+
+> Đọc Agent.md, project-rules.md (mục 5, 19 Optimistic claims) và
+  TASK_DECOMPOSITION.md (Part 7, Invariant 5, mục 7.5 arenaReducer, H3-T08).
+  Chỉ làm H3-T08. Test trước. CHƯA làm CLAIM_REJECTED / CLAIM_ABORTED (H3-T09).
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/arenaReducer.test.js rồi
+  arenaReducer.js.
+  - export function createArenaState(crates): { stock:
+  Object.fromEntries(crates.map((c) => [c.id, c.remainingStock])), pending: {},
+  owned: {}, lastError: null }
+  - export function arenaReducer(state, action) với switch(action.type):
+    'CLAIM_STARTED' { crateId, claimId }: nếu state.pending[crateId] hoặc
+  (state.stock[crateId] ?? 0) <= 0 → return state. Ngược lại trả object mới:
+  stock { ...state.stock, [crateId]: stock - 1 }, pending { ...state.pending,
+  [crateId]: claimId }, lastError null.
+    'CLAIM_CONFIRMED' { crateId, claimId, remainingStock }: nếu
+  state.pending[crateId] !== claimId → return state. Ngược lại stock =
+  remainingStock, xóa pending[crateId] (tạo object mới, không delete trên
+  object cũ), owned[crateId] + 1.
+    'DISMISS_ERROR': lastError null (nếu đã null thì return state).
+    default: throw new TypeError(Unknown action: ${action.type})
+  - Test: Object.freeze sâu state đầu vào (stock, pending, owned) để chứng minh
+  không mutate; các dòng 1, 2, 3, 4, 8, 9 của bảng mục 7.5.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/arenaReducer.js
+  src/homeworks/KraftonPubgVnArena/arenaReducer.test.js
+  git commit -m "feat(hw3): add optimistic claim reducer with in-flight lock"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\KraftonPubgVnArena\arenaReducer.test.js)
+  ⎿  Wrote 151 lines to
+     src\homeworks\KraftonPubgVnArena\arenaReducer.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { createArenaState, arenaReducer } from './arenaReducer.j
+         s'
+       4
+       5 /** Freezes the state and its three maps, so any mutation throws
+          in strict mode. */
+       6 function deepFreezeState(state) {
+       7   Object.freeze(state.stock)
+       8   Object.freeze(state.pending)
+     … +143 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\arenaReducer.js)
+  ⎿  Wrote 52 lines to src\homeworks\KraftonPubgVnArena\arenaReducer.js
+       1 /** @typedef {import('./pubg-vn-arena.contract.js').ArenaState}
+         ArenaState */
+       2 /** @typedef {import('./pubg-vn-arena.contract.js').PubgCrateDro
+         p} PubgCrateDrop */
+       3
+       4 /**
+       5  * @param {ReadonlyArray<PubgCrateDrop>} crates
+       6  * @returns {ArenaState}
+       7  */
+       8 export function createArenaState(crates) {
+     … +44 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T08 và commit 79fabaf với message feat(hw3): add optimistic
+  claim reducer with in-flight lock. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): chạy arenaReducer.test.js
+  (src/homeworks/KraftonPubgVnArena/arenaReducer.test.js) khi chưa có
+  implementation thì báo ERR_MODULE_NOT_FOUND, vì arenaReducer.js
+  (src/homeworks/KraftonPubgVnArena/arenaReducer.js) chưa tồn tại.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 239 test, 239 pass, 0 fail (toàn dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - createArenaState và arenaReducer có ba action CLAIM_STARTED,
+    CLAIM_CONFIRMED, DISMISS_ERROR, và default ném TypeError. Logic theo đúng mô
+    tả của prompt.
+  - CLAIM_REJECTED và CLAIM_ABORTED chưa làm, để dành cho H3-T09. Hiện tại hai
+    action này sẽ rơi vào default và ném TypeError.
+  - Mọi state đầu vào trong test đều được đóng băng ở cả bốn tầng: state, stock,
+    pending, owned. Nhờ đó nếu reducer mutate thì test sẽ lỗi.
+  - Test phủ các dòng 1, 2, 3, 4, 8, 9 của bảng mục 7.5.
+  - Tôi thêm vài test ngoài bảng, trong phạm vi mô tả của prompt:
+    - createArenaState.
+    - CLAIM_STARTED xóa lastError cũ.
+    - Crate không tồn tại trả về cùng object.
+    - CLAIM_CONFIRMED với claimId không khớp trả về cùng object.
+    - owned cộng dồn.
+    - Giữ pending của crate khác.
+    - DISMISS_ERROR khi không có lỗi trả về cùng object.
+
+  Không verify: chưa kiểm tra trên trình duyệt (chưa có UI).
+
+  Phạm vi: tôi chỉ tạo hai file nêu trên và chưa làm H3-T09.
+
+> Đọc Agent.md, project-rules.md (mục 19) và TASK_DECOMPOSITION.md (Part 7, mục
+  7.5 arenaReducer, H3-T09). Chỉ làm H3-T09. Test trước.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/arenaReducer.js,
+  arenaReducer.test.js.
+  - 'CLAIM_REJECTED' { crateId, claimId, remainingStock, error }: nếu
+  pending[crateId] !== claimId → return state. Khôi phục: restored =
+  stock[crateId] + 1; sau đó stock = Number.isFinite(remainingStock) ?
+  remainingStock : restored; xóa pending; lastError = error ?? 'Claim failed'.
+  - 'CLAIM_ABORTED' { crateId, claimId }: nếu pending khớp → stock + 1, xóa
+  pending (không đặt lastError).
+  - Test: đủ toàn bộ bảng reducer mục 7.5 (thêm dòng 5, 6, 7); test riêng:
+  REJECTED không có remainingStock → stock về giá trị trước khi claim.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/arenaReducer.js
+  src/homeworks/KraftonPubgVnArena/arenaReducer.test.js
+  git commit -m "feat(hw3): roll back optimistic claim on 409 looted out"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cat >> src/homeworks/KraftonPubgVnArena/arenaReducer.test.js <<'EOF'…)
+  ⎿  Updated src\homeworks\KraftonPubgVnArena\arenaReducer.test.js (+122
+     -0)
+      149  test('an unknown action type throws TypeError', () => {
+      150    assert.throws(() => arenaReducer(initialState(), { type: 'NO
+           PE' }), TypeError)
+      151  })
+      152 +                                                              
+      153 +function startedState() {                                     
+      154 +  return deepFreezeState(arenaReducer(initialState(), { type: 
+          +'CLAIM_STARTED', crateId: 'a', claimId: 'c1' }))              
+      155 +}                                                             
+      156 +                                                              
+      157 +test('CLAIM_REJECTED applies the server stock, clears pending,
+          + keeps owned empty and sets lastError', () => {               
+      158 +  const started = startedState()                              
+      159 +  const next = arenaReducer(started, {                        
+      160 +    type: 'CLAIM_REJECTED',                                   
+      161 +    crateId: 'a',                                             
+      162 +    claimId: 'c1',                                            
+      163 +    remainingStock: 0,                                        
+      164 +    error: 'Looted Out',                                      
+      165 +  })                                                          
+      166 +  assert.deepEqual(next.stock, { a: 0 })                      
+      167 +  assert.deepEqual(next.pending, {})                          
+      168 +  assert.deepEqual(next.owned, {})                            
+      169 +  assert.equal(next.lastError, 'Looted Out')                  
+      170 +  assert.notEqual(next, started)                              
+      171 +  assert.deepEqual(started.stock, { a: 1 })                   
+      172 +  assert.deepEqual(started.pending, { a: 'c1' })              
+      173 +})                                                            
+      174 +                                                              
+      175 +test('CLAIM_REJECTED without remainingStock restores the stock
+          + from before the claim', () => {                              
+      176 +  const next = arenaReducer(startedState(), {                 
+      177 +    type: 'CLAIM_REJECTED',                                   
+      178 +    crateId: 'a',                                             
+      179 +    claimId: 'c1',                                            
+      180 +    error: 'Looted Out',                                      
+      181 +  })                                                          
+      182 +  assert.deepEqual(next.stock, { a: 2 })                      
+      183 +  assert.deepEqual(next.pending, {})                          
+      184 +  assert.equal(next.lastError, 'Looted Out')                  
+      185 +})                                                            
+      186 +                                                              
+      187 +test('CLAIM_REJECTED with a non-finite remainingStock restores
+          + the stock from before the claim', () => {                    
+      188 +  const next = arenaReducer(startedState(), {                 
+     … 85 more lines (ctrl+o to expand)
+
+● Lần thất bại đầu tiên: TypeError: Unknown action: CLAIM_REJECTED (10 test
+  lỗi). Giờ thêm hai case vào reducer.
+● Update(src\homeworks\KraftonPubgVnArena\arenaReducer.js)
+  ⎿  Added 20 lines
+      43          owned: { ...state.owned, [crateId]: (state.owned[crateI
+          d] ?? 0) + 1 },
+      44        }
+      45      }
+      46 +    case 'CLAIM_REJECTED': {                                   
+      47 +      const { crateId, claimId, remainingStock, error } = actio
+         +n                                                              
+      48 +      if (state.pending[crateId] !== claimId) return state     
+      49 +      const restored = state.stock[crateId] + 1                
+      50 +      return {                                                 
+      51 +        ...state,                                              
+      52 +        stock: { ...state.stock, [crateId]: Number.isFinite(rem
+         +ainingStock) ? remainingStock : restored },                    
+      53 +        pending: Object.fromEntries(Object.entries(state.pendin
+         +g).filter(([id]) => id !== crateId)),                          
+      54 +        lastError: error ?? 'Claim failed',                    
+      55 +      }                                                        
+      56 +    }                                                          
+      57 +    case 'CLAIM_ABORTED': {                                    
+      58 +      const { crateId, claimId } = action                      
+      59 +      if (state.pending[crateId] !== claimId) return state     
+      60 +      return {                                                 
+      61 +        ...state,                                              
+      62 +        stock: { ...state.stock, [crateId]: state.stock[crateId
+         +] + 1 },                                                       
+      63 +        pending: Object.fromEntries(Object.entries(state.pendin
+         +g).filter(([id]) => id !== crateId)),                          
+      64 +      }                                                        
+      65 +    }                                                          
+      66      case 'DISMISS_ERROR':
+      67        if (state.lastError === null) return state
+      68        return { ...state, lastError: null }
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T09 và commit 7c9aa37 với message feat(hw3): roll back
+  optimistic claim on 409 looted out. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): sau khi thêm 10 test mới vào
+  arenaReducer.test.js (src/homeworks/KraftonPubgVnArena/arenaReducer.test.js),
+  chạy với reducer cũ thì 10 test lỗi (15 pass, 10 fail) với TypeError: Unknown
+  action: CLAIM_REJECTED.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 249 test, 249 pass, 0 fail (toàn dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - Sau commit, working tree sạch.
+
+  Nội dung: trong arenaReducer.js
+  (src/homeworks/KraftonPubgVnArena/arenaReducer.js) tôi thêm hai case, còn các
+  case cũ giữ nguyên.
+  - CLAIM_REJECTED:
+    - Nếu pending[crateId] không khớp claimId thì trả về cùng state.
+    - Nếu khớp, stock lấy theo remainingStock khi giá trị này hữu hạn, ngược lại
+      về stock + 1.
+    - pending của crate đó bị xóa.
+    - lastError đặt theo error ?? 'Claim failed'.
+    - owned không đổi.
+  - CLAIM_ABORTED: nếu claimId khớp thì stock + 1 và xóa pending, không đặt
+    lastError.
+  - Cả hai case xóa pending bằng cách tạo object mới, không delete trên object
+    cũ.
+
+  Test:
+  - Gồm các dòng 5, 6, 7 của bảng mục 7.5, cộng test riêng "REJECTED không có
+    remainingStock thì stock về 2".
+  - Tôi thêm vài test ngoài bảng, trong phạm vi mô tả của prompt:
+    - remainingStock là NaN.
+    - Không có error thì dùng 'Claim failed'.
+    - Không có pending nào.
+    - Giữ pending của crate khác.
+    - Claim lại được sau khi rejected.
+  - Toàn bộ bảng reducer của mục 7.5 giờ đã có test.
+
+  Không verify: chưa kiểm tra trên trình duyệt (chưa có UI).
+
+  Phạm vi: tôi chỉ sửa hai file nêu trên và chưa làm H3-T10.
+
+> Đọc Agent.md, project-rules.md (mục 16 Fetch and abort, 19) và
+  TASK_DECOMPOSITION.md (Part 7, mục 7.5 mock server, H3-T10). Chỉ làm H3-T10.
+  Test trước.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/mockArenaServer.test.js rồi
+  mockArenaServer.js.
+  - Import delay từ '../GrandPiano88/replay.js' (abortable, đã test ở HW2) làm
+  mặc định.
+  - export function createMockArenaServer({ serverStock, latencyMs = 800,
+  delay: wait = delay }):
+    const stock = { ...serverStock } (bản sao riêng); const answers = new Map()
+  (claimId → response)
+    async claimCrate(crateId, claimId, { signal } = {}):
+      if (!(crateId in stock)) throw new TypeError(Unknown crate: ${crateId})
+      await wait(latencyMs, signal)   // abort ở đây → reject AbortError, stock
+  không đổi
+      if (answers.has(claimId)) return answers.get(claimId)
+      const res = stock[crateId] > 0 ? Object.freeze({ status: 200,
+  remainingStock: --stock[crateId] }) : Object.freeze({ status: 409, error:
+  'Looted Out', remainingStock: 0 })
+      answers.set(claimId, res); return res
+    peekStock(crateId) (chỉ phục vụ test).
+  - Không fetch, không http.
+  - Test: 6 dòng mục 7.5 (fake wait: resolve ngay, hoặc reject AbortError nếu
+  signal.aborted).
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C2, C6' không in gì.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C2:
+    Get-ChildItem src -Recurse -Include .jsx,.js,.css | Select-String -Pattern
+  'http://'
+  C6':
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  'isLoading|isError'
+    Get-ChildItem src -Recurse -Include .jsx,.js | Where-Object Name -ne
+  'usePubgAirdropTimer.js' | Select-String -Pattern 'setInterval\('
+    Get-ChildItem src -Recurse -Include .jsx,.js | Where-Object Name -notlike
+  'fetchKraftonPubgTelemetry' | Select-String -Pattern '\bfetch\('
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/mockArenaServer.js
+  src/homeworks/KraftonPubgVnArena/mockArenaServer.test.js
+  git commit -m "feat(hw3): add idempotent mock arena server with 409"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\mockArenaServer.test.js)
+  ⎿  Wrote 111 lines to
+     src\homeworks\KraftonPubgVnArena\mockArenaServer.test.js
+      1 import { test } from 'node:test'
+      2 import assert from 'node:assert/strict'
+      3 import { createMockArenaServer } from './mockArenaServer.js'
+      4
+      5 /** Fake wait: resolves at once, or rejects with an AbortError wh
+        en the signal is already aborted. */
+      6 function instant(_ms, signal) {
+      7   if (signal?.aborted) return Promise.reject(new DOMException('Ab
+        orted', 'AbortError'))
+      8   return Promise.resolve()
+     … +103 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\mockArenaServer.js)
+  ⎿  Wrote 43 lines to src\homeworks\KraftonPubgVnArena\mockArenaServer.js
+       1 import { delay } from '../GrandPiano88/replay.js'
+       2
+       3 /** @typedef {import('./pubg-vn-arena.contract.js').ClaimRespons
+         e} ClaimResponse */
+       4
+       5 /**
+       6  * In-memory stand-in for the claim endpoint. It makes no networ
+         k request.
+       7  * Answers are remembered by claimId, so repeating a claimId is
+         idempotent.
+     … +36 lines (ctrl+o to expand)
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T10 và commit 592eb12 với message feat(hw3): add idempotent
+  mock arena server with 409. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): chạy mockArenaServer.test.js
+  (src/homeworks/KraftonPubgVnArena/mockArenaServer.test.js) khi chưa có
+  implementation thì báo ERR_MODULE_NOT_FOUND, vì mockArenaServer.js
+  (src/homeworks/KraftonPubgVnArena/mockArenaServer.js) chưa tồn tại.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 260 test, 260 pass, 0 fail (toàn dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - C2 và cả ba lệnh C6' (isLoading|isError, setInterval(, fetch(): không in gì,
+    tức là đạt.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - createMockArenaServer viết đúng theo mô tả, với delay mặc định lấy từ
+    ../GrandPiano88/replay.js. Server không dùng fetch hay http.
+  - Server giữ bản sao riêng của serverStock, nên object đầu vào không bị sửa.
+  - Câu trả lời được nhớ theo claimId, nên gọi lại cùng claimId trả đúng câu trả
+    lời cũ và không trừ stock lần hai.
+  - peekStock chỉ dùng cho test.
+  - Test có 6 dòng của mục 7.5, dùng fake wait: resolve ngay, hoặc reject
+    AbortError khi signal đã abort.
+  - Tôi thêm vài test ngoài bảng, trong phạm vi mô tả của prompt:
+    - Abort giữa lúc đang chờ độ trễ.
+    - Claim bị abort thì gọi lại cùng claimId vẫn chỉ áp dụng một lần.
+    - Mặc định 800ms và tùy chỉnh 50ms được truyền vào wait cùng signal.
+    - Bản sao serverStock.
+    - Response được đóng băng.
+
+  Lưu ý: theo thiết kế của prompt, câu trả lời được tra theo claimId mà không
+  xét crateId. Cùng một claimId dùng cho hai crate khác nhau sẽ trả về câu trả
+  lời của lần đầu. Tôi giữ nguyên hành vi này vì UI sẽ tạo claimId duy nhất cho
+  mỗi lần bấm.
+
+  Không verify: chưa chạy với delay thật ở độ trễ 800ms trên trình duyệt (chưa
+  có UI).
+
+  Phạm vi: tôi chỉ tạo hai file nêu trên và chưa làm H3-T11.
+
+> Đọc Agent.md, project-rules.md (mục 5, 15) và TASK_DECOMPOSITION.md (Part 7,
+  mục 7.5 selectStandings, H3-T11). Chỉ làm H3-T11. Test trước.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/standings.test.js rồi
+  standings.js.
+  - export const SORT_OPTIONS = Object.freeze([{ value: 'wwcd', label: 'WWCD'
+  }, { value: 'placement', label: 'Placement points' }, { value: 'kills',
+  label: 'Kill points' }, { value: 'total', label: 'Total points'
+  }].map(Object.freeze))
+  - const FIELD = { wwcd: 'wwcdCount', placement: 'placementPts', kills:
+  'killPts', total: 'totalPts' }
+  - export function selectStandings(rows, { squadId = 'all', sortBy = 'wwcd' }
+  = {}): sortBy không có trong FIELD → throw RangeError; rows.map thêm
+  totalPts; filter theo squadId nếu khác 'all'; .toSorted giảm dần theo
+  FIELD[sortBy], hòa thì totalPts giảm dần, rồi squadId.localeCompare.
+  - Test: 6 dòng mục 7.5; input không đổi (frozen); mỗi dòng có totalPts.
+  - Không .sort(.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết; C5 không in gì.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C5:
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  '\.sort\('
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/standings.js
+  src/homeworks/KraftonPubgVnArena/standings.test.js
+  git commit -m "feat(hw3): add standings filter and sort by wwcd, placement,
+  kills"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Đã có 1 kết quả C5 từ test H3-T04 do tôi viết ([...ids].sort() tại
+  arenaData.test.js:32); tôi sẽ sửa riêng bằng một commit nhỏ, còn bây giờ viết
+  test cho H3-T11. · summary
+
+● Write(src\homeworks\KraftonPubgVnArena\standings.test.js)
+  ⎿  Wrote 74 lines to src\homeworks\KraftonPubgVnArena\standings.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { SORT_OPTIONS, selectStandings } from './standings.js'
+       4 import { SQUAD_STANDINGS } from './arenaData.js'
+       5
+       6 function ids(rows) {
+       7   return rows.map((row) => row.squadId)
+       8 }
+       9
+      10 test('SORT_OPTIONS lists the four sort keys with labels and is f
+     … +65 lines (~3 KB) (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\standings.js)
+  ⎿  Wrote 31 lines to src\homeworks\KraftonPubgVnArena\standings.js
+       1 /** @typedef {import('./pubg-vn-arena.contract.js').PubgVnSquadS
+         tanding} PubgVnSquadStanding */
+       2 /** @typedef {import('./pubg-vn-arena.contract.js').StandingSort
+         Key} StandingSortKey */
+       3
+       4 export const SORT_OPTIONS = Object.freeze(
+       5   [
+       6     { value: 'wwcd', label: 'WWCD' },
+       7     { value: 'placement', label: 'Placement points' },
+       8     { value: 'kills', label: 'Kill points' },
+     … +23 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(git add src/homeworks/KraftonPubgVnArena/standings.js
+      src/homeworks/KraftonPubgVnArena/standings.test.js 2>/dev/null && git
+      commit -q -m "feat(hw3): add standin…)
+  ⎿  Updated src\homeworks\KraftonPubgVnArena\arenaData.test.js (+1 -1)
+      29  
+      30  test('squad ids are exactly te, ces, ge, agg with no duplicates
+          ', () => {
+      31    const ids = SQUAD_STANDINGS.map((row) => row.squadId)
+      32 -  assert.deepEqual([...ids].sort(), ['agg', 'ces', 'ge', 'te'])
+      32 +  assert.deepEqual(ids.toSorted(), ['agg', 'ces', 'ge', 'te']) 
+      33    assert.equal(new Set(ids).size, ids.length)
+      34  })
+      35  
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T11 và commit f62485b với message feat(hw3): add standings
+  filter and sort by wwcd, placement, kills. Tôi cũng thêm một commit sửa lỗi
+  nhỏ ở H3-T04 (ea14317, xem phần "Ngoài phạm vi" bên dưới). Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): chạy standings.test.js
+  (src/homeworks/KraftonPubgVnArena/standings.test.js) khi chưa có
+  implementation thì báo ERR_MODULE_NOT_FOUND, vì standings.js
+  (src/homeworks/KraftonPubgVnArena/standings.js) chưa tồn tại.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 272 test, 272 pass, 0 fail (toàn dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - C5: không in gì sau khi sửa (xem phần dưới).
+  - Sau cả hai commit, working tree sạch.
+
+  Nội dung:
+  - SORT_OPTIONS và selectStandings viết đúng mô tả. Trong selectStandings:
+    - Mỗi dòng thêm totalPts = placementPts + killPts.
+    - Lọc theo squadId, sắp giảm dần bằng .toSorted.
+    - Hòa thì xét totalPts giảm dần rồi squadId.localeCompare.
+    - sortBy không hợp lệ ném RangeError.
+  - Tôi kiểm tra sortBy bằng Object.hasOwn(FIELD, sortBy) thay vì in, để các tên
+    như 'toString' không lọt qua.
+  - Test gồm 6 dòng của mục 7.5, input bị đóng băng, và mỗi dòng có totalPts.
+  - Tôi thêm vài test ngoài bảng, trong phạm vi mô tả của prompt: giá trị mặc
+    định, totalPts đúng là 105/100/96/82, giữ nguyên các trường gốc, và hòa thì
+    xét theo totalPts rồi squadId.
+
+  Ngoài phạm vi (cần bạn biết):
+  - Trước khi làm, C5 đã in một dòng: arenaData.test.js:32
+    (src/homeworks/KraftonPubgVnArena/arenaData.test.js#L32) có [...ids].sort().
+    Đây là lỗi của chính tôi ở H3-T04, vì check C5 quét cả file test.
+  - Tôi sửa thành ids.toSorted(), đúng một dòng, và tách thành commit riêng
+    ea14317 với message test(hw3): use toSorted in arenaData test to satisfy C5.
+    Nhờ vậy commit H3-T11 chỉ chứa đúng hai file được phép.
+  - Message này không nằm trong WBS. Nếu bạn muốn gộp vào commit khác hoặc đổi
+    message thì báo tôi.
+
+  Không verify: chưa kiểm tra trên trình duyệt (chưa có UI).
+
+  Phạm vi: ngoài hai file của H3-T11, tôi chỉ sửa một dòng trong
+  arenaData.test.js (src/homeworks/KraftonPubgVnArena/arenaData.test.js) và chưa
+  làm H3-T12.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 7, mục 7.4 và
+  7.5 generateKillFeed, H3-T12). Chỉ làm H3-T12. Test trước.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/killFeed.test.js rồi
+  killFeed.js.
+  - export const WEAPONS = Object.freeze(['M416', 'AKM', 'Beryl M762',
+  'Kar98k', 'Mini14', 'UMP45'])
+  - function createRandom(seed): PRNG mulberry32 (thuần, trả số [0,1)).
+  - export function generateKillFeed(count, seed): squad ids lấy từ
+  SQUAD_STANDINGS; mỗi sự kiện: killer = ids[floor(r()*4)], victim chọn trong 3
+  id còn lại, weapon = WEAPONS[floor(r()*6)], id kf-${String(i +
+  1).padStart(3, '0')}; mỗi event frozen, mảng frozen.
+  - export const SAMPLE_KILL_FEED = generateKillFeed(120, 2026)
+  - export function filterKillFeed(events, squadId): 'all' → events; ngược lại
+  filter killer hoặc victim bằng squadId.
+  - Test: các dòng generateKillFeed/filterKillFeed mục 7.5.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/killFeed.js
+  src/homeworks/KraftonPubgVnArena/killFeed.test.js
+  git commit -m "feat(hw3): add seeded sample kill feed and squad filter"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\KraftonPubgVnArena\killFeed.test.js)
+  ⎿  Wrote 99 lines to src\homeworks\KraftonPubgVnArena\killFeed.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { WEAPONS, generateKillFeed, filterKillFeed, SAMPLE_KILL_
+         FEED } from './killFeed.js'
+       4
+       5 const SQUAD_IDS = ['te', 'ces', 'ge', 'agg']
+       6
+       7 test('WEAPONS lists the six weapons and is frozen', () => {
+       8   assert.deepEqual(WEAPONS, ['M416', 'AKM', 'Beryl M762', 'Kar98
+         k', 'Mini14', 'UMP45'])
+     … +91 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\killFeed.js)
+  ⎿  Wrote 57 lines to src\homeworks\KraftonPubgVnArena\killFeed.js
+       1 import { SQUAD_STANDINGS } from './arenaData.js'
+       2
+       3 /** @typedef {import('./pubg-vn-arena.contract.js').KillFeedEven
+         t} KillFeedEvent */
+       4
+       5 export const WEAPONS = Object.freeze(['M416', 'AKM', 'Beryl M762
+         ', 'Kar98k', 'Mini14', 'UMP45'])
+       6
+       7 /**
+       8  * Small seeded PRNG (mulberry32). The same seed always gives th
+     … +50 lines (~2 KB) (ctrl+o to expand)
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T12 và commit 500f242 với message feat(hw3): add seeded sample
+  kill feed and squad filter. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): chạy killFeed.test.js
+  (src/homeworks/KraftonPubgVnArena/killFeed.test.js) khi chưa có implementation
+  thì báo ERR_MODULE_NOT_FOUND, vì killFeed.js
+  (src/homeworks/KraftonPubgVnArena/killFeed.js) chưa tồn tại.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 287 test, 287 pass, 0 fail (toàn dự án).
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - C5: không in gì, tức là đạt. Tôi chạy thêm vì killFeed có sắp xếp, dù prompt
+    không yêu cầu.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - WEAPONS, generateKillFeed, SAMPLE_KILL_FEED, filterKillFeed viết đúng mô tả.
+  - PRNG là mulberry32 thuần.
+  - Danh sách squad lấy từ SQUAD_STANDINGS.
+  - Killer chọn trong 4 squad. Victim chọn trong các squad còn lại, nên killer
+    không bao giờ trùng victim.
+  - Mảng và từng event đều được đóng băng.
+  - filterKillFeed(events, 'all') trả về đúng mảng đầu vào.
+  - Test có các dòng generateKillFeed và filterKillFeed của mục 7.5.
+  - Tôi thêm vài test ngoài bảng, trong phạm vi mô tả của prompt: đúng bộ trường
+    của event, count = 0 cho mảng rỗng, cả 4 squad đều làm killer,
+    SAMPLE_KILL_FEED bằng generateKillFeed(120, 2026), và filter không đổi
+    input.
+
+  Chưa biết trước: tôi không tính trước phân bố của feed seed 2026. Test chỉ
+  khẳng định các tính chất đã nêu, nên không dựa vào giá trị cụ thể nào của
+  feed. Seed 2026 và 2027 cho kết quả khác nhau, te lọc ra được ít nhất 1 và ít
+  hơn 120 sự kiện.
+
+  Không verify: chưa kiểm tra trên trình duyệt (chưa có UI).
+
+  Phạm vi: tôi chỉ tạo hai file nêu trên và chưa làm H3-T13.
+
+> Đọc Agent.md, project-rules.md (mục 6, 16 Effects and dependencies, 19
+  Anti-drift timer) và TASK_DECOMPOSITION.md (Part 7, Invariants 2 và 3,
+  H3-T13). Chỉ làm H3-T13.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/usePubgAirdropTimer.js.
+
+  Slide 30 có code mẫu, nhưng code đó vi phạm mục 16 (calcRemaining không có
+  trong deps, setState đồng bộ trong effect). KHÔNG chép nguyên. Viết theo cấu
+  trúc sau:
+  export function usePubgAirdropTimer(targetEpochMs, serverOffsetMs = 0, now =
+  Date.now) {
+    const [nowMs, setNowMs] = useState(now)
+    useEffect(() => {
+      const syncClock = () => setNowMs(now())
+      const timerId = window.setInterval(syncClock, 200)
+      const onWake = () => { if (document.visibilityState === 'visible')
+  syncClock() }
+      document.addEventListener('visibilitychange', onWake)
+      return () => { window.clearInterval(timerId);
+  document.removeEventListener('visibilitychange', onWake) }
+    }, [now])
+    const remainingMs = computeRemainingMs(targetEpochMs, nowMs,
+  serverOffsetMs)
+    return { remainingMs, isLive: remainingMs === 0, nowMs }
+  }
+  JSDoc giải thích vì sao remainingMs là derived (không trôi, đúng ngay khi
+  target đổi) và vì sao tab nền vẫn đúng (visibilitychange).
+
+  Kiểm tra: npm run build; npm run lint exit 0 với đúng 1 warning đã biết (nếu
+  có warning/error mới thì DỪNG và báo, không tắt rule); C6', C10 không in gì;
+  C11 in đúng 4 dòng.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C6':
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  'isLoading|isError'
+    Get-ChildItem src -Recurse -Include .jsx,.js | Where-Object Name -ne
+  'usePubgAirdropTimer.js' | Select-String -Pattern 'setInterval\('
+    Get-ChildItem src -Recurse -Include .jsx,.js | Where-Object Name -notlike
+  'fetchKraftonPubgTelemetry*' | Select-String -Pattern '\bfetch\('
+  C10:
+    Get-ChildItem src\homeworks\KraftonPubgVnArena -Recurse -Include .jsx,.js |
+  Select-String -Pattern '=>\s*\w+\s*-\s1\b|-=\s1000'
+  C11:   # phải in đúng 4 dòng
+    Select-String -Path src\homeworks\KraftonPubgVnArena\usePubgAirdropTimer.js
+  -Pattern 'setInterval\(|clearInterval\(|addEventListener\(.visibilitychange|
+  removeEventListener\(.visibilitychange'
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/usePubgAirdropTimer.js
+  git commit -m "feat(hw3): add usePubgAirdropTimer with visibilitychange
+  resync"
+
+  Không push. Báo cáo bằng tiếng Việt.
+  ```
+
+  Listed 1 directory (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\usePubgAirdropTimer.js)
+  ⎿  Wrote 41 lines to
+     src\homeworks\KraftonPubgVnArena\usePubgAirdropTimer.js
+       1 import { useEffect, useState } from 'react'
+       2 import { computeRemainingMs } from './airdropClock.js'
+       3
+       4 /**
+       5  * Anti-drift airdrop countdown.
+       6  *
+       7  * The only state is nowMs, the last clock reading. Remaining ti
+         me is not stored:
+       8  * it is computed during render from the target epoch, so it can
+         not drift and it is
+     … +33 lines (ctrl+o to expand)
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T13 và commit 1234d3c với message feat(hw3): add
+  usePubgAirdropTimer with visibilitychange resync. Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết (PubgMatchTelemetry.jsx:17), 0
+    error. Không có warning hay error mới nên tôi không phải dừng.
+  - C6' (cả ba lệnh) và C10: không in gì, tức là đạt.
+  - C11: in đúng 4 dòng, gồm setInterval( ở dòng 28, addEventListener ở dòng 32,
+    clearInterval( ở dòng 34 và removeEventListener ở dòng 35.
+  - Tôi chạy thêm npm test cho chắc: 287 test, 287 pass, 0 fail. Sau commit,
+    working tree sạch.
+
+  Nội dung của usePubgAirdropTimer.js
+  (src/homeworks/KraftonPubgVnArena/usePubgAirdropTimer.js):
+  - Code theo đúng cấu trúc trong prompt, không chép code mẫu ở slide 30.
+  - State chỉ có nowMs.
+  - remainingMs được tính trong lúc render bằng computeRemainingMs. Vì vậy nó
+    không trôi, và đúng ngay ở lần render mà targetEpochMs hoặc serverOffsetMs
+    đổi.
+  - Chỉ có một effect, deps là [now]. Effect đặt state bên trong callback
+    syncClock, không đặt đồng bộ trong thân effect, và cleanup xóa cả timer lẫn
+    listener.
+  - JSDoc giải thích hai điểm bạn yêu cầu: vì sao remainingMs là giá trị suy ra,
+    và vì sao tab nền vẫn đúng nhờ visibilitychange.
+  - Tôi cố ý không viết các cụm setInterval(, clearInterval( hay
+    addEventListener(...) trong comment, để C11 chỉ khớp đúng 4 dòng code thật.
+
+  Không verify:
+  - Hook chưa có unit test, vì prompt giới hạn phạm vi vào một file và npm test
+    chạy bằng node --test không có môi trường DOM. Hành vi thật (tick 200ms,
+    resync khi chuyển lại tab, cleanup khi unmount) chưa được kiểm tra trên
+    trình duyệt. Hook chưa được component nào dùng, nên việc kiểm tra này sẽ làm
+    ở các bước ghép UI.
+  - Thời điểm gọi now lần đầu: useState(now) gọi now() làm giá trị khởi tạo,
+    theo đúng cấu trúc trong prompt.
+
+  Phạm vi: tôi chỉ tạo file hook này và chưa làm H3-T14.
+> Đọc Agent.md, project-rules.md (mục 3, 19) và TASK_DECOMPOSITION.md (Part 7,
+  Invariants 4, 6, H3-T14). Chỉ làm H3-T14.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/CrateCard.jsx,
+  KraftonPubgVnArena.module.css (tạo, tối thiểu, chỉ token).
+
+  export function CrateCard({ crate, stock, isPending, ownedCount, onClaim }):
+  - const { remainingMs, nowMs } = usePubgAirdropTimer(crate.dropEpochMs)
+  - const phase = getDropPhase({ nowMs, dropEpochMs: crate.dropEpochMs,
+  remainingStock: stock, windowMs: DROP_WINDOW_MS })  (tính khi render từ nowMs
+  của hook; KHÔNG gọi Date.now trong render)
+  - canClaim = phase === 'AIRDROP_LIVE' && !isPending
+  - JSX: <article className={styles.crate} aria-labelledby={titleId}><h4
+  id={titleId}>{crate.title}</h4>  (h4 vì sẽ nằm dưới h2 của section và h3
+  "Airdrops")
+    <dl className={styles.crateFacts}><dt>Price</dt><dd>{formatVnd(crate.priceV
+  nd)}</dd><dt>Stock</dt><dd>{stock}</dd><dt>Status</dt><dd>{PHASE_LABEL[phase]
+  }</dd>{ownedCount > 0 && (<><dt>Claimed by
+  you</dt><dd>{ownedCount}</dd></>)}</dl>
+    {phase === 'WARMUP' && <p>Drops in <time
+  dateTime={`PT${Math.ceil(remainingMs /
+  1000)}S`}>{formatCountdown(remainingMs)}</time></p>}
+    <button type="button" className={styles.claim} aria-disabled={!canClaim}
+  onClick={() => { if (canClaim) onClaim(crate.id) }}>{isPending ? 'Claiming…'
+  : 'Claim'}</button></article>
+  - PHASE_LABEL cấp module: { WARMUP: 'Warm-up', AIRDROP_LIVE: 'Airdrop live',
+  LOOTED_OUT: 'Looted out', EXPIRED: 'Expired' }.
+  - Countdown KHÔNG nằm trong aria-live (tránh đọc mỗi 200 ms).
+
+  Kiểm tra: npm run build; npm run lint exit 0 với đúng 1 warning đã biết; C1',
+  C3, C6', C10.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C1':
+    Get-ChildItem src\components, src\homeworks, src\shell -Recurse -Filter
+  .jsx | Select-String -Pattern '<div'
+  C3:
+    Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern
+  'React\.Component|ReactDOM\.render|defaultProps|import \* as React|keyCode|al
+  ert\(|dangerouslySetInnerHTML|innerHTML|style=\{\{|key=\{(i|idx|index)\}'
+  C6':
+    Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern
+  'isLoading|isError'
+    Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -ne
+  'usePubgAirdropTimer.js' | Select-String -Pattern 'setInterval\('
+    Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike
+  'fetchKraftonPubgTelemetry*' | Select-String -Pattern '\bfetch\('
+  C10:
+    Get-ChildItem src\homeworks\KraftonPubgVnArena -Recurse -Include *.jsx,*.js
+  | Select-String -Pattern '=>\s\w+\s*-\s1\b|-=\s1000'
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/CrateCard.jsx
+  src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css
+  git commit -m "feat(hw3): build crate cards with live countdown and phase"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\CrateCard.jsx)
+  ⎿  Wrote 72 lines to src\homeworks\KraftonPubgVnArena\CrateCard.jsx
+       1 import { useId } from 'react'
+       2 import { DROP_WINDOW_MS } from './arenaData.js'
+       3 import { formatCountdown, getDropPhase } from './airdropClock.js
+         '
+       4 import { formatVnd } from './formatVnd.js'
+       5 import { usePubgAirdropTimer } from './usePubgAirdropTimer.js'
+       6 import styles from './KraftonPubgVnArena.module.css'
+       7
+       8 const PHASE_LABEL = {
+       9   WARMUP: 'Warm-up',
+     … +63 lines (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.module.css)
+  ⎿  Wrote 51 lines to
+     src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.module.css
+       1 .crate {
+       2   display: grid;
+       3   gap: var(--space-2);
+       4   min-width: 0;
+       5   padding: var(--space-4);
+       6   border: var(--control-border-width) solid var(--color-border);
+       7   border-radius: var(--radius-md);
+       8   background-color: var(--color-card-bg);
+       9   color: var(--color-text);
+      10 }
+     … +41 lines (ctrl+o to expand)
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T14 và commit 2d87168 với message feat(hw3): build crate cards
+  with live countdown and phase. Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết (PubgMatchTelemetry.jsx:17),
+    không có cái mới.
+  - C1', C3, C6' (cả ba lệnh) và C10: đều không in gì, tức là đạt.
+  - npm test: 287 test, 287 pass, 0 fail (chạy thêm cho chắc).
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - CrateCard.jsx (src/homeworks/KraftonPubgVnArena/CrateCard.jsx) làm đúng theo
+    cấu trúc trong prompt:
+    - <article aria-labelledby>, <h4> và <dl> với Price, Stock, Status; thêm
+      "Claimed by you" khi ownedCount > 0.
+    - Phase lấy từ getDropPhase bằng nowMs của hook, không gọi Date.now trong
+      lúc render.
+    - Dòng "Drops in" với <time dateTime="PT…S"> chỉ hiện ở WARMUP.
+    - Nút Claim dùng aria-disabled và một guard trong handler, không dùng thuộc
+      tính disabled, nên vẫn giữ được focus. Chữ trên nút là "Claim" hoặc
+      "Claiming…".
+    - Countdown không nằm trong vùng aria-live.
+  - titleId lấy từ useId. PHASE_LABEL là hằng ở cấp module.
+  - KraftonPubgVnArena.module.css
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css) chỉ có ba
+    class .crate, .crateFacts, .claim, và chỉ dùng token đã có, không thêm token
+    mới. Nút aria-disabled='true' được làm mờ bằng màu chữ và con trỏ
+    not-allowed. Tôi thêm một style :focus-visible cho nút Claim bằng các token
+    focus có sẵn.
+
+  Không verify (quan trọng):
+  - Hash của file JS trong npm run build giống hệt lần build trước
+    (index-Bh1ikp4p.js). Lý do là chưa có component nào import CrateCard, nên
+    Vite không đưa nó vào bundle. Vì vậy build chỉ chứng minh dự án vẫn biên
+    dịch được, chưa chứng minh CrateCard.jsx biên dịch. Chỉ lint đã phân tích cú
+    pháp file này.
+  - Tôi chưa render thật CrateCard ở bất kỳ môi trường nào: chưa xem giao diện,
+    chưa kiểm tra đếm ngược trên trình duyệt, chưa kiểm tra giữ focus khi
+    aria-disabled, và chưa kiểm tra chữ "Claiming…". Việc này đến lúc gắn vào
+    view ở H3-T15 và H3-T16.
+
+  Phạm vi: tôi chỉ tạo hai file nêu trên và chưa làm H3-T15.
+
+> Đọc Agent.md, project-rules.md (mục 17 App shell) và TASK_DECOMPOSITION.md
+  (Part 7, H3-T15). Chỉ làm H3-T15. Test trước (thêm dòng test, thấy fail, rồi
+  sửa). Vì KraftonPubgVnArena.jsx chưa có, tạo trước một file tối thiểu: export
+  function KraftonPubgVnArena() trả <section aria-labelledby={id}><h2
+  id={id}>HW3 KRAFTON x PUBG Vietnam Airdrop
+  Arena</h2><p>{SAMPLE_DATA_NOTICE}</p></section> (id từ useId). H3-T16 sẽ hoàn
+  thiện.
+
+  Phạm vi file: src/shell/resolveView.js, src/shell/resolveView.test.js,
+  src/App.jsx, src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx.
+  - VIEWS thêm Object.freeze({ id: 'hw3', label: 'HW3 PUBG VN Arena' }); test
+  '#hw3' → 'hw3', VIEWS.length 4.
+  - App: if (view === 'hw3') return <KraftonPubgVnArena />.
+
+  Kiểm tra: npm test; npm run build; npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/shell/resolveView.js src/shell/resolveView.test.js src/App.jsx
+  src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx
+  git commit -m "feat(shell): add hw3 view to navigation"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src\shell\resolveView.test.js)
+  ⎿  Added 1 line
+       8    ['#exercises', 'exercises'],
+       9    ['#hw1', 'hw1'],
+      10    ['#hw2', 'hw2'],
+      11 +  ['#hw3', 'hw3'],                                             
+      12    ['hw1', 'hw1'],
+      13    ['#HW1', 'exercises'],
+      14    ['#hw9', 'exercises'],
+
+● Update(src\shell\resolveView.test.js)
+  ⎿  Added 3 lines, removed 2 lines
+      32    assert.equal(new Set(ids).size, ids.length)
+      33  })
+      34  
+      35 -test('VIEWS lists exercises, hw1 and hw2 in that order', () => 
+         -{                                                              
+      36 -  assert.equal(VIEWS.length, 3)                                
+      35 +test('VIEWS lists exercises, hw1, hw2 and hw3 in that order', (
+         +) => {                                                         
+      36 +  assert.equal(VIEWS.length, 4)                                
+      37    assert.deepEqual(
+      38      VIEWS.map((v) => [v.id, v.label]),
+      39      [
+      40        ['exercises', 'Exercises 1–3'],
+      41        ['hw1', 'HW1 Drum Kit'],
+      42        ['hw2', 'HW2 Piano 88'],
+      43 +      ['hw3', 'HW3 PUBG VN Arena'],                            
+      44      ],
+      45    )
+      46  })
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Lần thất bại đầu tiên: resolveView("#hw3") trả 'exercises' thay vì 'hw3', và
+  VIEWS.length là 3 thay vì 4 (2 test lỗi). Giờ sửa phần thực thi.
+
+● Update(src\shell\resolveView.js)
+  ⎿  Added 1 line
+      2    Object.freeze({ id: 'exercises', label: 'Exercises 1–3' }),
+      3    Object.freeze({ id: 'hw1', label: 'HW1 Drum Kit' }),
+      4    Object.freeze({ id: 'hw2', label: 'HW2 Piano 88' }),
+      5 +  Object.freeze({ id: 'hw3', label: 'HW3 PUBG VN Arena' }),     
+      6  ])
+      7  
+      8  /**
+
+● Update(src\App.jsx)
+  ⎿  Added 1 line
+      3  import { PubgMatchTelemetry } from './components/PubgMatchTeleme
+         try.jsx'
+      4  import { DrumMachine } from './homeworks/DrumMachine/DrumMachine
+         .jsx'
+      5  import { GrandPiano88 } from './homeworks/GrandPiano88/GrandPian
+         o88.jsx'
+      6 +import { KraftonPubgVnArena } from './homeworks/KraftonPubgVnAre
+        +na/KraftonPubgVnArena.jsx'                                      
+      7  import { SiteHeader } from './shell/SiteHeader.jsx'
+      8  import { useHashView } from './shell/useHashView.js'
+      9  
+
+● Update(src\App.jsx)
+  ⎿  Added 1 line
+      10  function CurrentView({ view }) {
+      11    if (view === 'hw1') return <DrumMachine />
+      12    if (view === 'hw2') return <GrandPiano88 />
+      13 +  if (view === 'hw3') return <KraftonPubgVnArena />            
+      14    return (
+      15      <>
+      16        <DeveloperCard />
+
+● Write(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Wrote 13 lines to
+     src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx
+       1 import { useId } from 'react'
+       2 import { SAMPLE_DATA_NOTICE } from './arenaData.js'
+       3
+       4 /** Stub for H3-T15: heading and sample-data notice only. H3-T16
+          composes the arena. */
+       5 export function KraftonPubgVnArena() {
+       6   const headingId = useId()
+       7   return (
+       8     <section aria-labelledby={headingId}>
+       9       <h2 id={headingId}>HW3 KRAFTON x PUBG Vietnam Airdrop Aren
+     … +5 lines (ctrl+o to expand)
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T15 và commit 53bc2bf với message feat(shell): add hw3 view to
+  navigation. Tôi chưa push.
+
+  Lần thất bại đầu tiên (test trước): sau khi thêm dòng '#hw3' → 'hw3' và đổi
+  test thứ tự VIEWS thành 4 phần tử trong resolveView.test.js
+  (src/shell/resolveView.test.js), 2 test lỗi (10 pass, 2 fail):
+  - resolveView("#hw3") trả 'exercises', trong khi mong đợi 'hw3'.
+  - VIEWS.length là 3, trong khi mong đợi 4.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm test: 288 test, 288 pass, 0 fail (toàn dự án).
+  - npm run build: thành công. Lần này hash của file JS đã đổi
+    (index-Bqw3hpfN.js, 244.69 kB), nghĩa là KraftonPubgVnArena đã được đưa vào
+    bundle.
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - C1' và C3: không in gì, tức là đạt. Tôi chạy thêm vì có file .jsx mới và
+    App.jsx đổi, dù prompt không yêu cầu.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - resolveView.js (src/shell/resolveView.js): VIEWS có thêm { id: 'hw3', label:
+    'HW3 PUBG VN Arena' }, là một object được đóng băng.
+  - App.jsx (src/App.jsx): thêm import và nhánh if (view === 'hw3') return
+    <KraftonPubgVnArena />.
+  - KraftonPubgVnArena.jsx
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx): file tối thiểu
+    gồm <section aria-labelledby>, <h2>HW3 KRAFTON x PUBG Vietnam Airdrop
+    Arena</h2> và <p> chứa SAMPLE_DATA_NOTICE, với id lấy từ useId.
+  - SiteHeader.jsx (src/shell/SiteHeader.jsx) tạo các link điều hướng từ
+    VIEWS.map. Vì vậy link HW3 tự xuất hiện mà tôi không cần sửa file đó.
+
+  Không verify: tôi chưa mở trình duyệt, nên chưa xem link "HW3 PUBG VN Arena"
+  hiển thị, chưa kiểm tra bấm vào #hw3 có hiện đúng <h2> và dòng thông báo, và
+  chưa kiểm tra có đúng một <h1> trên trang. Phần CrateCard vẫn chưa được dùng ở
+  đâu, đến H3-T16 mới ghép vào.
+
+  Phạm vi: tôi chỉ sửa bốn file nêu trên và chưa làm H3-T16.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 7, Invariant 1,
+  H3-T16). Chỉ làm H3-T16. CHƯA nối claim (H3-T17), leaderboard (T18), kill
+  feed (T19).
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx,
+  KraftonPubgVnArena.module.css.
+  - const [crates] = useState(() => buildSampleCrates(Date.now()))
+  - const [state] = useState(() => createArenaState(crates))  (T17 đổi sang
+  useReducer)
+  - JSX: section + h2 + <p
+  className={styles.notice}><strong>{SAMPLE_DATA_NOTICE}</strong></p>
+    <section aria-labelledby={dropsId}><h3 id={dropsId}>Airdrops</h3><ul
+  className={styles.crates}>{crates.map((c) => (<li key={c.id}><CrateCard
+  crate={c} stock={state.stock[c.id]} isPending={false} ownedCount={0}
+  onClaim={() => {}} /></li>))}</ul></section>
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C1':
+    Get-ChildItem src\components, src\homeworks, src\shell -Recurse -Filter
+  *.jsx | Select-String -Pattern '<div'
+  C3:
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  'React\.Component|ReactDOM\.render|defaultProps|import \* as React|keyCode|al
+  ert\(|dangerouslySetInnerHTML|innerHTML|style=\{\{|key=\{(i|idx|index)\}'
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx
+  src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css
+  git commit -m "feat(hw3): compose arena with sample data notice"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 30 lines, removed 5 lines
+       1 -import { useId } from 'react'                                  
+       2 -import { SAMPLE_DATA_NOTICE } from './arenaData.js'            
+       1 +import { useId, useState } from 'react'                        
+       2 +import { SAMPLE_DATA_NOTICE, buildSampleCrates } from './arenaD
+         +ata.js'                                                        
+       3 +import { createArenaState } from './arenaReducer.js'           
+       4 +import { CrateCard } from './CrateCard.jsx'                    
+       5 +import styles from './KraftonPubgVnArena.module.css'           
+       6  
+       4 -/** Stub for H3-T15: heading and sample-data notice only. H3-T1
+         -6 composes the arena. */                                       
+       7 +/** Composes the arena. The claim handler is not wired yet (H3-
+         +T17). */                                                       
+       8  export function KraftonPubgVnArena() {
+       9    const headingId = useId()
+      10 +  const dropsId = useId()                                      
+      11 +  const [crates] = useState(() => buildSampleCrates(Date.now())
+         +)                                                              
+      12 +  const [state] = useState(() => createArenaState(crates))     
+      13 +                                                               
+      14    return (
+       8 -    <section aria-labelledby={headingId}>                      
+      15 +    <section className={styles.arena} aria-labelledby={headingI
+         +d}>                                                            
+      16        <h2 id={headingId}>HW3 KRAFTON x PUBG Vietnam Airdrop Are
+          na</h2>
+      10 -      <p>{SAMPLE_DATA_NOTICE}</p>                              
+      17 +      <p className={styles.notice}>                            
+      18 +        <strong>{SAMPLE_DATA_NOTICE}</strong>                  
+      19 +      </p>                                                     
+      20 +      <section aria-labelledby={dropsId}>                      
+      21 +        <h3 id={dropsId}>Airdrops</h3>                         
+      22 +        <ul className={styles.crates}>                         
+      23 +          {crates.map((crate) => (                             
+      24 +            <li key={crate.id}>                                
+      25 +              <CrateCard                                       
+      26 +                crate={crate}                                  
+      27 +                stock={state.stock[crate.id]}                  
+      28 +                isPending={false}                              
+      29 +                ownedCount={0}                                 
+      30 +                onClaim={() => {}}                             
+      31 +              />                                               
+      32 +            </li>                                              
+      33 +          ))}                                                  
+      34 +        </ul>                                                  
+      35 +      </section>                                               
+      36      </section>
+      37    )
+      38  }
+
+● Bash(cat > /tmp/arena_css.txt <<'EOF'
+      .arena {…)
+  ⎿  Updated src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.module.css
+     (+38 -0)
+       1 +.arena {                                                       
+       2 +  display: grid;                                               
+       3 +  grid-template-columns: minmax(0, 1fr);                       
+       4 +  gap: var(--space-4);                                         
+       5 +  width: 100%;                                                 
+       6 +  min-width: 0;                                                
+       7 +  max-width: min(100%, 72rem);                                 
+       8 +  padding: var(--space-4);                                     
+       9 +  border: var(--control-border-width) solid var(--color-border)
+         +;                                                              
+      10 +  border-radius: var(--radius-lg);                             
+      11 +  background-color: var(--color-card-bg);                      
+      12 +  color: var(--color-text);                                    
+      13 +}                                                              
+      14 +                                                               
+      15 +.arena h2 {                                                    
+      16 +  font-size: var(--font-size-lg);                              
+      17 +  line-height: 1.2;                                            
+      18 +  overflow-wrap: anywhere;                                     
+      19 +}                                                              
+      20 +                                                               
+      21 +.arena h3 {                                                    
+      22 +  margin-bottom: var(--space-3);                               
+      23 +  font-size: var(--font-size-md);                              
+      24 +}                                                              
+      25 +                                                               
+      26 +.notice {                                                      
+      27 +  color: var(--color-text);                                    
+      28 +}                                                              
+      29 +                                                               
+      30 +.crates {                                                      
+      31 +  display: grid;                                               
+      32 +  grid-template-columns: minmax(0, 1fr);                       
+      33 +  gap: var(--space-3);                                         
+      34 +  margin: 0;                                                   
+      35 +  padding: 0;                                                  
+      36 +  list-style: none;                                            
+      37 +}                                                              
+      38 +                                                               
+      39  .crate {
+      40    display: grid;
+     … 1 more lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T16 và commit 538e9a8 với message feat(hw3): compose arena with
+  sample data notice. Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm run build: thành công. Hash JS đổi thành index-CH7q4U9a.js (247.59 kB),
+    nghĩa là CrateCard lần đầu được đưa vào bundle và biên dịch.
+  - npm test: 288 test, 288 pass, 0 fail (toàn dự án).
+  - npm run lint: exit 0, đúng 1 warning đã biết, không có cái mới.
+  - C1' và C3: không in gì, tức là đạt.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - KraftonPubgVnArena.jsx
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx) theo đúng mô tả:
+    - crates lấy từ useState(() => buildSampleCrates(Date.now())), state từ
+      useState(() => createArenaState(crates)).
+    - <section aria-labelledby> chứa <h2> và thông báo sample data đặt trong
+      <strong>.
+    - Bên trong có <section> con với <h3>Airdrops</h3> và <ul> các CrateCard,
+      key là crate.id.
+    - isPending={false}, ownedCount={0} và onClaim={() => {}} là giá trị tạm.
+      Nút Claim chưa làm gì khi bấm.
+    - Chưa có claim (T17), leaderboard (T18) hay kill feed (T19).
+  - KraftonPubgVnArena.module.css
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css) thêm các
+    class .arena, .notice, .crates vào đầu file, sau đó là các class .crate* của
+    T14. Chỉ dùng token đã có, một cột, không có style inline.
+
+  Không verify: tôi chưa mở trình duyệt. Chưa xem bố cục thật, chưa kiểm tra đếm
+  ngược chạy, chưa kiểm tra thứ tự heading h2 → h3 → h4 trên trang, và chưa
+  kiểm tra layout ở 375px. Phần responsive để dành cho H3-T21.
+
+  Phạm vi: tôi chỉ sửa hai file nêu trên và chưa làm H3-T17.
+
+> Đọc Agent.md, project-rules.md (mục 6, 16, 19 Optimistic claims) và
+  TASK_DECOMPOSITION.md (Part 7, Invariants 4, 5, 6, 7, 11, H3-T17). Chỉ làm
+  H3-T17.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx,
+  KraftonPubgVnArena.module.css.
+  - const [state, dispatch] = useReducer(arenaReducer, crates,
+  createArenaState)
+  - const [server] = useState(() => createMockArenaServer({ serverStock:
+  buildServerStock() }))
+  - const inFlightRef = useRef(new Map())  // crateId → AbortController
+  - useEffect(() => { const inFlight = inFlightRef.current; return () => { for
+  (const c of inFlight.values()) c.abort(); inFlight.clear() } }, [])
+  - const handleClaim = useCallback(async (crateId) => {
+      const inFlight = inFlightRef.current
+      if (inFlight.has(crateId)) return
+      const claimId = crypto.randomUUID(); const controller = new
+  AbortController()
+      inFlight.set(crateId, controller)
+      dispatch({ type: 'CLAIM_STARTED', crateId, claimId })
+      try {
+    const res = await server.claimCrate(crateId, claimId, { signal:
+  controller.signal })
+    if (res.status === 200) dispatch({ type: 'CLAIM_CONFIRMED', crateId,
+  claimId, remainingStock: res.remainingStock })
+    else dispatch({ type: 'CLAIM_REJECTED', crateId, claimId, remainingStock:
+  res.remainingStock, error: ${res.error}: your claim was rolled back. })
+      } catch (err) {
+    if (err.name === 'AbortError') return
+    dispatch({ type: 'CLAIM_REJECTED', crateId, claimId, error: 'Claim failed:
+  your claim was rolled back.' })
+      } finally { inFlight.delete(crateId) }
+    }, [server])
+  - CrateCard: stock={state.stock[c.id]}
+  isPending={Boolean(state.pending[c.id])} ownedCount={state.owned[c.id] ?? 0}
+  onClaim={handleClaim}
+  - Thông báo lỗi: {state.lastError && (<p className={styles.alert}
+  role="alert">{state.lastError} <button type="button" onClick={() =>
+  dispatch({ type: 'DISMISS_ERROR' })}>Dismiss</button></p>)}. Khi bấm Dismiss,
+  nút biến mất: chuyển focus về heading "Airdrops" (tabIndex={-1}, ref) ngay
+  trong handler.
+  - Unmount khi đang claim: AbortError → không dispatch.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết (react(refs) hay exhaustive-deps mới → DỪNG báo); C1', C3, C6'.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C1':
+    Get-ChildItem src\components, src\homeworks, src\shell -Recurse -Filter
+  .jsx | Select-String -Pattern '<div'
+  C3:
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  'React\.Component|ReactDOM\.render|defaultProps|import \* as React|keyCode|al
+  ert\(|dangerouslySetInnerHTML|innerHTML|style=\{\{|key=\{(i|idx|index)\}'
+  C6':
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  'isLoading|isError'
+    Get-ChildItem src -Recurse -Include .jsx,.js | Where-Object Name -ne
+  'usePubgAirdropTimer.js' | Select-String -Pattern 'setInterval\('
+    Get-ChildItem src -Recurse -Include .jsx,.js | Where-Object Name -notlike
+  'fetchKraftonPubgTelemetry' | Select-String -Pattern '\bfetch\('
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx
+  src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css
+  git commit -m "feat(hw3): wire optimistic claim with rollback and abort on
+  unmount"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 78 lines, removed 9 lines
+       1 -import { useId, useState } from 'react'                        
+       2 -import { SAMPLE_DATA_NOTICE, buildSampleCrates } from './arenaD
+         -ata.js'                                                        
+       3 -import { createArenaState } from './arenaReducer.js'           
+       1 +import { useCallback, useEffect, useId, useReducer, useRef, use
+         +State } from 'react'                                           
+       2 +import { flushSync } from 'react-dom'                          
+       3 +import { SAMPLE_DATA_NOTICE, buildSampleCrates, buildServerStoc
+         +k } from './arenaData.js'                                      
+       4 +import { arenaReducer, createArenaState } from './arenaReducer.
+         +js'                                                            
+       5 +import { createMockArenaServer } from './mockArenaServer.js'   
+       6  import { CrateCard } from './CrateCard.jsx'
+       7  import styles from './KraftonPubgVnArena.module.css'
+       8  
+       7 -/** Composes the arena. The claim handler is not wired yet (H3-
+         -T17). */                                                       
+       9 +/**                                                            
+      10 + * Composes the arena and wires optimistic claims.             
+      11 + * A claim updates the UI at once, then the mock server answers
+         +; a 409 rolls the claim back.                                  
+      12 + * Every pending request has an AbortController, and unmount ab
+         +orts all of them.                                              
+      13 + */                                                            
+      14  export function KraftonPubgVnArena() {
+      15    const headingId = useId()
+      16    const dropsId = useId()
+      17 +  const dropsHeadingRef = useRef(null)                         
+      18    const [crates] = useState(() => buildSampleCrates(Date.now())
+          )
+      12 -  const [state] = useState(() => createArenaState(crates))     
+      19 +  const [state, dispatch] = useReducer(arenaReducer, crates, cr
+         +eateArenaState)                                                
+      20 +  const [server] = useState(() => createMockArenaServer({ serve
+         +rStock: buildServerStock() }))                                 
+      21 +  const inFlightRef = useRef(new Map())                        
+      22  
+      23 +  useEffect(() => {                                            
+      24 +    const inFlight = inFlightRef.current                       
+      25 +    return () => {                                             
+      26 +      for (const controller of inFlight.values()) controller.ab
+         +ort()                                                          
+      27 +      inFlight.clear()                                         
+      28 +    }                                                          
+      29 +  }, [])                                                       
+      30 +                                                               
+      31 +  const handleClaim = useCallback(                             
+      32 +    async (crateId) => {                                       
+      33 +      const inFlight = inFlightRef.current                     
+      34 +      if (inFlight.has(crateId)) return                        
+      35 +      const claimId = crypto.randomUUID()                      
+      36 +      const controller = new AbortController()                 
+      37 +      inFlight.set(crateId, controller)                        
+      38 +      dispatch({ type: 'CLAIM_STARTED', crateId, claimId })    
+      39 +      try {                                                    
+      40 +        const res = await server.claimCrate(crateId, claimId, {
+         + signal: controller.signal })                                  
+      41 +        if (res.status === 200) {                              
+      42 +          dispatch({ type: 'CLAIM_CONFIRMED', crateId, claimId,
+         + remainingStock: res.remainingStock })                         
+      43 +        } else {                                               
+      44 +          dispatch({                                           
+      45 +            type: 'CLAIM_REJECTED',                            
+      46 +            crateId,                                           
+      47 +            claimId,                                           
+      48 +            remainingStock: res.remainingStock,                
+      49 +            error: `${res.error}: your claim was rolled back.`,
+      50 +          })                                                   
+      51 +        }                                                      
+      52 +      } catch (err) {                                          
+      53 +        if (err.name === 'AbortError') return                  
+      54 +        dispatch({                                             
+      55 +          type: 'CLAIM_REJECTED',                              
+      56 +          crateId,                                             
+      57 +          claimId,                                             
+      58 +          error: 'Claim failed: your claim was rolled back.',  
+      59 +        })                                                     
+      60 +      } finally {                                              
+      61 +        inFlight.delete(crateId)                               
+      62 +      }                                                        
+      63 +    },                                                         
+      64 +    [server],                                                  
+      65 +  )                                                            
+      66 +                                                               
+      67 +  // The Dismiss button disappears with the message, so focus m
+         +oves to the Airdrops heading here.                             
+      68 +  const handleDismiss = () => {                                
+      69 +    flushSync(() => dispatch({ type: 'DISMISS_ERROR' }))       
+      70 +    dropsHeadingRef.current?.focus()                           
+      71 +  }                                                            
+      72 +                                                               
+      73    return (
+      74      <section className={styles.arena} aria-labelledby={headingI
+          d}>
+      75        <h2 id={headingId}>HW3 KRAFTON x PUBG Vietnam Airdrop Are
+          na</h2>
+     ...
+       77          <strong>{SAMPLE_DATA_NOTICE}</strong>
+       78        </p>
+       79        <section aria-labelledby={dropsId}>
+       21 -        <h3 id={dropsId}>Airdrops</h3>                        
+       80 +        <h3 id={dropsId} ref={dropsHeadingRef} tabIndex={-1}> 
+       81 +          Airdrops                                            
+       82 +        </h3>                                                 
+       83 +        {state.lastError && (                                 
+       84 +          <p className={styles.alert} role="alert">           
+       85 +            {state.lastError}{' '}                            
+       86 +            <button type="button" onClick={handleDismiss}>    
+       87 +              Dismiss                                         
+       88 +            </button>                                         
+       89 +          </p>                                                
+       90 +        )}                                                    
+       91          <ul className={styles.crates}>
+       92            {crates.map((crate) => (
+       93              <li key={crate.id}>
+       94                <CrateCard
+       95                  crate={crate}
+       96                  stock={state.stock[crate.id]}
+       28 -                isPending={false}                             
+       29 -                ownedCount={0}                                
+       30 -                onClaim={() => {}}                            
+       97 +                isPending={Boolean(state.pending[crate.id])}  
+       98 +                ownedCount={state.owned[crate.id] ?? 0}       
+       99 +                onClaim={handleClaim}                         
+      100                />
+      101              </li>
+      102            ))}
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.module.css)
+  ⎿  Added 15 lines
+      27    color: var(--color-text);
+      28  }
+      29  
+      30 +.alert {                                                       
+      31 +  margin: 0 0 var(--space-3);                                  
+      32 +  padding: var(--space-3);                                     
+      33 +  border: var(--control-border-width) solid var(--color-alert-b
+         +order);                                                        
+      34 +  border-radius: var(--radius-sm);                             
+      35 +  background-color: var(--color-tier-awareness-bg);            
+      36 +  color: var(--color-tier-awareness-text);                     
+      37 +}                                                              
+      38 +                                                               
+      39 +.alert button {                                                
+      40 +  min-height: var(--control-min-height);                       
+      41 +  padding: var(--control-padding);                             
+      42 +  font: inherit;                                               
+      43 +}                                                              
+      44 +                                                               
+      45  .crates {
+      46    display: grid;
+      47    grid-template-columns: minmax(0, 1fr);
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T17 và commit 024a333 với message feat(hw3): wire optimistic
+  claim with rollback and abort on unmount. Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm run build: thành công.
+  - npm test: 288 test, 288 pass, 0 fail (toàn dự án).
+  - npm run lint: exit 0, đúng 1 warning đã biết. Không có warning react(refs)
+    hay exhaustive-deps mới nên tôi không phải dừng.
+  - C1', C3 và cả ba lệnh C6': không in gì, tức là đạt.
+  - Sau commit, working tree sạch.
+
+  Nội dung của KraftonPubgVnArena.jsx
+  (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx):
+  - Dùng useReducer(arenaReducer, crates, createArenaState).
+  - Mock server được tạo một lần bằng useState với buildServerStock().
+  - inFlightRef là một Map từ crateId sang AbortController.
+  - Effect cleanup abort mọi request đang chờ rồi xóa Map.
+  - handleClaim làm đúng theo luồng bạn mô tả:
+    - Có guard theo inFlight.
+    - CLAIM_STARTED rồi await claimCrate kèm signal.
+    - 200 thì CLAIM_CONFIRMED, 409 thì CLAIM_REJECTED kèm thông báo.
+    - Lỗi khác thì CLAIM_REJECTED với thông báo chung.
+    - AbortError thì return và không dispatch.
+    - finally luôn xóa inFlight.
+  - Thông báo lỗi là <p role="alert"> kèm nút Dismiss.
+  - Khi bấm Dismiss, handler gọi flushSync cho DISMISS_ERROR rồi focus() heading
+    "Airdrops" (tabIndex={-1}, có ref) ngay trong handler. Tôi dùng flushSync
+    theo quy tắc "Focus after delete" ở mục 15, vì prompt chỉ nói "ngay trong
+    handler".
+  - KraftonPubgVnArena.module.css
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css) thêm .alert
+    và .alert button, chỉ dùng token đã có.
+
+  Không verify (quan trọng):
+  - Tôi chưa mở trình duyệt, nên chưa kiểm tra bấm Claim có trừ stock ngay, hiện
+    "Claiming…" trong khoảng 800ms rồi xác nhận hay không, và chưa chạy thử
+    đường 409.
+  - gcoin-last dùng để thử 409 (UI stock 1, server stock 0), nhưng nút chỉ bấm
+    được khi crate ở phase AIRDROP_LIVE. Theo dữ liệu mẫu, vip-pass (drop sau 45
+    giây) lúc đó đang WARMUP nên chưa bấm được. Ba crate còn lại đã drop từ
+    trước (gcoin-600 và gcoin-last cách 60 giây, early-bird cách 20 phút), và
+    early-bird đã quá cửa sổ 10 phút nên là EXPIRED.
+  - Chưa kiểm tra focus có chuyển về heading sau Dismiss, chưa kiểm tra unmount
+    giữa lúc đang claim, và chưa kiểm tra không có cảnh báo trong console khi
+    chạy StrictMode.
+  - Dự án không có môi trường DOM cho test tự động, nên các hành vi trên đều cần
+    bạn thử bằng tay.
+
+  Phạm vi: tôi chỉ sửa hai file nêu trên và chưa làm H3-T18.
+> Đọc Agent.md, project-rules.md (mục 3, 4, 15, 19) và TASK_DECOMPOSITION.md
+  (Part 7, Invariants 9, 10, H3-T18). Chỉ làm H3-T18.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/Leaderboard.jsx,
+  KraftonPubgVnArena.jsx, KraftonPubgVnArena.module.css.
+  - KraftonPubgVnArena: state squadFilter ('all'), sortBy ('wwcd'); labels
+  useId.
+    <form role="search" className={styles.filters} onSubmit={(e) =>
+  e.preventDefault()}>
+      <p><label htmlFor={squadSelectId}>Squad</label><select id={squadSelectId}
+  value={squadFilter} onChange={(e) => setSquadFilter(e.target.value)}><option
+  value="all">All squads</option>{SQUAD_STANDINGS.map((s) => <option
+  key={s.squadId} value={s.squadId}>{s.squadName}</option>)}</select></p>
+      <p><label htmlFor={sortSelectId}>Sort leaderboard by</label><select
+  id={sortSelectId} value={sortBy} onChange={(e) =>
+  setSortBy(e.target.value)}>{SORT_OPTIONS.map((o) => <option key={o.value}
+  value={o.value}>{o.label}</option>)}</select></p>
+    </form>
+    const rows = selectStandings(SQUAD_STANDINGS, { squadId: squadFilter,
+  sortBy })  (khi render)
+    <Leaderboard rows={rows} sortBy={sortBy} />
+  - Leaderboard({ rows, sortBy }): <section aria-labelledby={id}><h3
+  id={id}>Leaderboard</h3>
+    <section className={styles.tableScroll} aria-label="Leaderboard table"
+  tabIndex={0}><table><caption>PVS Finals standings (sample data)</caption>
+    <thead><tr><th scope="col">Rank</th><th scope="col">Squad</th><th
+  scope="col" aria-sort={sortBy === 'wwcd' ? 'descending' :
+  undefined}>WWCD</th><th scope="col" aria-sort={sortBy === 'placement' ?
+  'descending' : undefined}>Placement pts</th><th scope="col" aria-sort={sortBy
+  === 'kills' ? 'descending' : undefined}>Kill pts</th><th scope="col"
+  aria-sort={sortBy === 'total' ? 'descending' :
+  undefined}>Total</th></tr></thead>
+    <tbody>{rows.map((r, i) => (<tr key={r.squadId}><td>{i + 1}</td><th
+  scope="row">{r.squadName}</th><td>{r.wwcdCount}</td><td>{r.placementPts}</td>
+  <td>{r.killPts}</td><td>{r.totalPts}</td></tr>))}</tbody></table></section>
+    <output role="status" aria-live="polite">{rows.length} of
+  {SQUAD_STANDINGS.length} squads</output></section>
+    (key là squadId, không phải index; i chỉ dùng hiển thị hạng.)
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C5.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C1':
+    Get-ChildItem src\components, src\homeworks, src\shell -Recurse -Filter
+  *.jsx | Select-String -Pattern '<div'
+  C3:
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  'React\.Component|ReactDOM\.render|defaultProps|import \* as React|keyCode|al
+  ert\(|dangerouslySetInnerHTML|innerHTML|style=\{\{|key=\{(i|idx|index)\}'
+  C5:
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  '\.sort\('
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/Leaderboard.jsx
+  src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx
+  src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css
+  git commit -m "feat(hw3): add accessible leaderboard with filter and sort"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\Leaderboard.jsx)
+  ⎿  Wrote 58 lines to src\homeworks\KraftonPubgVnArena\Leaderboard.jsx
+       1 import { useId } from 'react'
+       2 import { SQUAD_STANDINGS } from './arenaData.js'
+       3 import styles from './KraftonPubgVnArena.module.css'
+       4
+       5 /**
+       6  * Squad standings table. The sorted column carries aria-sort.
+       7  * The scroll container is focusable so keyboard users can scrol
+         l a wide table.
+       8  * @param {{
+       9  *   rows: ReadonlyArray<import('./pubg-vn-arena.contract.js').P
+     … +50 lines (~2 KB) (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Stop Task
+  ⎿  python3 - <<'PY' 2>/dev/null || echo "no python"
+     PY… · stopped
+
+● Lệnh python3 thừa đó là sơ suất của tôi, đã dừng. Giờ sửa file bằng Edit.
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 8 lines, removed 1 line
+       1  import { useCallback, useEffect, useId, useReducer, useRef, use
+          State } from 'react'
+       2  import { flushSync } from 'react-dom'
+       3 -import { SAMPLE_DATA_NOTICE, buildSampleCrates, buildServerStoc
+         -k } from './arenaData.js'                                      
+       3 +import {                                                       
+       4 +  SAMPLE_DATA_NOTICE,                                          
+       5 +  SQUAD_STANDINGS,                                             
+       6 +  buildSampleCrates,                                           
+       7 +  buildServerStock,                                            
+       8 +} from './arenaData.js'                                        
+       9  import { arenaReducer, createArenaState } from './arenaReducer.
+          js'
+      10  import { createMockArenaServer } from './mockArenaServer.js'
+      11 +import { SORT_OPTIONS, selectStandings } from './standings.js' 
+      12  import { CrateCard } from './CrateCard.jsx'
+      13 +import { Leaderboard } from './Leaderboard.jsx'                
+      14  import styles from './KraftonPubgVnArena.module.css'
+      15  
+      16  /**
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 4 lines
+      21  export function KraftonPubgVnArena() {
+      22    const headingId = useId()
+      23    const dropsId = useId()
+      24 +  const squadSelectId = useId()                                
+      25 +  const sortSelectId = useId()                                 
+      26    const dropsHeadingRef = useRef(null)
+      27 +  const [squadFilter, setSquadFilter] = useState('all')        
+      28 +  const [sortBy, setSortBy] = useState('wwcd')                 
+      29    const [crates] = useState(() => buildSampleCrates(Date.now())
+          )
+      30    const [state, dispatch] = useReducer(arenaReducer, crates, cr
+          eateArenaState)
+      31    const [server] = useState(() => createMockArenaServer({ serve
+          rStock: buildServerStock() }))
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 2 lines
+      81      dropsHeadingRef.current?.focus()
+      82    }
+      83  
+      84 +  const rows = selectStandings(SQUAD_STANDINGS, { squadId: squa
+         +dFilter, sortBy })                                             
+      85 +                                                               
+      86    return (
+      87      <section className={styles.arena} aria-labelledby={headingI
+          d}>
+      88        <h2 id={headingId}>HW3 KRAFTON x PUBG Vietnam Airdrop Are
+          na</h2>
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 24 lines
+      115            ))}
+      116          </ul>
+      117        </section>
+      118 +      <form role="search" className={styles.filters} onSubmit=
+          +{(e) => e.preventDefault()}>                                  
+      119 +        <p>                                                   
+      120 +          <label htmlFor={squadSelectId}>Squad</label>        
+      121 +          <select id={squadSelectId} value={squadFilter} onCha
+          +nge={(e) => setSquadFilter(e.target.value)}>                  
+      122 +            <option value="all">All squads</option>           
+      123 +            {SQUAD_STANDINGS.map((s) => (                     
+      124 +              <option key={s.squadId} value={s.squadId}>      
+      125 +                {s.squadName}                                 
+      126 +              </option>                                       
+      127 +            ))}                                               
+      128 +          </select>                                           
+      129 +        </p>                                                  
+      130 +        <p>                                                   
+      131 +          <label htmlFor={sortSelectId}>Sort leaderboard by</l
+          +abel>                                                         
+      132 +          <select id={sortSelectId} value={sortBy} onChange={(
+          +e) => setSortBy(e.target.value)}>                             
+      133 +            {SORT_OPTIONS.map((o) => (                        
+      134 +              <option key={o.value} value={o.value}>          
+      135 +                {o.label}                                     
+      136 +              </option>                                       
+      137 +            ))}                                               
+      138 +          </select>                                           
+      139 +        </p>                                                  
+      140 +      </form>                                                 
+      141 +      <Leaderboard rows={rows} sortBy={sortBy} />             
+      142      </section>
+      143    )
+      144  }
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.module.css)
+  ⎿  Added 55 lines
+       42    font: inherit;
+       43  }
+       44  
+       45 +.filters {                                                    
+       46 +  display: grid;                                              
+       47 +  grid-template-columns: minmax(0, 1fr);                      
+       48 +  gap: var(--space-3);                                        
+       49 +}                                                             
+       50 +                                                              
+       51 +.filters p {                                                  
+       52 +  display: grid;                                              
+       53 +  gap: var(--space-1);                                        
+       54 +  margin: 0;                                                  
+       55 +}                                                             
+       56 +                                                              
+       57 +.filters select {                                             
+       58 +  min-height: var(--control-min-height);                      
+       59 +  padding: var(--control-padding);                            
+       60 +  border: var(--control-border-width) solid var(--color-border
+          +);                                                            
+       61 +  border-radius: var(--radius-sm);                            
+       62 +  background-color: var(--color-control-bg);                  
+       63 +  color: var(--color-control-text);                           
+       64 +  font: inherit;                                              
+       65 +}                                                             
+       66 +                                                              
+       67 +.tableScroll {                                                
+       68 +  max-width: 100%;                                            
+       69 +  overflow-x: auto;                                           
+       70 +}                                                             
+       71 +                                                              
+       72 +.table {                                                      
+       73 +  width: 100%;                                                
+       74 +  border-collapse: collapse;                                  
+       75 +}                                                             
+       76 +                                                              
+       77 +.table caption {                                              
+       78 +  padding-bottom: var(--space-2);                             
+       79 +  color: var(--color-text-muted);                             
+       80 +  text-align: left;                                           
+       81 +}                                                             
+       82 +                                                              
+       83 +.table th,                                                    
+       84 +.table td {                                                   
+       85 +  padding: var(--space-2) var(--space-3);                     
+       86 +  border-bottom: var(--control-border-width) solid var(--color
+          +-border);                                                     
+       87 +  text-align: left;                                           
+       88 +}                                                             
+       89 +                                                              
+       90 +.table th[aria-sort] {                                        
+       91 +  background-color: var(--color-tier-core-bg);                
+       92 +  color: var(--color-tier-core-text);                         
+       93 +}                                                             
+       94 +                                                              
+       95 +.tableScroll:focus-visible {                                  
+       96 +  outline: var(--focus-ring-width) solid var(--color-focus-rin
+          +g);                                                           
+       97 +  outline-offset: var(--focus-ring-offset);                   
+       98 +}                                                             
+       99 +                                                              
+      100  .crates {
+      101    display: grid;
+      102    grid-template-columns: minmax(0, 1fr);
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T18 và commit 6cf976c với message feat(hw3): add accessible
+  leaderboard with filter and sort. Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm run build: thành công.
+  - npm test: 288 test, 288 pass, 0 fail (toàn dự án).
+  - npm run lint: exit 0, đúng 1 warning đã biết, không có cái mới.
+  - C1', C3 và C5: không in gì, tức là đạt.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - Leaderboard.jsx (src/homeworks/KraftonPubgVnArena/Leaderboard.jsx) theo đúng
+    mô tả:
+    - Có <h3>Leaderboard</h3>, <table> với <caption> và <th scope="col">.
+    - Cột đang sắp xếp có aria-sort="descending", các cột còn lại không có thuộc
+      tính này.
+    - Tên squad là <th scope="row">.
+    - Bảng nằm trong container cuộn ngang có aria-label và tabIndex={0}, và
+      <output role="status" aria-live="polite"> hiển thị "N of 4 squads".
+    - Key là squadId, còn i chỉ dùng để hiển thị hạng.
+  - KraftonPubgVnArena.jsx
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx): thêm state
+    squadFilter và sortBy, một <form role="search"> với hai <select> có label
+    gắn bằng useId, và onSubmit gọi preventDefault. rows được tính bằng
+    selectStandings trong lúc render, rồi truyền xuống Leaderboard.
+  - KraftonPubgVnArena.module.css
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css) thêm
+    .filters, .tableScroll, .table cùng style cho cột đang sắp xếp và focus
+    ring. Chỉ dùng token đã có.
+
+  Ghi chú:
+  - Trong phiên này tôi lỡ chạy một lệnh python3 thừa làm treo shell. Tôi đã
+    dừng nó bằng TaskStop và không để lại thay đổi nào. Sau đó tôi sửa file bằng
+    công cụ Edit.
+  - Bộ lọc squad và cách sắp xếp mới chỉ tác động lên leaderboard. Kill feed
+    (T19) sẽ dùng chung bộ lọc squad.
+
+  Không verify (quan trọng):
+  - Tôi chưa mở trình duyệt, nên chưa xem bảng hiển thị, chưa thử đổi bộ lọc hay
+    cách sắp xếp, và chưa kiểm tra aria-sort trong cây accessibility.
+  - Chưa kiểm tra bảng có cuộn ngang trong container ở 375px không (responsive
+    để dành cho H3-T21).
+  - Chưa kiểm tra trình đọc màn hình đọc <output> thế nào.
+  - Chưa kiểm tra thứ tự heading của cả trang.
+
+  Phạm vi: tôi chỉ sửa ba file nêu trên và chưa làm H3-T19.
+
+> Đọc Agent.md, project-rules.md (mục 3, 7, 19) và TASK_DECOMPOSITION.md (Part
+  7, Invariants 10, 12, H3-T19). Chỉ làm H3-T19.
+
+  Phạm vi file: src/homeworks/KraftonPubgVnArena/KillFeed.jsx,
+  KraftonPubgVnArena.jsx, KraftonPubgVnArena.module.css.
+  - KraftonPubgVnArena: const events = filterKillFeed(SAMPLE_KILL_FEED,
+  squadFilter) (khi render); <KillFeed events={events}
+  total={SAMPLE_KILL_FEED.length} />
+  - KillFeed({ events, total }): NAME_BY_ID =
+  Object.fromEntries(SQUAD_STANDINGS.map((s) => [s.squadId, s.squadName])) ở
+  cấp module.
+    <section aria-labelledby={id}><h3 id={id}>Kill feed</h3><output
+  role="status" aria-live="polite">{events.length} of {total} events</output>
+    <section className={styles.feedScroll} aria-label="Kill feed events"
+  tabIndex={0}><ol className={styles.feed}>{events.map((e) => (<li key={e.id}
+  className={styles.feedRow}>{NAME_BY_ID[e.killerSquadId]} eliminated
+  {NAME_BY_ID[e.victimSquadId]} with
+  {e.weapon}</li>))}</ol></section></section>
+  - CSS: .feedScroll max-block-size 20rem; overflow-y auto. .feedRow
+  content-visibility auto; contain-intrinsic-size auto
+  var(--control-min-height) (token riêng --feed-row-height sẽ thêm ở H3-T20 và
+  dùng ở H3-T21).
+  - Không style= nội tuyến, không JS windowing.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C4.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C1':
+    Get-ChildItem src\components, src\homeworks, src\shell -Recurse -Filter
+  *.jsx | Select-String -Pattern '<div'
+  C3:
+    Get-ChildItem src -Recurse -Include .jsx,.js | Select-String -Pattern
+  'React\.Component|ReactDOM\.render|defaultProps|import \* as React|keyCode|al
+  ert\(|dangerouslySetInnerHTML|innerHTML|style=\{\{|key=\{(i|idx|index)\}'
+  C4:
+    Get-ChildItem src -Recurse -Filter *.css | Where-Object Name -ne
+  'tokens.css' | Select-String -Pattern
+  '#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\('
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/KillFeed.jsx
+  src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx
+  src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css
+  git commit -m "feat(hw3): add filtered kill feed with content-visibility
+  rows"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Read 1 file (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\KillFeed.jsx)
+  ⎿  Wrote 34 lines to src\homeworks\KraftonPubgVnArena\KillFeed.jsx
+       1 import { useId } from 'react'
+       2 import { SQUAD_STANDINGS } from './arenaData.js'
+       3 import styles from './KraftonPubgVnArena.module.css'
+       4
+       5 const NAME_BY_ID = Object.fromEntries(SQUAD_STANDINGS.map((s) =>
+          [s.squadId, s.squadName]))
+       6
+       7 /**
+       8  * Kill feed for the selected squad. Rows use content-visibility
+          in CSS, so off-screen rows
+     … +26 lines (ctrl+o to expand)
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 1 line
+       7    buildServerStock,
+       8  } from './arenaData.js'
+       9  import { arenaReducer, createArenaState } from './arenaReducer.
+          js'
+      10 +import { SAMPLE_KILL_FEED, filterKillFeed } from './killFeed.js
+         +'                                                              
+      11  import { createMockArenaServer } from './mockArenaServer.js'
+      12  import { SORT_OPTIONS, selectStandings } from './standings.js'
+      13  import { CrateCard } from './CrateCard.jsx'
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 1 line
+      11  import { createMockArenaServer } from './mockArenaServer.js'
+      12  import { SORT_OPTIONS, selectStandings } from './standings.js'
+      13  import { CrateCard } from './CrateCard.jsx'
+      14 +import { KillFeed } from './KillFeed.jsx'                      
+      15  import { Leaderboard } from './Leaderboard.jsx'
+      16  import styles from './KraftonPubgVnArena.module.css'
+      17  
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 1 line
+      84    }
+      85  
+      86    const rows = selectStandings(SQUAD_STANDINGS, { squadId: squa
+          dFilter, sortBy })
+      87 +  const events = filterKillFeed(SAMPLE_KILL_FEED, squadFilter) 
+      88  
+      89    return (
+      90      <section className={styles.arena} aria-labelledby={headingI
+          d}>
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.jsx)
+  ⎿  Added 1 line
+      142          </p>
+      143        </form>
+      144        <Leaderboard rows={rows} sortBy={sortBy} />
+      145 +      <KillFeed events={events} total={SAMPLE_KILL_FEED.length
+          +} />                                                          
+      146      </section>
+      147    )
+      148  }
+
+● Update(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.module.css)
+  ⎿  Added 21 lines
+       97    outline-offset: var(--focus-ring-offset);
+       98  }
+       99  
+      100 +.feedScroll {                                                 
+      101 +  max-block-size: 20rem;                                      
+      102 +  overflow-y: auto;                                           
+      103 +}                                                             
+      104 +                                                              
+      105 +.feedScroll:focus-visible {                                   
+      106 +  outline: var(--focus-ring-width) solid var(--color-focus-rin
+          +g);                                                           
+      107 +  outline-offset: var(--focus-ring-offset);                   
+      108 +}                                                             
+      109 +                                                              
+      110 +.feed {                                                       
+      111 +  margin: 0;                                                  
+      112 +  padding: 0 0 0 var(--space-5);                              
+      113 +}                                                             
+      114 +                                                              
+      115 +.feedRow {                                                    
+      116 +  padding: var(--space-1) 0;                                  
+      117 +  content-visibility: auto;                                   
+      118 +  contain-intrinsic-size: auto var(--control-min-height);     
+      119 +}                                                             
+      120 +                                                              
+      121  .crates {
+      122    display: grid;
+      123    grid-template-columns: minmax(0, 1fr);
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T19 và commit fe85b87 với message feat(hw3): add filtered kill
+  feed with content-visibility rows. Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - npm run build: thành công.
+  - npm test: 288 test, 288 pass, 0 fail (toàn dự án).
+  - npm run lint: exit 0, đúng 1 warning đã biết, không có cái mới.
+  - C1', C3 và C4: không in gì, tức là đạt.
+  - Sau commit, working tree sạch.
+
+  Nội dung:
+  - KillFeed.jsx (src/homeworks/KraftonPubgVnArena/KillFeed.jsx) theo đúng mô
+    tả:
+    - NAME_BY_ID ở cấp module.
+    - <h3>Kill feed</h3>, <output role="status" aria-live="polite"> hiển thị "N
+      of 120 events".
+    - Vùng cuộn có aria-label và tabIndex={0}, bên trong là <ol> mà mỗi <li>
+      dùng key={e.id} và có dạng "X eliminated Y with weapon".
+    - Không dùng style= hay windowing bằng JavaScript.
+  - KraftonPubgVnArena.jsx
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx): events =
+    filterKillFeed(SAMPLE_KILL_FEED, squadFilter) được tính trong lúc render, và
+    <KillFeed> đặt sau <Leaderboard>. Vì vậy chọn squad ở form sẽ lọc cả kill
+    feed lẫn leaderboard.
+  - KraftonPubgVnArena.module.css
+    (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css) thêm
+    .feedScroll (max-block-size: 20rem, overflow-y: auto, kèm focus ring), .feed
+    và .feedRow. .feedRow dùng content-visibility: auto và
+    contain-intrinsic-size: auto var(--control-min-height), đúng như prompt.
+    Token --feed-row-height sẽ thêm ở H3-T20 và dùng ở H3-T21.
+
+  Không verify (quan trọng):
+  - Tôi chưa mở trình duyệt. Chưa xem 120 dòng có hiển thị đúng và cuộn trong
+    vùng 20rem không, chưa kiểm tra lọc squad có cập nhật đúng số "N of 120
+    events", và chưa đo xem content-visibility có giảm công việc render thật hay
+    không. Tôi cũng chưa đo hiệu năng.
+  - Chưa kiểm tra trình đọc màn hình đọc <output> thế nào.
+
+  Phạm vi: tôi chỉ sửa ba file nêu trên và chưa làm H3-T20.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 7,
+  H3-T20). Chỉ làm H3-T20.
+  Phạm vi: src/styles/tokens.css, chỉ THÊM nhóm "/* Arena (Homework 3) */":
+    --feed-row-height: 2.75rem;
+    --crate-min-width: 15rem;
+    --color-notice-bg: var(--color-tier-awareness-bg);
+    --color-notice-text: var(--color-tier-awareness-text);
+    --color-claim-bg: var(--color-accent);
+    --color-claim-text: var(--color-card-bg);
+  Báo tương phản notice-text/notice-bg và claim-text/claim-bg (>= 4.5:1).
+  Kiểm tra: npm run build; C4 không in gì.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C4:
+    Get-ChildItem src -Recurse -Filter *.css | Where-Object Name -ne
+  'tokens.css' | Select-String -Pattern
+  '#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\('
+  Commit:
+  git add src/styles/tokens.css
+  git commit -m "style(hw3): add arena tokens"
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Update(src\styles\tokens.css)
+  ⎿  Added 8 lines
+      73    --color-piano-pressed: var(--color-tier-core-bg);
+      74    --color-piano-pressed-text: var(--color-tier-core-text);
+      75    --color-piano-pressed-border: var(--color-accent);
+      76 +                                                               
+      77 +  /* Arena (Homework 3) */                                     
+      78 +  --feed-row-height: 2.75rem;                                  
+      79 +  --crate-min-width: 15rem;                                    
+      80 +  --color-notice-bg: var(--color-tier-awareness-bg);           
+      81 +  --color-notice-text: var(--color-tier-awareness-text);       
+      82 +  --color-claim-bg: var(--color-accent);                       
+      83 +  --color-claim-text: var(--color-card-bg);                    
+      84  }
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T20 và commit bdaabc3 với message style(hw3): add arena tokens.
+  Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - git diff: 8 dòng thêm, 0 dòng xóa trong tokens.css (src/styles/tokens.css).
+    Nhóm /* Arena (Homework 3) */ nằm ở cuối :root, sau nhóm Piano.
+  - npm run build: thành công.
+  - C4: không in gì, tức là đạt.
+  - Sau commit, working tree sạch.
+
+  Tương phản (tôi tính bằng công thức WCAG 2.x từ giá trị hex của token, chưa đo
+  trong trình duyệt):
+
+  ┌─────────────────────────┬─────────┬─────────┬────────┬──────────────┐
+  │           Cặp           │   Chữ   │   Nền   │ Tỉ lệ  │ Ngưỡng 4.5:1 │
+  ├─────────────────────────┼─────────┼─────────┼────────┼──────────────┤
+  │ notice-text / notice-bg │ #78350f │ #fef3c7 │ 8.15:1 │ đạt          │
+  ├─────────────────────────┼─────────┼─────────┼────────┼──────────────┤
+  │ claim-text / claim-bg   │ #ffffff │ #1d4ed8 │ 6.70:1 │ đạt          │
+  └─────────────────────────┴─────────┴─────────┴────────┴──────────────┘
+
+  Nội dung: 6 token đúng như prompt: --feed-row-height: 2.75rem,
+  --crate-min-width: 15rem, hai token notice và hai token claim. Các token màu
+  đều là var() của token đã có.
+
+  Lưu ý: các token này mới được khai báo, chưa có file CSS nào dùng chúng.
+  .notice và .claim vẫn dùng màu cũ cho đến khi H3-T21 (và các bước sau) áp
+  dụng. Vì vậy hai tỉ lệ tương phản ở trên là của cặp token, chưa phải của giao
+  diện đang chạy.
+
+  Không verify: chưa mở trình duyệt hay chạy Lighthouse.
+
+  Phạm vi: tôi chỉ sửa tokens.css (src/styles/tokens.css) và chưa làm H3-T21.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 7,
+  H3-T21). Chỉ làm H3-T21. Tham khảo (không sửa) PubgMatchTelemetry.module.css
+  và DrumMachine.module.css.
+
+  Phạm vi: src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css.
+  Không sửa JSX.
+  - .arena kiểu thẻ như .telemetry (max-width rộng hơn cho bảng: min(100%,
+  64rem)).
+  - .notice: nền var(--color-notice-bg), chữ var(--color-notice-text), padding,
+  bo.
+  - .crates: grid; grid-template-columns repeat(auto-fit, minmax(min(100%,
+  var(--crate-min-width)), 1fr)); gap; list-style none; padding 0.
+  - .crate: thẻ con; .crateFacts grid 2 cột (dt/dd); .claim min-height
+  var(--control-min-height), nền var(--color-claim-bg), chữ
+  var(--color-claim-text); .claim[aria-disabled='true'] nền
+  var(--color-control-bg), chữ var(--color-text-muted), viền nét đứt, cursor
+  not-allowed (khác biệt không chỉ bằng màu).
+  - .alert viền var(--color-alert-border).
+  - .filters flex wrap gap; select min-height var(--control-min-height).
+  - .tableScroll overflow-x auto; table border-collapse collapse; width 100%;
+  th, td padding var(--space-2); text-align start; số căn end.
+  - .feedScroll, .feedRow như H3-T19 nhưng contain-intrinsic-size đổi sang auto
+  var(--feed-row-height).
+  - Không nowrap, không mã màu.
+
+  Kiểm tra: npm run build; npm test; npm run lint exit 0 với đúng 1 warning đã
+  biết; C4; git diff --stat chỉ 1 file.
+  Định nghĩa các check (PowerShell, chạy từ lab3-react19; không in gì là đạt,
+  trừ khi ghi khác):
+  C4:
+    Get-ChildItem src -Recurse -Filter *.css | Where-Object Name -ne
+  'tokens.css' | Select-String -Pattern
+  '#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\('
+
+  Commit:
+  git add src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css
+  git commit -m "style(hw3): add responsive 375px arena layout"
+
+  Không push. Báo cáo bằng tiếng Việt: nêu rõ chưa kiểm tra trình duyệt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\KraftonPubgVnArena\KraftonPubgVnArena.module.css)
+  ⎿  Added 96 lines, removed 72 lines
+       1 +/* Mobile first: the base rules fit 375px and also 320px. Nothi
+         +ng here forces horizontal page scroll. */                      
+       2 +                                                               
+       3  .arena {
+       4    display: grid;
+       5    grid-template-columns: minmax(0, 1fr);
+       6    gap: var(--space-4);
+       7    width: 100%;
+       8    min-width: 0;
+       7 -  max-width: min(100%, 72rem);                                 
+       9 +  max-width: min(100%, 64rem);                                 
+      10    padding: var(--space-4);
+      11    border: var(--control-border-width) solid var(--color-border)
+          ;
+      12    border-radius: var(--radius-lg);
+     ...
+       26  }
+       27  
+       28  .notice {
+       29 +  margin: 0;                                                  
+       30 +  padding: var(--space-3);                                    
+       31 +  border-radius: var(--radius-sm);                            
+       32 +  background-color: var(--color-notice-bg);                   
+       33 +  color: var(--color-notice-text);                            
+       34 +  overflow-wrap: anywhere;                                    
+       35 +}                                                             
+       36 +                                                              
+       37 +/* Crates */                                                  
+       38 +                                                              
+       39 +.crates {                                                     
+       40 +  display: grid;                                              
+       41 +  grid-template-columns: repeat(auto-fit, minmax(min(100%, var
+          +(--crate-min-width)), 1fr));                                  
+       42 +  gap: var(--space-3);                                        
+       43 +  margin: 0;                                                  
+       44 +  padding: 0;                                                 
+       45 +  list-style: none;                                           
+       46 +}                                                             
+       47 +                                                              
+       48 +.crate {                                                      
+       49 +  display: grid;                                              
+       50 +  gap: var(--space-2);                                        
+       51 +  min-width: 0;                                               
+       52 +  padding: var(--space-4);                                    
+       53 +  border: var(--control-border-width) solid var(--color-border
+          +);                                                            
+       54 +  border-radius: var(--radius-md);                            
+       55 +  background-color: var(--color-card-bg);                     
+       56    color: var(--color-text);
+       57  }
+       58  
+       59 +.crate h4 {                                                   
+       60 +  font-size: var(--font-size-md);                             
+       61 +  line-height: 1.3;                                           
+       62 +  overflow-wrap: anywhere;                                    
+       63 +}                                                             
+       64 +                                                              
+       65 +.crateFacts {                                                 
+       66 +  display: grid;                                              
+       67 +  grid-template-columns: max-content minmax(0, 1fr);          
+       68 +  gap: var(--space-1) var(--space-3);                         
+       69 +}                                                             
+       70 +                                                              
+       71 +.crateFacts dt {                                              
+       72 +  color: var(--color-text-muted);                             
+       73 +}                                                             
+       74 +                                                              
+       75 +.crateFacts dd {                                              
+       76 +  margin: 0;                                                  
+       77 +  overflow-wrap: anywhere;                                    
+       78 +}                                                             
+       79 +                                                              
+       80 +.claim {                                                      
+       81 +  min-height: var(--control-min-height);                      
+       82 +  padding: var(--control-padding);                            
+       83 +  border: var(--control-border-width) solid var(--color-claim-
+          +bg);                                                          
+       84 +  border-radius: var(--radius-sm);                            
+       85 +  background-color: var(--color-claim-bg);                    
+       86 +  color: var(--color-claim-text);                             
+       87 +  font: inherit;                                              
+       88 +  cursor: pointer;                                            
+       89 +}                                                             
+       90 +                                                              
+       91 +/* Unavailable is shown by a dashed border and the cursor, not
+          + only by color. */                                            
+       92 +.claim[aria-disabled='true'] {                                
+       93 +  border: var(--control-border-width) dashed var(--color-borde
+          +r);                                                           
+       94 +  background-color: var(--color-control-bg);                  
+       95 +  color: var(--color-text-muted);                             
+       96 +  cursor: not-allowed;                                        
+       97 +}                                                             
+       98 +                                                              
+       99 +/* Error message */                                           
+      100 +                                                              
+      101  .alert {
+      102    margin: 0 0 var(--space-3);
+      103    padding: var(--space-3);
+     ...
+      105    border-radius: var(--radius-sm);
+      106    background-color: var(--color-tier-awareness-bg);
+      107    color: var(--color-tier-awareness-text);
+      108 +  overflow-wrap: anywhere;                                    
+      109  }
+      110  
+      111  .alert button {
+     ...
+      114    font: inherit;
+      115  }
+      116  
+      117 +/* Filters */                                                 
+      118 +                                                              
+      119  .filters {
+       46 -  display: grid;                                              
+       47 -  grid-template-columns: minmax(0, 1fr);                      
+      120 +  display: flex;                                              
+      121 +  flex-wrap: wrap;                                            
+      122    gap: var(--space-3);
+      123  }
+      124  
+     ...
+      138    font: inherit;
+      139  }
+      140  
+      141 +/* Leaderboard: the table scrolls inside its own container, ne
+          +ver the page */                                               
+      142 +                                                              
+      143  .tableScroll {
+      144    max-width: 100%;
+      145    overflow-x: auto;
+     ...
+      153  .table caption {
+      154    padding-bottom: var(--space-2);
+      155    color: var(--color-text-muted);
+       80 -  text-align: left;                                           
+      156 +  text-align: start;                                          
+      157  }
+      158  
+      159  .table th,
+      160  .table td {
+       85 -  padding: var(--space-2) var(--space-3);                     
+      161 +  padding: var(--space-2);                                    
+      162    border-bottom: var(--control-border-width) solid var(--color
+           -border);
+       87 -  text-align: left;                                           
+      163 +  text-align: start;                                          
+      164  }
+      165  
+      166 +.table thead th:nth-child(n + 3),                             
+      167 +.table tbody td:nth-child(n + 3) {                            
+      168 +  text-align: end;                                            
+      169 +}                                                             
+      170 +                                                              
+      171  .table th[aria-sort] {
+      172    background-color: var(--color-tier-core-bg);
+      173    color: var(--color-tier-core-text);
+      174  }
+      175  
+       95 -.tableScroll:focus-visible {                                  
+       96 -  outline: var(--focus-ring-width) solid var(--color-focus-rin
+          -g);                                                           
+       97 -  outline-offset: var(--focus-ring-offset);                   
+       98 -}                                                             
+      176 +/* Kill feed */                                               
+      177  
+      178  .feedScroll {
+      179    max-block-size: 20rem;
+      180    overflow-y: auto;
+      181  }
+      182  
+      105 -.feedScroll:focus-visible {                                   
+      106 -  outline: var(--focus-ring-width) solid var(--color-focus-rin
+          -g);                                                           
+      107 -  outline-offset: var(--focus-ring-offset);                   
+      108 -}                                                             
+      109 -                                                              
+      183  .feed {
+      184    margin: 0;
+      185    padding: 0 0 0 var(--space-5);
+     ...
+      187  
+      188  .feedRow {
+      189    padding: var(--space-1) 0;
+      190 +  overflow-wrap: anywhere;                                    
+      191    content-visibility: auto;
+      118 -  contain-intrinsic-size: auto var(--control-min-height);     
+      192 +  contain-intrinsic-size: auto var(--feed-row-height);        
+      193  }
+      194  
+      121 -.crates {                                                     
+      122 -  display: grid;                                              
+      123 -  grid-template-columns: minmax(0, 1fr);                      
+      124 -  gap: var(--space-3);                                        
+      125 -  margin: 0;                                                  
+      126 -  padding: 0;                                                 
+      127 -  list-style: none;                                           
+      128 -}                                                             
+      195 +/* Focus */                                                   
+      196  
+      130 -.crate {                                                      
+      131 -  display: grid;                                              
+      132 -  gap: var(--space-2);                                        
+      133 -  min-width: 0;                                               
+      134 -  padding: var(--space-4);                                    
+      135 -  border: var(--control-border-width) solid var(--color-border
+          -);                                                            
+      136 -  border-radius: var(--radius-md);                            
+      137 -  background-color: var(--color-card-bg);                     
+      138 -  color: var(--color-text);                                   
+      139 -}                                                             
+      140 -                                                              
+      141 -.crate h4 {                                                   
+      142 -  font-size: var(--font-size-md);                             
+      143 -  line-height: 1.3;                                           
+      144 -  overflow-wrap: anywhere;                                    
+      145 -}                                                             
+      146 -                                                              
+      147 -.crateFacts {                                                 
+      148 -  display: grid;                                              
+      149 -  grid-template-columns: max-content minmax(0, 1fr);          
+      150 -  gap: var(--space-1) var(--space-3);                         
+      151 -}                                                             
+      152 -                                                              
+      153 -.crateFacts dt {                                              
+      154 -  color: var(--color-text-muted);                             
+      155 -}                                                             
+      156 -                                                              
+      157 -.crateFacts dd {                                              
+      158 -  margin: 0;                                                  
+      159 -}                                                             
+      160 -                                                              
+      161 -.claim {                                                      
+      162 -  min-height: var(--control-min-height);                      
+      163 -  padding: var(--control-padding);                            
+      164 -  border: var(--control-border-width) solid var(--color-border
+          -);                                                            
+      165 -  border-radius: var(--radius-sm);                            
+      166 -  background-color: var(--color-control-bg);                  
+      167 -  color: var(--color-control-text);                           
+      168 -  font: inherit;                                              
+      169 -  cursor: pointer;                                            
+      170 -}                                                             
+      171 -                                                              
+      172 -.claim[aria-disabled='true'] {                                
+      173 -  color: var(--color-text-muted);                             
+      174 -  cursor: not-allowed;                                        
+      175 -}                                                             
+      176 -                                                              
+      177 -.claim:focus-visible {                                        
+      197 +.claim:focus-visible,                                         
+      198 +.alert button:focus-visible,                                  
+      199 +.filters select:focus-visible,                                
+      200 +.tableScroll:focus-visible,                                   
+      201 +.feedScroll:focus-visible {                                   
+      202    outline: var(--focus-ring-width) solid var(--color-focus-rin
+           g);
+      203    outline-offset: var(--focus-ring-offset);
+      204  }
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã viết lại KraftonPubgVnArena.module.css
+  (src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css) cho H3-T21 và
+  commit d1b426a với message style(hw3): add responsive 375px arena layout. Tôi
+  chưa push. Tôi chưa kiểm tra trong trình duyệt. Các điều bên dưới đều chưa
+  được xem thật.
+
+  Kết quả các check (chạy trong phiên này):
+  - git diff --stat: đúng 1 file thay đổi (96 dòng thêm, 72 dòng xóa).
+  - npm run build: thành công.
+  - npm test: 288 test, 288 pass, 0 fail (toàn dự án).
+  - npm run lint: exit 0, đúng 1 warning đã biết.
+  - C4: không in gì, tức là không có mã màu nào ngoài tokens.css.
+  - Grep tìm nowrap không thấy kết quả nào.
+  - Tôi cũng kiểm tra mọi styles.xxx trong các file JSX đều có class tương ứng
+    trong CSS, và không thiếu class nào.
+  - Sau commit, working tree sạch.
+
+  Nội dung (theo prompt):
+  - .arena: dạng thẻ giống .telemetry, max-width: min(100%, 64rem).
+  - .notice: nền và chữ lấy từ --color-notice-*, có padding và bo góc.
+  - .crates: repeat(auto-fit, minmax(min(100%, var(--crate-min-width)), 1fr)),
+    list-style: none, padding: 0.
+  - .claim:
+    - Nền và chữ lấy từ --color-claim-*.
+    - Khi aria-disabled='true': nền --color-control-bg, chữ --color-text-muted,
+      viền nét đứt, cursor: not-allowed. Nhờ vậy trạng thái không dùng được khác
+      biệt không chỉ bằng màu.
+  - .alert: viền --color-alert-border.
+  - .filters: display: flex, flex-wrap: wrap, có gap, select có min-height:
+    var(--control-min-height).
+  - Bảng:
+    - Nằm trong .tableScroll có overflow-x: auto.
+    - th/td dùng text-align: start.
+    - Cột số, từ cột thứ 3 trở đi, căn end (ở cả tiêu đề lẫn ô).
+  - .feedRow: contain-intrinsic-size: auto var(--feed-row-height).
+  - Focus: tôi gộp một rule :focus-visible cho nút Claim, nút Dismiss, các
+    select và hai vùng cuộn, vì select và nút Dismiss trước đó chưa có focus
+    ring riêng. Đây là thêm so với prompt, nhằm theo quy tắc "focus nhìn thấy
+    được trên mọi phần tử tương tác".
+  - Thêm so với prompt: overflow-wrap: anywhere cho các text dài (notice, alert,
+    dd, dòng kill feed).
+
+  Chưa kiểm tra (cần bạn xem bằng tay):
+  - Không có cuộn ngang trang ở 375px và 320px.
+  - Bảng có thật sự cuộn trong container hay chỉ bị co cột. Tôi không đặt
+    min-width cho bảng, nên ở màn hình hẹp có thể cột bị ép và tiêu đề xuống
+    dòng thay vì cuộn.
+  - Lưới crate auto-fit ở các độ rộng khác nhau, nét đứt của nút khi
+    aria-disabled, và focus ring của nút Claim (viền cùng màu nền nút).
+  - Tương phản thật của giao diện đang chạy. Hai cặp token notice và claim tôi
+    đã tính ở bước trước (8.15:1 và 6.70:1) nhưng chưa đo lại trên trang.
+
+  Phạm vi: tôi chỉ sửa file CSS này, không sửa JSX, và chưa làm H3-T22.
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\lab3-react19\AI_FAILURE_AUDIT.md in the
+  IDE. This may or may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 7, H3-T23). Chỉ
+  làm H3-T23.
+
+  Phạm vi file: README.md. Chỉ THÊM, 0 dòng xóa và 0 dòng sửa của nội dung cũ.
+
+  1) Thêm mới ở CUỐI file mục "## Homework 3: KRAFTON x PUBG Vietnam Airdrop
+  Arena" với các mục con ###:
+
+  Mô tả đầu mục (tiếng Anh): KraftonPubgVnArena shows PVS Finals ticket and
+  G-Coin crate airdrops with an anti-drift countdown (usePubgAirdropTimer,
+  resynced on visibilitychange), optimistic claims with an in-flight lock and
+  rollback on 409 Looted Out against an in-memory mock server, a leaderboard of
+  the squads te, ces, ge and agg sorted by WWCD, placement points, kill points
+  or total, and a kill feed filtered by squad. It renders only in the #hw3
+  view. Sau đó một dòng in đậm, ĐÚNG NGUYÊN VĂN: **Sample data, not official
+  PVS results or prices.** kèm một câu: all numbers, prices and stock in this
+  homework are sample data written for the exercise.
+
+  ### Source layout: khối code với cây src/homeworks/KraftonPubgVnArena/ gồm
+  mọi file hiện có (pubg-vn-arena.contract.js, arenaData, airdropClock,
+  formatVnd, arenaReducer, mockArenaServer, standings, killFeed,
+  usePubgAirdropTimer, CrateCard, Leaderboard, KillFeed, KraftonPubgVnArena,
+  module.css; mỗi file một dòng mô tả ngắn đúng với mã hiện có, hãy ĐỌC file để
+  mô tả cho đúng). Ghi thêm: view #hw3 nằm trong src/shell/resolveView.js,
+  token nằm ở nhóm "Arena (Homework 3)" trong src/styles/tokens.css, và delay
+  lấy từ src/homeworks/GrandPiano88/replay.js.
+
+  ### Constraints (tiếng Anh, mỗi ý một gạch đầu dòng): remaining time is
+  derived during render from computeRemainingMs(targetEpochMs, nowMs,
+  serverOffsetMs); the hook only stores nowMs; the slide's hook was
+  restructured because its effect reads a function that is not in the
+  dependency list (exhaustive-deps) and calls setState synchronously in the
+  effect body (set-state-in-effect); the effect ticks every 200 ms and resyncs
+  on visibilitychange, with cleanup; setInterval is allowed only in
+  usePubgAirdropTimer.js; the claim reducer is pure with a pending claimId lock
+  per crate, CLAIM_REJECTED restores the optimistic decrement then applies the
+  server stock, and an in-flight Map in the component backs the lock; the
+  claim button uses aria-disabled plus a handler guard so it keeps focus; every
+  claim has an AbortController and unmount aborts them all, AbortError is not
+  shown as an error; prices use one module-level Intl.NumberFormat('vi-VN');
+  the kill feed uses CSS content-visibility: auto with contain-intrinsic-size
+  instead of JavaScript windowing, because windowing needs dynamic inline
+  styles which project-rules section 7 forbids; leaderboard sorting uses
+  toSorted.
+
+  ### Sample data: bảng crate (id, title, priceVnd, UI stock, server stock,
+  drop offset) và bảng squad (squadId, squadName, wwcdCount, placementPts,
+  killPts) lấy ĐÚNG từ src/homeworks/KraftonPubgVnArena/arenaData.js, cộng
+  DROP_WINDOW_MS (10 phút), độ trễ mock 800 ms, kill feed 120 sự kiện seed
+  2026.
+
+  ### Text checks: nêu các check C6', C10, C11, C12 (phải đúng: C6' không in
+  gì; C10 không in gì; C11 in đúng 4 dòng; C12 in ít nhất 2 dòng gồm
+  arenaData.js và README.md). Viết lệnh PowerShell và lệnh Git Bash tương đương
+  cho từng check, rồi CHẠY thật cả hai loại lệnh và xác nhận kết quả. Lệnh
+  PowerShell:
+  C6' (ba lệnh):
+    Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern
+  'isLoading|isError'
+    Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -ne
+  'usePubgAirdropTimer.js' | Select-String -Pattern 'setInterval\('
+    Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike
+  'fetchKraftonPubgTelemetry*' | Select-String -Pattern '\bfetch\('
+  C10:
+    Get-ChildItem src\homeworks\KraftonPubgVnArena -Recurse -Include *.jsx,*.js
+  | Select-String -Pattern '=>\s*\w+\s*-\s*1\b|-=\s*1000'
+  C11:
+    Select-String -Path src\homeworks\KraftonPubgVnArena\usePubgAirdropTimer.js
+  -Pattern 'setInterval\(|clearInterval\(|addEventListener\(.visibilitychange|
+  removeEventListener\(.visibilitychange'
+  C12:
+    Select-String -Path src\homeworks\KraftonPubgVnArena\arenaData.js,
+  README.md -Pattern 'not official'
+  Bản Git Bash viết bằng grep -rnE tương đương (dùng --include và --exclude cho
+  các điều kiện loại file).
+
+  ### How to test (các bước làm tay tại http://localhost:5173/#hw3, tiếng Anh):
+  (1) four crates are shown: VIP Warm-up with a countdown that turns Airdrop
+  live after about 45 seconds without a reload, two live G-Coin crates, one
+  Expired; (2) background tab: reload, switch to another tab for at least 60
+  seconds, come back: the countdown is already correct; (3) optimistic claim:
+  click Claim on the 600 G-Coin crate, stock drops at once and the button says
+  Claiming…, then Claimed by you 1 appears; (4) double-click lock: in the
+  Console run
+  const b = [...document.querySelectorAll('button')].find(x => x.textContent
+  === 'Claim' && x.closest('article').textContent.includes('600 G-Coin')); for
+  (let i = 0; i < 5; i++) b.click()
+  and the stock drops by 1 only; (5) rollback: click Claim on the Last Crate,
+  stock goes 1 to 0, then a red alert "Looted Out: your claim was rolled back."
+  appears and the status is Looted out; (6) unmount: click Claim and at once
+  click HW1 in the nav, the Console stays clean; (7) leaderboard and kill feed:
+  set Sort to Kill points to get the order Genius Esports, The Expendables,
+  Cerberus Esports, AGG; set Squad to AGG to see only AGG events in the kill
+  feed.
+
+  ### Known limits (đúng các ý sau, tiếng Anh):
+  - All numbers, prices and stock are sample data, not official PVS results or
+  prices.
+  - The mock server lives in memory, so reloading the page resets the stock and
+  the claims.
+  - Background tabs may tick only once a minute; the countdown is corrected
+  when the tab becomes visible again (visibilitychange).
+  - One squad select filters both the leaderboard and the kill feed, so with a
+  squad selected the leaderboard shows a single row.
+  - Each crate card runs its own 200 ms timer, so four timers run while the
+  arena is open.
+  - Kill-feed rows rely on content-visibility; browsers without it render every
+  row normally.
+  - The Lab 2 code (anti-drift timer, virtual scroller) was not reused; this
+  homework was written from scratch.
+  - The mock server is in memory only; there is no real network or server, and
+  claim IDs come from crypto.randomUUID, which needs localhost or HTTPS.
+  Không ghi điểm hay số đo.
+
+  2) Cập nhật hai mục có sẵn, chỉ THÊM dòng: trong "### Open a view" thêm một
+  dòng cho http://localhost:5173/#hw3 (và http://localhost:4173/#hw3 trên
+  preview build); trong "## Repository layout" không sửa dòng đã có sẵn
+  KraftonPubgVnArena (HW3) nếu nó đã đúng. Không sửa dòng cũ.
+
+  Kiểm tra: npm run build; npm run lint exit 0 với đúng 1 warning đã biết
+  (PubgMatchTelemetry.jsx:17); npm test (288 pass); git diff --numstat
+  README.md phải có 0 dòng xóa; chạy thật các lệnh Git Bash đã ghi trong Text
+  checks và dán kết quả vào báo cáo.
+
+  Commit:
+  git add README.md
+  git commit -m "docs(readme): document hw3 and sample data"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Made 1 scratchpad edit +140, searched for 1 pattern, listed 1 directory, ran 1 shell command (ctrl+o to expand)
+
+● Update(README.md)
+  ⎿  Added 1 line
+      269  
+      270  - `npm run dev`, then open `http://localhost:5173/#exercises` 
+           or `http://localhost:5173/#hw1`.
+      271  - For Homework 2, open `http://localhost:5173/#hw2` (or `http:
+           //localhost:4173/#hw2` on the preview build).
+      272 +- For Homework 3, open `http://localhost:5173/#hw3` (or `http:
+          +//localhost:4173/#hw3` on the preview build).                 
+      273  - For Lighthouse, build and serve the production bundle with `
+           npm run build` and `npm run preview`, then run Lighthouse on e
+           ach view by its URL with the hash, for example `http://localho
+           st:4173/#hw1`. Run it once per view.
+      274  
+      275  ## Homework 1: Production Studio Drum Kit
+
+● Bash(tail -c 1 README.md | xxd | head -1; grep -c $'\r' README.md; cat
+      "/c/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/cbffd563-0749-44
+      48-8d80-12a7373769b2…)
+  ⎿  Updated README.md (+139 -0)
+      512  - Starting or stopping a recording releases every held note, b
+           ecause the keyboard effect depends on mode.
+      513  - The status text says "Take ready: 1 notes" for a single note
+           .
+      514  - Browsers throttle timers in background tabs, so replay timin
+           g can drift when the tab is not visible.
+      515 +                                                              
+      516 +## Homework 3: KRAFTON x PUBG Vietnam Airdrop Arena           
+      517 +                                                              
+      518 +`KraftonPubgVnArena` shows PVS Finals ticket and G-Coin crate 
+          +airdrops with an anti-drift countdown (`usePubgAirdropTimer`, 
+          +resynced on `visibilitychange`), optimistic claims with an in-
+          +flight lock and rollback on 409 Looted Out against an in-memor
+          +y mock server, a leaderboard of the squads te, ces, ge and agg
+          + sorted by WWCD, placement points, kill points or total, and a
+          + kill feed filtered by squad. It renders only in the `#hw3` vi
+          +ew.                                                           
+      519 +                                                              
+      520 +**Sample data, not official PVS results or prices.**          
+      521 +                                                              
+      522 +All numbers, prices and stock in this homework are sample data
+          + written for the exercise.                                    
+      523 +                                                              
+      524 +### Source layout                                             
+      525 +                                                              
+      526 +```                                                           
+      527 +src/                                                          
+      528 +  shell/resolveView.js             VIEWS gains { id: 'hw3', la
+          +bel: 'HW3 PUBG VN Arena' } (and resolveView.test.js)          
+      529 +  App.jsx                          renders KraftonPubgVnArena 
+          +for the hw3 view                                              
+      530 +  styles/tokens.css                "Arena (Homework 3)" token 
+          +group                                                         
+      531 +  homeworks/                                                  
+      532 +    KraftonPubgVnArena/                                       
+      533 +      pubg-vn-arena.contract.js    JSDoc typedefs only        
+      534 +      arenaData.js / .test.js      SAMPLE_DATA_NOTICE, DROP_WI
+          +NDOW_MS, frozen SQUAD_STANDINGS and CRATE_SEEDS, buildSampleCr
+          +ates(nowMs), buildServerStock(), with tests                   
+      535 +      airdropClock.js / .test.js   computeRemainingMs, formatC
+          +ountdown, DROP_PHASES, getDropPhase, with tests               
+      536 +      formatVnd.js / .test.js      formatVnd with one module-l
+          +evel Intl.NumberFormat('vi-VN'), with tests                   
+      537 +      arenaReducer.js / .test.js   createArenaState and the pu
+          +re arenaReducer (CLAIM_STARTED, CLAIM_CONFIRMED, CLAIM_REJECTE
+          +D, CLAIM_ABORTED, DISMISS_ERROR), with tests                  
+      538 +      mockArenaServer.js / .test.js   createMockArenaServer: i
+          +n-memory claimCrate that answers by claimId (idempotent), 200 
+          +or 409 Looted Out, abortable, with tests                      
+      539 +      standings.js / .test.js      SORT_OPTIONS and selectStan
+          +dings (filter, derived totalPts, toSorted), with tests        
+      540 +      killFeed.js / .test.js       WEAPONS, seeded generateKil
+          +lFeed, frozen SAMPLE_KILL_FEED, filterKillFeed, with tests    
+      541 +      usePubgAirdropTimer.js       hook: stores nowMs, 200 ms 
+          +tick, visibilitychange resync, returns { remainingMs, isLive, 
+          +nowMs }                                                       
+      542 +      CrateCard.jsx                one crate: price, stock, ph
+          +ase, countdown while warming up, Claim button with aria-disabl
+          +ed                                                            
+      543 +      Leaderboard.jsx              standings table with captio
+          +n, scope and aria-sort inside a focusable scroll container    
+      544 +      KillFeed.jsx                 filtered kill-feed list wit
+          +h a result count                                              
+      545 +      KraftonPubgVnArena.jsx       the arena: claim reducer, m
+          +ock server, in-flight Map, squad and sort filters, error alert
+      546 +      KraftonPubgVnArena.module.css   layout, crate grid, tabl
+          +e, kill-feed rows with content-visibility                     
+      547 +```                                                           
+      548 +                                                              
+      549 +The view id `#hw3` lives in `src/shell/resolveView.js`. The ar
+          +ena design tokens are in `src/styles/tokens.css`, in the "Aren
+          +a (Homework 3)" group. The abortable `delay` is imported from 
+          +`src/homeworks/GrandPiano88/replay.js`.                       
+      550 +                                                              
+      551 +### Constraints                                               
+     … 102 more lines (ctrl+o to expand)
+
+● Đã thêm xong nội dung README (140 dòng thêm, 0 dòng xóa). Giờ chạy build,
+  lint, test và các check bằng cả PowerShell lẫn Git Bash.
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T23 và commit 3b61670 với message docs(readme): document hw3
+  and sample data. Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - git diff --numstat README.md: 140 dòng thêm, 0 dòng xóa.
+  - npm run build: thành công.
+  - npm run lint: exit 0, đúng 1 warning đã biết (PubgMatchTelemetry.jsx:17).
+  - npm test: 288 test, 288 pass, 0 fail.
+  - Sau commit, working tree sạch.
+
+  Text checks, chạy thật cả hai loại lệnh (kết quả giống nhau):
+
+  ┌────────┬──────────────────────────────┬───────────────────────┬─────────┐
+  │ Check  │           Git Bash           │      PowerShell       │  Đạt?   │
+  ├────────┼──────────────────────────────┼───────────────────────┼─────────┤
+  │ C6' (3 │ không có dòng nào (rc=1 cả   │ không in gì           │ đạt     │
+  │  lệnh) │ ba)                          │                       │         │
+  ├────────┼──────────────────────────────┼───────────────────────┼─────────┤
+  │ C10    │ không có dòng nào (rc=1)     │ không in gì           │ đạt     │
+  ├────────┼──────────────────────────────┼───────────────────────┼─────────┤
+  │        │ 4 dòng: 28 setInterval, 32   │                       │         │
+  │ C11    │ addEventListener, 34         │ cùng 4 dòng           │ đạt     │
+  │        │ clearInterval, 35            │                       │         │
+  │        │ removeEventListener          │                       │         │
+  ├────────┼──────────────────────────────┼───────────────────────┼─────────┤
+  │        │ arenaData.js:4 và            │ arenaData.js:4,       │ đạt (có │
+  │ C12    │ README.md:520, 595, 609,     │ README.md:520, 595,   │  cả hai │
+  │        │ 624, 646                     │ 609, 624, 646 (6      │  file)  │
+  │        │                              │ dòng)                 │         │
+  └────────┴──────────────────────────────┴───────────────────────┴─────────┘
+
+  C12 in nhiều dòng của README vì chính phần "Text checks" và "Known limits" tôi
+  viết cũng chứa cụm not official. Điều kiện "ít nhất 2 dòng, gồm arenaData.js
+  và README.md" vẫn thỏa.
+
+  Nội dung thêm vào README.md:
+  - Phần cuối file: mục ## Homework 3: KRAFTON x PUBG Vietnam Airdrop Arena, gồm
+    mô tả, dòng in đậm Sample data, not official PVS results or prices. (đúng
+    nguyên văn, ở dòng 520) và câu về dữ liệu mẫu. Tiếp theo là Source layout,
+    Constraints, Sample data, Text checks, How to test và Known limits.
+  - Source layout: liệt kê đủ 14 file, mô tả ngắn lấy từ mã hiện có (tôi đã đối
+    chiếu với các export thật).
+  - Mục "Open a view": thêm một dòng cho #hw3 ở cổng 5173 và 4173.
+  - Mục "Repository layout": không sửa, vì dòng 27 đã có KraftonPubgVnArena
+    (HW3).
+  - Bảng crate và squad lấy đúng từ arenaData.js.
+  - Không ghi điểm hay số đo nào.
+
+  Lưu ý:
+  - Hai ý trong Known limits ("mock server lives in memory" và "mock server is
+    in memory only") hơi trùng nhau. Tôi giữ cả hai đúng như prompt liệt kê.
+  - Mô tả ở "How to test" và "Constraints" là hành vi mà tôi suy ra từ mã đã
+    viết và dữ liệu mẫu. Tôi chưa chạy bảy bước đó trong trình duyệt. Ví dụ chưa
+    kiểm tra VIP chuyển sang Airdrop live sau khoảng 45 giây, chưa thử đoạn
+    Console ở bước 4, và chưa kiểm tra Console sạch khi unmount. Bạn nên chạy
+    lại các bước này bằng tay trước khi nộp.
+  - Câu "needs localhost or HTTPS" của crypto.randomUUID cũng là kiến thức tôi
+    viết theo prompt, chưa kiểm chứng trong phiên này.
+
+  Phạm vi: tôi chỉ sửa README.md và chưa làm H3-T24.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 7, H3-T25). Chỉ
+  làm H3-T25.
+
+  Phạm vi file: src/components/DeveloperCard.jsx, chỉ giá trị commits mặc định
+  (dòng metrics = { commits: 104, vdomNodes: 0, a11yScore: 100 }). Đổi commits:
+  104 thành commits: 129. Không tự tính số này; 129 là giá trị tôi cung cấp.
+  Không đổi vdomNodes, a11yScore hay dòng nào khác.
+
+  Kiểm tra: git diff phải đúng +1/-1 dòng trong DeveloperCard.jsx; npm run
+  build; npm test (288 pass); npm run lint exit 0 với đúng 1 warning đã biết.
+
+  Commit:
+  git add src/components/DeveloperCard.jsx
+  git commit -m "fix(ex1): sync commits metric after hw3"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Update(src\components\DeveloperCard.jsx)
+  ⎿  Added 1 line, removed 1 line
+      11    fullName = 'Võ Văn Thiện',
+      12    role = 'Student at the University of Information Technology –
+           VNU-HCM',
+      13    avatarUrl = 'https://images.unsplash.com/photo-1534528741775-
+          53994a69daeb?w=240',
+      14 -  metrics = { commits: 104, vdomNodes: 0, a11yScore: 100 },    
+      14 +  metrics = { commits: 129, vdomNodes: 0, a11yScore: 100 },    
+      15    skills = [
+      16      { id: 'sk-1', name: 'React 19 createRoot + StrictMode', tie
+          r: 'Core' },
+      17      { id: 'sk-2', name: 'Hooks: useState, useEffect, useId', ti
+          er: 'Core' },
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã làm xong H3-T25 và commit 5da7718 với message fix(ex1): sync commits metric
+  after hw3. Tôi chưa push.
+
+  Kết quả các check (chạy trong phiên này):
+  - git diff --numstat: 1 1 src/components/DeveloperCard.jsx, tức là đúng +1/-1
+    dòng.
+  - Dòng thay đổi ở DeveloperCard.jsx:14 (src/components/DeveloperCard.jsx#L14):
+    commits: 104 thành commits: 129, còn vdomNodes: 0 và a11yScore: 100 giữ
+    nguyên.
+  - npm run build: thành công.
+  - npm test: 288 test, 288 pass, 0 fail.
+  - npm run lint: exit 0, đúng 1 warning đã biết (PubgMatchTelemetry.jsx:17).
+  - Sau commit, working tree sạch.
+
+  Không verify: 129 là giá trị bạn cung cấp. Tôi không tự đếm số commit nên
+  không xác nhận được nó khớp với git log. Tôi cũng chưa xem thẻ hiển thị trên
+  trình duyệt.
+
+  Phạm vi: tôi chỉ sửa một dòng trong DeveloperCard.jsx
+  (src/components/DeveloperCard.jsx) và chưa làm H3-T26.
