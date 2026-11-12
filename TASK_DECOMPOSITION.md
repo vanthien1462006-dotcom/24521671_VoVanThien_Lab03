@@ -754,3 +754,173 @@ Events: [{60, f60, 300, 0}, {64, f64, 100, 500}, {67, f67, 200, 250}].
 | H2-T23 | Sync the commits metric | `src/components/DeveloperCard.jsx` | Only `metrics.commits`, value from the author. | `fix(ex1): sync commits metric after hw2` |
 | H2-T24 | Final audit | No file changes | Checks pass; log matches Parts 1 to 6. | (no commit) |
 | H2-T25 | Archive Homework 2 evidence | `docs/evidence/HW2_GrandPiano88/*.png`, `docs/prompt_logs/HW2_GrandPiano88.txt` | Copied with names unchanged. | `docs(evidence): archive hw2 screenshots and prompt log` |
+
+## Part 7. Homework 3: KRAFTON x PUBG Vietnam Championship & Airdrop Arena
+
+### 7.1 Overview
+`KraftonPubgVnArena` (src/homeworks/KraftonPubgVnArena/) shows PVS Finals ticket and G-Coin crate airdrops with an anti-drift countdown (`usePubgAirdropTimer`, resynced on `visibilitychange`), optimistic claims with an in-flight lock and rollback on 409 Looted Out against an in-memory mock server, a leaderboard of the Vietnamese squads te, ces, ge and agg sorted by WWCD, placement points or kill points, and a filtered kill feed. All numbers, prices and stock are sample data, labelled "Sample data, not official PVS results or prices." Source: slides 29 and 30.
+
+### 7.2 Contract
+```js
+/**
+ * @typedef {'WARMUP' | 'AIRDROP_LIVE' | 'LOOTED_OUT' | 'EXPIRED'} DropPhase
+ */
+
+/**
+ * @typedef {Object} PubgCrateDrop
+ * @property {string} id
+ * @property {string} title           For example 'PVS Finals VIP Pass + 5,000 G-Coin'.
+ * @property {number} priceVnd        Formatted with Intl.NumberFormat('vi-VN').
+ * @property {number} remainingStock
+ * @property {number} dropEpochMs
+ */
+
+/**
+ * @typedef {'te' | 'ces' | 'ge' | 'agg'} PubgVnSquadId
+ */
+
+/**
+ * @typedef {Object} PubgVnSquadStanding
+ * @property {PubgVnSquadId} squadId
+ * @property {string} squadName
+ * @property {number} wwcdCount       Winner Winner Chicken Dinner count.
+ * @property {number} placementPts
+ * @property {number} killPts
+ */
+
+/**
+ * @typedef {'wwcd' | 'placement' | 'kills' | 'total'} StandingSortKey
+ */
+
+/**
+ * @typedef {Object} KillFeedEvent
+ * @property {string} id
+ * @property {PubgVnSquadId} killerSquadId
+ * @property {PubgVnSquadId} victimSquadId
+ * @property {string} weapon
+ */
+
+/**
+ * @typedef {Object} ClaimResponse
+ * @property {200 | 409} status
+ * @property {number} remainingStock  Server stock after the request.
+ * @property {string} [error]         'Looted Out' when status is 409.
+ */
+
+/**
+ * @typedef {Object} ArenaState
+ * @property {Readonly<Record<string, number>>} stock     Crate id to displayed stock.
+ * @property {Readonly<Record<string, string>>} pending   Crate id to in-flight claimId.
+ * @property {Readonly<Record<string, number>>} owned     Crate id to confirmed claims.
+ * @property {string | null} lastError
+ */
+
+export {};
+```
+
+### 7.3 Invariants
+1. KraftonPubgVnArena is one `<section aria-labelledby>` with `<h2>HW3 KRAFTON x PUBG Vietnam Airdrop Arena</h2>` and a visible notice "Sample data, not official PVS results or prices.", rendered only in the `hw3` view.
+2. Remaining time is derived during render from `computeRemainingMs(targetEpochMs, nowMs, serverOffsetMs)` = `Math.max(0, targetEpochMs - (nowMs + serverOffsetMs))`. The clock state is `nowMs`; nothing counts down by subtraction.
+3. `usePubgAirdropTimer(targetEpochMs, serverOffsetMs = 0, now = Date.now)` returns `{ remainingMs, isLive, nowMs }` (`nowMs` is the last clock tick, used to derive the phase without calling Date.now during render). Its one effect starts `setInterval` every 200 ms and a `visibilitychange` listener that resyncs when visible, and its cleanup clears both. It never sets state synchronously in the effect body. `setInterval` appears in no other file.
+4. Phase comes only from `getDropPhase`. A crate can be claimed only in AIRDROP_LIVE with displayed stock above 0 and no pending claim.
+5. Claims go through `arenaReducer`: started (stock − 1, pending set), confirmed (stock = server value, owned + 1), rejected (stock restored then set to server value, lastError set). State is never mutated. A second click while pending changes nothing.
+6. The claim button keeps focus while pending: `aria-disabled="true"` and a guard in the handler, not the `disabled` attribute. Its text is "Claim" or "Claiming…".
+7. The mock server is created once per arena with injected `delay`; every claim passes `{ signal }`; unmount aborts every pending claim; AbortError is a normal outcome.
+8. Prices use `formatVnd`, one shared `Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })`.
+9. The leaderboard is a `<table>` with `<caption>`, `<th scope="col">` and `aria-sort` on the sorted column; rows come from `selectStandings` using `.toSorted()`; total is derived.
+10. One `<form role="search">` holds the squad filter and sort selects, labelled with useId, with `preventDefault` on submit. The kill feed shows only events involving the selected squad. Counts go in `<output role="status" aria-live="polite">`.
+11. Rejected claims are announced in an element with `role="alert"`.
+12. Kill-feed rows use `content-visibility: auto` with `contain-intrinsic-size`. No inline style.
+
+### 7.4 Sample data
+Values as approved in the guide, section 0.2: four standings (te 3/58/47, ces 2/61/39, ge 2/44/52, agg 1/49/33), four crates (vip-pass, gcoin-600, gcoin-last, early-bird with prices 1990000, 149000, 149000, 990000; UI stock 5, 3, 1, 2; server stock 5, 3, 0, 2; drop offsets +45000, -60000, -60000, -1200000 ms), DROP_WINDOW_MS 600000, kill feed of 120 events with seed 2026.
+
+### 7.5 Expected results
+computeRemainingMs(target, now, offset):
+| target | now | offset | Expected |
+| --- | --- | --- | --- |
+| 10000 | 4000 | 0 | 6000 |
+| 10000 | 4000 | 1000 | 5000 |
+| 10000 | 4000 | -1000 | 7000 |
+| 10000 | 12000 | 0 | 0 |
+
+formatCountdown(ms): 0 → '00:00'; 999 → '00:01'; 61000 → '01:01'; 3600000 → '1:00:00'; 3725000 → '1:02:05' (seconds rounded up).
+
+getDropPhase({ nowMs, dropEpochMs: 1000, remainingStock, windowMs: 500 }):
+| nowMs | stock | Expected |
+| --- | --- | --- |
+| 999 | 3 | WARMUP |
+| 1000 | 3 | AIRDROP_LIVE |
+| 1200 | 0 | LOOTED_OUT |
+| 1500 | 3 | EXPIRED |
+| 1500 | 0 | EXPIRED |
+
+formatVnd: 1990000 → '1.990.000 ₫'; 149000 → '149.000 ₫'; 0 → '0 ₫' (after replacing   with a space).
+
+arenaReducer from { stock: { a: 2 }, pending: {}, owned: {}, lastError: null }:
+| Action | Expected |
+| --- | --- |
+| CLAIM_STARTED a, c1 | stock a 1, pending a c1 |
+| then CLAIM_STARTED a, c2 | same object returned (lock) |
+| then CLAIM_CONFIRMED a, c1, remainingStock 1 | stock a 1, pending {}, owned a 1 |
+| CLAIM_STARTED when stock a is 0 | same object returned |
+| CLAIM_STARTED a, c1 then CLAIM_REJECTED a, c1, remainingStock 0, error 'Looted Out' | stock a 0, pending {}, owned {}, lastError 'Looted Out' |
+| CLAIM_REJECTED with a claimId that is not pending | same object returned |
+| CLAIM_STARTED then CLAIM_ABORTED a, c1 | stock restored to 2, pending {} |
+| DISMISS_ERROR | lastError null |
+| unknown type | throws TypeError |
+Every changed state is a new object; the input state is never mutated (checked with Object.freeze on the input).
+
+mock server createMockArenaServer({ serverStock: { a: 1, b: 0 }, delay: instant }):
+| Call | Expected |
+| --- | --- |
+| claimCrate('a', 'c1') | { status: 200, remainingStock: 0 } |
+| claimCrate('a', 'c1') again | same answer, stock not decremented twice |
+| claimCrate('a', 'c2') | { status: 409, error: 'Looted Out', remainingStock: 0 } |
+| claimCrate('b', 'c3') | 409 |
+| claimCrate('zzz', 'c4') | rejects TypeError (unknown crate) |
+| aborted signal | rejects with name 'AbortError', stock unchanged |
+
+selectStandings(rows, { squadId, sortBy }) with the sample rows:
+| squadId | sortBy | Expected ids |
+| --- | --- | --- |
+| 'all' | 'wwcd' | te, ces, ge, agg |
+| 'all' | 'placement' | ces, te, agg, ge |
+| 'all' | 'kills' | ge, te, ces, agg |
+| 'all' | 'total' | te, ces, ge, agg |
+| 'agg' | 'wwcd' | agg |
+| 'all' | 'unknown' | throws RangeError |
+Ties break by total, then by squadId. Input array unchanged. Each row gains `totalPts`.
+
+generateKillFeed(count, seed): 120 events for (120, 2026); ids 'kf-001' … 'kf-120'; killer never equals victim; weapons from the list; same seed gives deepEqual output; different seed gives different output. filterKillFeed(events, 'all') returns all; filterKillFeed(events, 'te') returns only events where te is killer or victim.
+
+### 7.6 Work breakdown structure
+| ID | Task | File | Acceptance criteria | Commit message |
+| --- | --- | --- | --- | --- |
+| H3-T01 | Write this WBS for Homework 3 | `TASK_DECOMPOSITION.md` | Part 7 appended. Parts 1 to 6 unchanged. 27 rows. | `docs(spec): add hw3 task decomposition` |
+| H3-T02 | Add the Homework 3 rules | `project-rules.md` | New section 19 appended. Sections 1 to 18 unchanged. | `docs(rules): add hw3 timer, optimistic claim and sample data rules` |
+| H3-T03 | Add the JSDoc contract | `src/homeworks/KraftonPubgVnArena/pubg-vn-arena.contract.js` | Exactly the code block of section 7.2. | `docs(hw3): add PUBG VN arena JSDoc contract` |
+| H3-T04 | Add the sample data, test first | `src/homeworks/KraftonPubgVnArena/arenaData.js`, `src/homeworks/KraftonPubgVnArena/arenaData.test.js` | Exports `SAMPLE_DATA_NOTICE`, `DROP_WINDOW_MS`, frozen `SQUAD_STANDINGS`, frozen `CRATE_SEEDS` and `buildSampleCrates(nowMs)` returning PubgCrateDrop objects. Values of section 7.4. | `feat(hw3): add labelled sample crates and squad standings` |
+| H3-T05 | Add remaining time and countdown, test first | `src/homeworks/KraftonPubgVnArena/airdropClock.js`, `src/homeworks/KraftonPubgVnArena/airdropClock.test.js` | `computeRemainingMs`, `formatCountdown`; rows of 7.5 pass. | `feat(hw3): add anti-drift remaining time and countdown format` |
+| H3-T06 | Add the phase, test first | `src/homeworks/KraftonPubgVnArena/airdropClock.js`, `src/homeworks/KraftonPubgVnArena/airdropClock.test.js` | `DROP_PHASES` and `getDropPhase`; rows of 7.5 pass. | `feat(hw3): derive airdrop phase from clock and stock` |
+| H3-T07 | Add VND formatting, test first | `src/homeworks/KraftonPubgVnArena/formatVnd.js`, `src/homeworks/KraftonPubgVnArena/formatVnd.test.js` | Rows of 7.5 pass. | `feat(hw3): format prices in vietnamese dong` |
+| H3-T08 | Add the claim reducer, test first | `src/homeworks/KraftonPubgVnArena/arenaReducer.js`, `src/homeworks/KraftonPubgVnArena/arenaReducer.test.js` | `createArenaState(crates)`, `arenaReducer` with CLAIM_STARTED, CLAIM_CONFIRMED, DISMISS_ERROR; lock rows pass. | `feat(hw3): add optimistic claim reducer with in-flight lock` |
+| H3-T09 | Add rollback, test first | `src/homeworks/KraftonPubgVnArena/arenaReducer.js`, `src/homeworks/KraftonPubgVnArena/arenaReducer.test.js` | CLAIM_REJECTED and CLAIM_ABORTED; all reducer rows of 7.5 pass. | `feat(hw3): roll back optimistic claim on 409 looted out` |
+| H3-T10 | Add the mock server, test first | `src/homeworks/KraftonPubgVnArena/mockArenaServer.js`, `src/homeworks/KraftonPubgVnArena/mockArenaServer.test.js` | `createMockArenaServer({ serverStock, latencyMs = 800, delay })`; rows of 7.5 pass. | `feat(hw3): add idempotent mock arena server with 409` |
+| H3-T11 | Add standings selection, test first | `src/homeworks/KraftonPubgVnArena/standings.js`, `src/homeworks/KraftonPubgVnArena/standings.test.js` | `SORT_OPTIONS`, `selectStandings`; rows of 7.5 pass; no `.sort(`. | `feat(hw3): add standings filter and sort by wwcd, placement, kills` |
+| H3-T12 | Add the kill feed, test first | `src/homeworks/KraftonPubgVnArena/killFeed.js`, `src/homeworks/KraftonPubgVnArena/killFeed.test.js` | `WEAPONS`, `generateKillFeed(count, seed)` with a small seeded PRNG, `filterKillFeed`, frozen `SAMPLE_KILL_FEED`; rows of 7.5 pass. | `feat(hw3): add seeded sample kill feed and squad filter` |
+| H3-T13 | Add the timer hook | `src/homeworks/KraftonPubgVnArena/usePubgAirdropTimer.js` | Invariant 3. Lint passes with only the known warning. C10, C11. | `feat(hw3): add usePubgAirdropTimer with visibilitychange resync` |
+| H3-T14 | Add the crate card | `src/homeworks/KraftonPubgVnArena/CrateCard.jsx`, `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | `<article>` with h4 title, price, stock, phase text, countdown in `<time>` for WARMUP, Claim button per invariant 6 (handler is a prop). | `feat(hw3): build crate cards with live countdown and phase` |
+| H3-T15 | Add the hw3 view | `src/shell/resolveView.js`, `src/shell/resolveView.test.js`, `src/App.jsx`, `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx` | VIEWS gains `{ id: 'hw3', label: 'HW3 PUBG VN Arena' }`; test row; App branch; KraftonPubgVnArena created as a stub with the h2 and the sample-data notice. | `feat(shell): add hw3 view to navigation` |
+| H3-T16 | Compose the arena | `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx`, `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | Invariant 1; crates from `useState(() => buildSampleCrates(Date.now()))`; h3 "Airdrops" and a list of CrateCard; claim handler not wired yet (no-op). | `feat(hw3): compose arena with sample data notice` |
+| H3-T17 | Wire optimistic claims | `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx`, `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | Invariants 4, 5, 6, 7, 11. | `feat(hw3): wire optimistic claim with rollback and abort on unmount` |
+| H3-T18 | Add the leaderboard | `src/homeworks/KraftonPubgVnArena/Leaderboard.jsx`, `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx`, `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | Invariants 9 and 10 (filter form lives in KraftonPubgVnArena and is shared). | `feat(hw3): add accessible leaderboard with filter and sort` |
+| H3-T19 | Add the kill feed list | `src/homeworks/KraftonPubgVnArena/KillFeed.jsx`, `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx`, `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | Invariants 10 and 12. | `feat(hw3): add filtered kill feed with content-visibility rows` |
+| H3-T20 | Add the arena tokens | `src/styles/tokens.css` | Only additions, colors as var() of existing tokens. | `style(hw3): add arena tokens` |
+| H3-T21 | Add the responsive layout | `src/homeworks/KraftonPubgVnArena/KraftonPubgVnArena.module.css` | Mobile first; kill-feed rows switch to `--feed-row-height`; table scrolls inside its own labelled container if needed; page no horizontal scroll at 375px and 320px. | `style(hw3): add responsive 375px arena layout` |
+| H3-T22 | Fix Lighthouse findings (conditional) | Files named by the finding | Only if Lighthouse on `#hw3` reports an Accessibility finding. | `fix(a11y): <finding>` |
+| H3-T23 | Document Homework 3 | `README.md` | New section after Homework 2 including the sample-data sentence. No scores. | `docs(readme): document hw3 and sample data` |
+| H3-T24 | Record AI failures | `AI_FAILURE_AUDIT.md` | Only real defects supplied by the author, appended. Skipped with no commit only if there are none. | `docs(audit): record hw3 ai failures` |
+| H3-T25 | Sync the commits metric | `src/components/DeveloperCard.jsx` | Only `metrics.commits`, value from the author. | `fix(ex1): sync commits metric after hw3` |
+| H3-T26 | Final audit | No file changes | Checks pass; log matches Parts 1 to 7. | (no commit) |
+| H3-T27 | Archive Homework 3 evidence | `docs/evidence/HW3_KraftonPubgVnArena/*.png`, `docs/prompt_logs/HW3_KraftonPubgVnArena.txt` | Copied, names unchanged. | `docs(evidence): archive hw3 screenshots and prompt log` |
