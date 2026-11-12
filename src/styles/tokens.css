@@ -60,4 +60,17 @@
   --color-pad-active-bg: var(--color-tier-core-bg);
   --color-pad-active-text: var(--color-tier-core-text);
   --color-pad-active-border: var(--color-accent);
+
+  /* Piano (Homework 2) */
+  --piano-white-key-width: 2.75rem;
+  --piano-white-key-height: 11rem;
+  --piano-black-key-width: 1.75rem;
+  --piano-black-key-height: 7rem;
+  --color-piano-white: var(--color-card-bg);
+  --color-piano-white-text: var(--color-text);
+  --color-piano-black: var(--color-text);
+  --color-piano-black-text: var(--color-card-bg);
+  --color-piano-pressed: var(--color-tier-core-bg);
+  --color-piano-pressed-text: var(--color-tier-core-text);
+  --color-piano-pressed-border: var(--color-accent);
 }
