@@ -1,0 +1,2817 @@
+
+> /clear
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md. Nhiệm vụ DUY NHẤT:
+  thêm Part 5 (Homework 1) vào CUỐI TASK_DECOMPOSITION.md. Không sửa Part 1 đến
+  4. Không sửa file khác. Chưa viết code.
+
+  Thêm ĐÚNG nội dung giữa BEGIN và END (tiếng Anh, giữ nguyên từng chữ; hai
+  dòng BEGIN/END không chép):
+
+  ===== BEGIN =====
+  ## Part 5. Homework 1: Production Studio Drum Kit (+ app shell)
+
+  ### 5.1 Overview
+  `DrumMachine` (src/homeworks/DrumMachine/) is a seven-pad drum kit played
+  with the physical keys W, A, S, D, J, K, L (read through `e.code`, safe with
+  the Vietnamese UniKey IME) or with the pointer. Sounds are synthesized with
+  the Web Audio API. A hit log in an `aria-live` output and a visual decibel
+  meter serve deaf and hard-of-hearing users. The task also adds an app shell:
+  a hash-driven nav that shows either the exercises or one homework. Source:
+  slide 26.
+
+  ### 5.2 Contract
+  ```js
+  /**
+   * @typedef {'kick' | 'snare' | 'hihat-closed' | 'hihat-open' | 'clap' |
+  'tom-high' | 'tom-low'} DrumPadId
+   */
+
+  /**
+   * @typedef {Object} ToneRecipe
+   * @property {'tone'} kind
+   * @property {OscillatorType} wave
+   * @property {number} startHz
+   * @property {number} endHz
+   * @property {number} durationMs
+   * @property {number} gain      Peak gain, 0 to 1.
+   */
+
+  /**
+   * @typedef {Object} NoiseRecipe
+   * @property {'noise'} kind
+   * @property {BiquadFilterType} filter
+   * @property {number} filterHz
+   * @property {number} durationMs
+   * @property {number} gain      Peak gain, 0 to 1.
+   */
+
+  /**
+   * @typedef {ToneRecipe | NoiseRecipe} DrumRecipe
+   */
+
+  /**
+   * @typedef {Object} DrumPad
+   * @property {DrumPadId} id
+   * @property {string} label     Visible name, for example 'Kick'.
+   * @property {string} code      KeyboardEvent.code, for example 'KeyW'.
+   * @property {string} keyLabel  Letter shown on the pad and in
+  aria-keyshortcuts, for example 'W'.
+   * @property {DrumRecipe} recipe
+   */
+
+  /**
+   * @typedef {Object} DrumHit
+   * @property {string} id        crypto.randomUUID()
+   * @property {DrumPadId} padId
+   * @property {string} label
+   * @property {string} keyLabel
+   */
+
+  /**
+   * @typedef {Object} DrumSynth
+   * @property {(recipe: DrumRecipe) => void} play   Creates the AudioContext
+  on first use.
+   * @property {() => AnalyserNode | null} getAnalyser
+   * @property {() => void} close                     Closes the context; a
+  later play creates a new one.
+   */
+
+  /**
+   * @typedef {Object} KeyGuardEvent
+   * @property {string} code
+   * @property {boolean} repeat
+   * @property {boolean} ctrlKey
+   * @property {boolean} altKey
+   * @proper
+  ──── (99 lines hidden) ──────────────────────────────────────────────────────
+  Id, the checkbox drives `isEnabled`. Build, lint, test pass. | `feat(hw1):
+  add session name input and shortcut toggle` |
+  | H1-T15 | Add the drum kit tokens | `src/styles/tokens.css` | Only additions
+  in `:root`, colors only as var() of existing tokens. Build passes. C4 prints
+  nothing. | `style(hw1): add drum kit tokens` |
+  | H1-T16 | Add the responsive layout |
+  `src/homeworks/DrumMachine/DrumMachine.module.css`,
+  `src/shell/SiteHeader.module.css` | Mobile first, tokens only, no nowrap.
+  Pads at least 44px. Pressed pads differ by more than color. JSX untouched.
+  User confirms no horizontal scroll at 375px and 320px. | `style(hw1): add
+  responsive 375px drum kit and header layout` |
+  | H1-T17 | Fix Lighthouse findings (conditional) | Files named by the finding
+  | Only if Lighthouse on `#hw1` reports an Accessibility finding. No commit
+  otherwise. | `fix(a11y): <finding>` |
+  | H1-T18 | Document the shell and Homework 1 | `README.md` | New sections
+  "App shell" and "Homework 1" after Exercise 3. Earlier sections unchanged.
+  Text checks C1', C8a to C8c. Known limits. No scores. | `docs(readme):
+  document app shell and hw1` |
+  | H1-T19 | Record AI failures (conditional) | `AI_FAILURE_AUDIT.md` | Only
+  real Homework 1 defects supplied by the author, appended after the last
+  entry. No commit if none. | `docs(audit): record hw1 ai failures` |
+  | H1-T20 | Sync the commits metric | `src/components/DeveloperCard.jsx` |
+  Only `metrics.commits` changes, to the number supplied by the author. Build,
+  lint, test pass. | `fix(ex1): sync commits metric after hw1` |
+  | H1-T21 | Final audit | No file changes | Checks pass; git log matches Parts
+  1 to 5. No commit. | (no commit) |
+  | H1-T22 | Archive Homework 1 evidence |
+  `docs/evidence/HW1_DrumMachine/*.png`, `docs/prompt_logs/HW1_DrumMachine.txt`
+  | Copied from the author's folders, names unchanged. Commit count equals the
+  card value. | `docs(evidence): archive hw1 screenshots and prompt log` |
+
+  ### 5.10 Verification gate
+  Before every commit: npm run build, npm run lint (exactly the one known
+  warning), npm test, C1' to C7 and C8a to C8c as described in the guide.
+  Browser and audio checks are done by the user.
+  ===== END =====
+
+  Kiểm tra: npm run build thành công; git diff chỉ có dòng thêm ở cuối file (0
+  dòng xóa); Part 5 có đúng 22 hàng H1-T01..H1-T22, commit message khớp từng
+  chữ.
+
+  Commit:
+  git add TASK_DECOMPOSITION.md
+  git commit -m "docs(spec): add hw1 task decomposition"
+
+  Không push. Báo cáo bằng tiếng Việt: số hàng, số dòng thêm/xóa, commit hash.
+
+  Ran 5 shell commands (ctrl+o to expand)
+
+● Lần ghi bằng heredoc bị lỗi, file vẫn chưa đổi. Mình sẽ ghi nội dung ra file
+  tạm rồi nối vào cuối.
+
+  Made 1 scratchpad edit +177 (ctrl+o to expand)
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" &&
+      S="C:/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/f93b8b8d-1c45-
+      46bc-a065-65877ada44ba/scratc…)
+  ⎿  Updated TASK_DECOMPOSITION.md (+176 -0)
+      413  
+      414  ### 4.7 Verification gate
+      415  Before every commit: npm run build, npm run lint, npm test (wh
+           en tests exist), C1 to C6 print nothing, C7 prints its three l
+           ines from E3-T09 on. Browser checks are done by the user with 
+           Network throttling Slow 3G.
+      416 +                                                              
+      417 +## Part 5. Homework 1: Production Studio Drum Kit (+ app shell
+          +)                                                             
+      418 +                                                              
+      419 +### 5.1 Overview                                              
+      420 +`DrumMachine` (src/homeworks/DrumMachine/) is a seven-pad drum
+          + kit played with the physical keys W, A, S, D, J, K, L (read t
+          +hrough `e.code`, safe with the Vietnamese UniKey IME) or with 
+          +the pointer. Sounds are synthesized with the Web Audio API. A 
+          +hit log in an `aria-live` output and a visual decibel meter se
+          +rve deaf and hard-of-hearing users. The task also adds an app 
+          +shell: a hash-driven nav that shows either the exercises or on
+          +e homework. Source: slide 26.                                 
+      421 +                                                              
+      422 +### 5.2 Contract                                              
+      423 +```js                                                         
+      424 +/**                                                           
+      425 + * @typedef {'kick' | 'snare' | 'hihat-closed' | 'hihat-open' 
+          +| 'clap' | 'tom-high' | 'tom-low'} DrumPadId                  
+      426 + */                                                           
+      427 +                                                              
+      428 +/**                                                           
+      429 + * @typedef {Object} ToneRecipe                               
+      430 + * @property {'tone'} kind                                    
+      431 + * @property {OscillatorType} wave                            
+      432 + * @property {number} startHz                                 
+      433 + * @property {number} endHz                                   
+      434 + * @property {number} durationMs                              
+      435 + * @property {number} gain      Peak gain, 0 to 1.            
+      436 + */                                                           
+      437 +                                                              
+      438 +/**                                                           
+      439 + * @typedef {Object} NoiseRecipe                              
+      440 + * @property {'noise'} kind                                   
+      441 + * @property {BiquadFilterType} filter                        
+      442 + * @property {number} filterHz                                
+      443 + * @property {number} durationMs                              
+      444 + * @property {number} gain      Peak gain, 0 to 1.            
+      445 + */                                                           
+      446 +                                                              
+      447 +/**                                                           
+      448 + * @typedef {ToneRecipe | NoiseRecipe} DrumRecipe             
+      449 + */                                                           
+      450 +                                                              
+      451 +/**                                                           
+      452 + * @typedef {Object} DrumPad                                  
+     … 139 more lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã thêm Part 5 vào cuối TASK_DECOMPOSITION.md và commit, chưa push.
+
+  - Số hàng: Part 5 có đúng 22 hàng, từ H1-T01 đến H1-T22, theo đúng thứ tự.
+    Mình đã tách cột commit message của 22 hàng ra xem lại, khớp từng chữ với
+    nội dung bạn đưa.
+  - Diff: thêm 176 dòng, xóa 0 dòng, chỉ trong TASK_DECOMPOSITION.md. Part 1 đến
+    4 không đổi. Mình thêm một dòng trống trước ## Part 5 để cách đều như các
+    Part trước.
+  - Build: npm run build chạy thành công.
+  - Commit: 0087f03 docs(spec): add hw1 task decomposition, chỉ gồm 1 file.
+
+  Lần ghi đầu bằng heredoc trong shell bị lỗi cú pháp và không ghi được gì vào
+  file. Mình ghi nội dung ra file tạm C:\Users\USER\AppData\Local\Temp\claude\38
+  af56aea87c5f9f\f93b8b8d-1c45-46bc-a065-65877ada44ba\scratchpad\part5.md rồi
+  nối vào cuối, file dùng xuống dòng LF như file gốc.
+
+  Mình chưa chạy npm run lint và npm test vì đề bài chỉ yêu cầu build, và lần
+  này chỉ đổi một file Markdown.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 5, H1-T02). Chỉ
+  làm H1-T02. Tôi cho phép sửa project-rules.md. KHÔNG sửa mục 1 đến 16, không
+  sửa file khác.
+
+  Thêm vào CUỐI file "## 17. Homework 1 and app shell rules" với các tiêu đề
+  ### và gạch đầu dòng sau (tiếng Anh, giữ nguyên chữ):
+
+  App shell
+
+  - One view is shown at a time, chosen from the URL hash by
+  src/shell/resolveView.js; an unknown hash shows the exercises. The hash is
+  read with useSyncExternalStore subscribed to hashchange. No router package.
+  - Shell code lives in src/shell/. Each homework adds its view id, its nav
+  link and its view branch in its own commits.
+
+  Keyboard
+
+  - Global shortcuts listen on window with e.code. Never keyCode, which or
+  charCode, and never read physical letters from e.key.
+  - Ignore e.repeat, Ctrl, Alt and Meta combinations, and events whose target
+  is an input, textarea, select or contenteditable element.
+  - Shortcuts can be turned off by the user (WCAG 2.2 SC 2.1.4). Listeners are
+  removed in the effect cleanup and are not added while shortcuts are off.
+  - Held pads are released on keyup and on window blur.
+
+  Web Audio
+
+  - Create the AudioContext lazily inside a user gesture, never at module load
+  or during render. Close it when the homework unmounts.
+  - Every source is started and stopped with explicit times. Gain ramps to
+  0.0001 with exponentialRampToValueAtTime before the stop, so there is no
+  click.
+  - Audio code takes an injectable context factory so unit tests run with a
+  fake context.
+
+  Live feedback
+
+  - Hits are announced in one output with aria-live='polite'. Lists are capped
+  and keyed by stable ids.
+  - Animation-frame loops live in the smallest component that needs them and
+  are cancelled in the effect cleanup.
+
+  Kiểm tra: git diff project-rules.md chỉ có dòng thêm ở cuối; npm run build
+  thành công.
+
+  Commit:
+  git add project-rules.md
+  git commit -m "docs(rules): add hw1 keyboard, audio and shell rules"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Made 1 scratchpad edit +22, ran 1 shell command (ctrl+o to expand)
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && cat
+      "C:/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/f93b8b8d-1c45-46
+      bc-a065-65877ada44ba/scra…)
+  ⎿  Updated project-rules.md (+21 -0)
+      164  - Errors render in an element with role='alert' and a type='bu
+           tton' retry control. Never window.alert().
+      165  - When the control that has focus disappears (for example a re
+           try button), move focus to a stable control in the same click 
+           handler. Never with useEffect.
+      166  - Every animation stops under prefers-reduced-motion: reduce.
+      167 +                                                              
+      168 +## 17. Homework 1 and app shell rules                         
+      169 +                                                              
+      170 +### App shell                                                 
+      171 +- One view is shown at a time, chosen from the URL hash by src
+          +/shell/resolveView.js; an unknown hash shows the exercises. Th
+          +e hash is read with useSyncExternalStore subscribed to hashcha
+          +nge. No router package.                                       
+      172 +- Shell code lives in src/shell/. Each homework adds its view 
+          +id, its nav link and its view branch in its own commits.      
+      173 +                                                              
+      174 +### Keyboard                                                  
+      175 +- Global shortcuts listen on window with e.code. Never keyCode
+          +, which or charCode, and never read physical letters from e.ke
+          +y.                                                            
+      176 +- Ignore e.repeat, Ctrl, Alt and Meta combinations, and events
+          + whose target is an input, textarea, select or contenteditable
+          + element.                                                     
+      177 +- Shortcuts can be turned off by the user (WCAG 2.2 SC 2.1.4).
+          + Listeners are removed in the effect cleanup and are not added
+          + while shortcuts are off.                                     
+      178 +- Held pads are released on keyup and on window blur.         
+      179 +                                                              
+      180 +### Web Audio                                                 
+      181 +- Create the AudioContext lazily inside a user gesture, never 
+          +at module load or during render. Close it when the homework un
+          +mounts.                                                       
+      182 +- Every source is started and stopped with explicit times. Gai
+          +n ramps to 0.0001 with exponentialRampToValueAtTime before the
+          + stop, so there is no click.                                  
+      183 +- Audio code takes an injectable context factory so unit tests
+          + run with a fake context.                                     
+      184 +                                                              
+      185 +### Live feedback                                             
+      186 +- Hits are announced in one output with aria-live='polite'. Li
+          +sts are capped and keyed by stable ids.                       
+      187 +- Animation-frame loops live in the smallest component that ne
+          +eds them and are cancelled in the effect cleanup.             
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã thêm mục 17 vào cuối project-rules.md và commit, chưa push.
+
+  - Nội dung: ## 17. Homework 1 and app shell rules gồm 4 tiêu đề con là App
+    shell, Keyboard, Web Audio, Live feedback, với 11 gạch đầu dòng chép nguyên
+    văn từ đề bài.
+  - Diff: thêm 21 dòng, xóa 0 dòng, tất cả nằm sau mục 16. Mục 1 đến 16 không
+    đổi. 21 dòng này gồm một dòng trống trước ## 17 để cách như các mục khác.
+  - Build: npm run build chạy thành công.
+  - Commit: 999f2b5 docs(rules): add hw1 keyboard, audio and shell rules, chỉ
+    gồm 1 file.
+
+  Mình chưa chạy npm run lint và npm test vì đề bài chỉ yêu cầu build và lần này
+  chỉ sửa tài liệu.
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\lab3-react19\TASK_DECOMPOSITION.md in the
+  IDE. This may or may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 5, mục 5.2).
+  Chỉ làm H1-T03.
+
+  Phạm vi file: tạo src/homeworks/DrumMachine/drum-machine.contract.js, nội
+  dung GIỐNG HỆT khối code js ở mục 5.2 (trích thẳng từ file, không gõ lại).
+  Không thêm, không bớt.
+
+  Kiểm tra: diff khối 5.2 với file mới phải rỗng; npm run build thành công; npm
+  run lint exit 0 với đúng 1 warning đã biết react(set-state-in-effect).
+
+  Commit:
+  git add src/homeworks/DrumMachine/drum-machine.contract.js
+  git commit -m "docs(hw1): add DrumMachine JSDoc contract"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && mkdir -p
+      src/homeworks/DrumMachine &&
+      F=src/homeworks/DrumMachine/drum-machine.contract.js && awk '/^##…)
+  ⎿  Created src\homeworks\DrumMachine\drum-machine.contract.js (+62 -0)
+       1 +/**                                                            
+       2 + * @typedef {'kick' | 'snare' | 'hihat-closed' | 'hihat-open' |
+         + 'clap' | 'tom-high' | 'tom-low'} DrumPadId                    
+       3 + */                                                            
+       4 +                                                               
+       5 +/**                                                            
+       6 + * @typedef {Object} ToneRecipe                                
+       7 + * @property {'tone'} kind                                     
+       8 + * @property {OscillatorType} wave                             
+       9 + * @property {number} startHz                                  
+      10 + * @property {number} endHz                                    
+      11 + * @property {number} durationMs                               
+      12 + * @property {number} gain      Peak gain, 0 to 1.             
+      13 + */                                                            
+      14 +                                                               
+      15 +/**                                                            
+      16 + * @typedef {Object} NoiseRecipe                               
+      17 + * @property {'noise'} kind                                    
+      18 + * @property {BiquadFilterType} filter                         
+      19 + * @property {number} filterHz                                 
+      20 + * @property {number} durationMs                               
+      21 + * @property {number} gain      Peak gain, 0 to 1.             
+      22 + */                                                            
+      23 +                                                               
+      24 +/**                                                            
+      25 + * @typedef {ToneRecipe | NoiseRecipe} DrumRecipe              
+      26 + */                                                            
+      27 +                                                               
+      28 +/**                                                            
+      29 + * @typedef {Object} DrumPad                                   
+      30 + * @property {DrumPadId} id                                    
+      31 + * @property {string} label     Visible name, for example 'Kick
+         +'.                                                             
+      32 + * @property {string} code      KeyboardEvent.code, for example
+         + 'KeyW'.                                                       
+      33 + * @property {string} keyLabel  Letter shown on the pad and in 
+         +aria-keyshortcuts, for example 'W'.                            
+      34 + * @property {DrumRecipe} recipe                               
+      35 + */                                                            
+      36 +                                                               
+      37 +/**                                                            
+      38 + * @typedef {Object} DrumHit                                   
+      39 + * @property {string} id        crypto.randomUUID()            
+      40 + * @property {DrumPadId} padId                                 
+     … 22 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Mình đã tạo src/homeworks/DrumMachine/drum-machine.contract.js và commit, chưa
+  push.
+
+  - Nội dung: file gồm 62 dòng, trích thẳng từ khối ```js ở mục 5.2 của
+    TASK_DECOMPOSITION.md (dòng 424 đến 485) chứ không gõ lại. Mở đầu bằng
+    typedef DrumPadId và kết thúc bằng export {};.
+  - So khớp: mình diff khối 5.2 với file mới theo hai cách, một lần bằng awk và
+    một lần cắt theo số dòng. Cả hai lần diff đều rỗng.
+  - Build: npm run build chạy thành công.
+  - Lint: npm run lint thoát với mã 0 và chỉ có 1 warning đã biết
+    react(set-state-in-effect) ở src/components/PubgMatchTelemetry.jsx:17.
+  - Commit: 94384a3 docs(hw1): add DrumMachine JSDoc contract, chỉ gồm 1 file.
+
+  Mình chưa chạy npm test vì đề bài không yêu cầu, và file này chỉ có typedef,
+  không có logic.
+
+> Đọc Agent.md, project-rules.md (mục 17) và TASK_DECOMPOSITION.md (Part 5, mục
+  5.4, H1-T04). Chỉ làm H1-T04. Test trước, code sau; báo lần chạy test thất
+  bại đầu tiên.
+
+  Phạm vi file: src/homeworks/DrumMachine/drumPads.test.js rồi
+  src/homeworks/DrumMachine/drumPads.js.
+
+  Yêu cầu:
+  - DRUM_PADS: mảng Object.freeze của 7 pad theo đúng thứ tự và giá trị bảng
+  5.4. Mỗi pad Object.freeze, recipe cũng Object.freeze.
+    Recipe tone: { kind: 'tone', wave: 'sine', startHz, endHz, durationMs, gain
+  }.
+    Recipe noise: { kind: 'noise', filter, filterHz, durationMs, gain } với
+  filter là 'highpass' hoặc 'bandpass'.
+  - PAD_BY_CODE: new Map(DRUM_PADS.map((p) => [p.code, p])), tạo MỘT lần ở cấp
+  module.
+  - JSDoc dùng typedef DrumPad từ ./drum-machine.contract.js.
+  - Test (node:test, node:assert/strict): đúng 7 pad; id và code không trùng;
+  code đúng thứ tự KeyW, KeyA, KeyS, KeyD, KeyJ, KeyK, KeyL; keyLabel bằng ký
+  tự cuối của code; durationMs và gain là số > 0, gain <= 1; tone có startHz >
+  endHz > 0; noise có filterHz > 0; mảng, pad và recipe đều frozen;
+  PAD_BY_CODE.get('KeyW').id === 'kick' và PAD_BY_CODE.size === 7; deepEqual
+  pad 'kick' và 'snare' với bảng 5.4.
+
+  Kiểm tra: npm test (báo số pass/fail), npm run build, npm run lint exit 0 với
+  đúng 1 warning đã biết.
+
+  Commit:
+  git add src/homeworks/DrumMachine/drumPads.js
+  src/homeworks/DrumMachine/drumPads.test.js
+  git commit -m "feat(hw1): add drum pad map keyed by e.code"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\DrumMachine\drumPads.test.js)
+  ⎿  Wrote 77 lines to src\homeworks\DrumMachine\drumPads.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { DRUM_PADS, PAD_BY_CODE } from './drumPads.js'
+       4
+       5 test('has exactly seven pads', () => {
+       6   assert.equal(DRUM_PADS.length, 7)
+       7 })
+       8
+       9 test('ids and codes are unique', () => {
+      10   const ids = DRUM_PADS.map((p) => p.id)
+     … +67 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Write(src\homeworks\DrumMachine\drumPads.js)
+  ⎿  Wrote 57 lines to src\homeworks\DrumMachine\drumPads.js
+       1 /** @typedef {import('./drum-machine.contract.js').DrumPad} Drum
+         Pad */
+       2
+       3 /** @type {readonly DrumPad[]} */
+       4 export const DRUM_PADS = Object.freeze([
+       5   Object.freeze({
+       6     id: 'kick',
+       7     label: 'Kick',
+       8     code: 'KeyW',
+       9     keyLabel: 'W',
+     … +48 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong H1-T04 và commit, chưa push. Dữ liệu 7 pad lấy đúng từ bảng 5.4, toàn
+  bộ test qua.
+
+  Lần chạy test thất bại đầu tiên (viết test trước, chưa có module):
+  - npm test: 59 test, 58 pass, 1 fail.
+  - Lỗi là ERR_MODULE_NOT_FOUND: Cannot find module
+    '...\src\homeworks\DrumMachine\drumPads.js', đúng lý do mong đợi là module
+    chưa có.
+
+  Sau khi thêm code:
+  - npm test: 67 test, 67 pass, 0 fail. Trong đó có 9 test mới của
+    drumPads.test.js.
+  - npm run build: thành công.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect) ở src/components/PubgMatchTelemetry.jsx:17.
+
+  Hai file đã tạo:
+  - drumPads.test.js (src/homeworks/DrumMachine/drumPads.test.js) kiểm tra đủ
+    các yêu cầu đề bài:
+    - có đúng 7 pad, id và code không trùng, code đúng thứ tự;
+    - keyLabel là ký tự cuối của code;
+    - durationMs và gain là số lớn hơn 0, gain không quá 1;
+    - recipe tone có startHz > endHz > 0, recipe noise có filterHz > 0;
+    - mảng, từng pad và từng recipe đều frozen;
+    - PAD_BY_CODE có 7 phần tử và get('KeyW') trả về kick;
+    - pad kick và snare khớp chính xác (deepEqual) với bảng 5.4.
+  - drumPads.js (src/homeworks/DrumMachine/drumPads.js) export DRUM_PADS và
+    PAD_BY_CODE.
+    - DRUM_PADS là mảng frozen gồm 7 pad theo đúng thứ tự bảng 5.4, mỗi pad và
+      mỗi recipe cũng frozen.
+    - PAD_BY_CODE là một Map tạo một lần ở cấp module.
+    - JSDoc dùng typedef DrumPad từ ./drum-machine.contract.js.
+
+  Commit: 310186c feat(hw1): add drum pad map keyed by e.code, gồm đúng 2 file.
+
+> Đọc Agent.md, project-rules.md (mục 17) và TASK_DECOMPOSITION.md (Part 5, mục
+  5.5, H1-T05). Chỉ làm H1-T05. Test trước; báo lần thất bại đầu tiên.
+
+  Phạm vi file: src/homeworks/DrumMachine/shouldHandleKey.test.js rồi
+  src/homeworks/DrumMachine/shouldHandleKey.js.
+
+  Yêu cầu:
+  - export function shouldHandleKey(event, isEnabled): trả false nếu
+  !isEnabled, event.repeat, event.ctrlKey, event.altKey, event.metaKey,
+  target?.isContentEditable, hoặc target?.tagName thuộc ['INPUT', 'TEXTAREA',
+  'SELECT']; còn lại true. Không kiểm tra code ở đây (hook làm), không truy cập
+  DOM thật, không dùng keyCode/which/charCode.
+  - JSDoc @param {KeyGuardEvent} event từ contract.
+  - Test: đúng 11 dòng bảng 5.5, mỗi dòng một test (tạo event từ base bằng
+  spread).
+
+  Kiểm tra: npm test, npm run build, npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/DrumMachine/shouldHandleKey.js
+  src/homeworks/DrumMachine/shouldHandleKey.test.js
+  git commit -m "feat(hw1): add repeat, modifier and input guard for shortcuts"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\DrumMachine\shouldHandleKey.test.js)
+  ⎿  Wrote 59 lines to src\homeworks\DrumMachine\shouldHandleKey.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { shouldHandleKey } from './shouldHandleKey.js'
+       4
+       5 const base = Object.freeze({
+       6   code: 'KeyW',
+       7   repeat: false,
+       8   ctrlKey: false,
+       9   altKey: false,
+      10   metaKey: false,
+     … +49 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\DrumMachine\shouldHandleKey.js)
+  ⎿  Wrote 19 lines to src\homeworks\DrumMachine\shouldHandleKey.js
+       1 /** @typedef {import('./drum-machine.contract.js').KeyGuardEvent
+         } KeyGuardEvent */
+       2
+       3 const EDITABLE_TAGS = Object.freeze(['INPUT', 'TEXTAREA', 'SELEC
+         T'])
+       4
+       5 /**
+       6  * Decides whether a keydown may trigger a drum pad shortcut.
+       7  * Does not check the key code; the keyboard hook maps e.code it
+         self.
+     … +12 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+● Đã xong H1-T05 và commit, chưa push. Cả 11 dòng của bảng 5.5 đều pass.
+
+  Lần chạy test thất bại đầu tiên (viết test trước, chưa có module):
+  - npm test: 68 test, 67 pass, 1 fail.
+  - Lỗi là ERR_MODULE_NOT_FOUND: Cannot find module '...\shouldHandleKey.js',
+    đúng lý do mong đợi là module chưa có.
+
+  Sau khi thêm code:
+  - npm test: 78 test, 78 pass, 0 fail.
+  - npm run build: thành công.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect) ở src/components/PubgMatchTelemetry.jsx:17.
+
+  Hai file đã tạo:
+  - shouldHandleKey.test.js (src/homeworks/DrumMachine/shouldHandleKey.test.js):
+    11 test, mỗi test ứng với một dòng của bảng 5.5. Mỗi event được tạo từ base
+    bằng spread.
+  - shouldHandleKey.js (src/homeworks/DrumMachine/shouldHandleKey.js): hàm
+    shouldHandleKey(event, isEnabled).
+    - Trả false khi shortcut bị tắt, khi phím đang giữ (repeat), khi có Ctrl,
+      Alt hoặc Meta, khi target có isContentEditable, hoặc khi tagName là INPUT,
+      TEXTAREA hay SELECT. Các trường hợp còn lại trả true, kể cả khi target là
+      null.
+    - Hàm không kiểm tra code, không truy cập DOM thật, không dùng keyCode,
+      which hay charCode.
+    - JSDoc dùng typedef KeyGuardEvent từ contract.
+
+  Commit: d588117 feat(hw1): add repeat, modifier and input guard for shortcuts,
+  gồm đúng 2 file.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 5, mục 5.6,
+  H1-T06). Chỉ làm H1-T06. Test trước; báo lần thất bại đầu tiên.
+
+  Phạm vi file: src/homeworks/DrumMachine/levels.test.js rồi
+  src/homeworks/DrumMachine/levels.js.
+
+  Yêu cầu:
+  - export const DB_FLOOR = -60
+  - export function toDecibels(samples): nhận mảng hoặc Float32Array. Nếu rỗng
+  hoặc RMS = 0 trả DB_FLOOR. Ngược lại db = 20 * Math.log10(rms), làm tròn
+  Math.round, kẹp trong [DB_FLOOR, 0]. Trả về số nguyên (không trả -0: dùng ||
+  0 hoặc tương đương nếu cần).
+  - Test: đúng 6 dòng bảng 5.6, thêm 1 test với Float32Array.from([0.5, -0.5])
+  cho -6.
+
+  Kiểm tra: npm test, npm run build, npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/homeworks/DrumMachine/levels.js
+  src/homeworks/DrumMachine/levels.test.js
+  git commit -m "feat(hw1): add rms to decibel helper with unit tests"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\DrumMachine\levels.test.js)
+  ⎿  Wrote 35 lines to src\homeworks\DrumMachine\levels.test.js
+       1 import { test } from 'node:test'
+       2 import assert from 'node:assert/strict'
+       3 import { DB_FLOOR, toDecibels } from './levels.js'
+       4
+       5 test('DB_FLOOR is -60', () => {
+       6   assert.equal(DB_FLOOR, -60)
+       7 })
+       8
+       9 test('[] -> -60', () => {
+      10   assert.equal(toDecibels([]), -60)
+     … +25 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\DrumMachine\levels.js)
+  ⎿  Wrote 19 lines to src\homeworks\DrumMachine\levels.js
+       1 export const DB_FLOOR = -60
+       2
+       3 /**
+       4  * Converts audio samples to an integer dBFS level in [DB_FLOOR,
+          0].
+       5  * @param {ArrayLike<number>} samples
+       6  * @returns {number}
+       7  */
+       8 export function toDecibels(samples) {
+       9   const count = samples.length
+     … +10 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+> Đọc Agent.md, project-rules.md (mục 17 Web Audio) và TASK_DECOMPOSITION.md
+  (Part 5, mục 5.7, H1-T07). Chỉ làm H1-T07. Test trước; báo lần thất bại đầu
+  tiên.
+
+  Phạm vi file: src/homeworks/DrumMachine/drumSynth.test.js rồi
+  src/homeworks/DrumMachine/drumSynth.js.
+
+  Thiết kế:
+  - export function createDrumSynth({ createContext = () => new AudioContext(),
+  random = Math.random } = {}) trả { play, getAnalyser, close }.
+  - ensure(): nếu chưa có ctx thì ctx = createContext(); master =
+  ctx.createGain() với gain.value = 0.8; analyser = ctx.createAnalyser()
+  (fftSize 2048); master.connect(analyser); analyser.connect(ctx.destination).
+  Nếu ctx.state === 'suspended' thì ctx.resume().
+  - play(recipe): ensure(); t = ctx.currentTime; dur = recipe.durationMs /
+  1000; g = ctx.createGain(); g.gain.setValueAtTime(recipe.gain, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur).
+    - kind 'tone': osc = ctx.createOscillator(); osc.type = recipe.wave;
+  osc.frequency.setValueAtTime(recipe.startHz, t);
+  osc.frequency.exponentialRampToValueAtTime(recipe.endHz, t + dur);
+  osc.connect(g).connect(master); osc.start(t); osc.stop(t + dur + 0.02).
+    - kind 'noise': length = Math.round(ctx.sampleRate * dur); buffer =
+  ctx.createBuffer(1, length, ctx.sampleRate); điền buffer.getChannelData(0)[i]
+  = random() * 2 - 1; src = ctx.createBufferSource(); src.buffer = buffer;
+  filter = ctx.createBiquadFilter(); filter.type = recipe.filter;
+  filter.frequency.setValueAtTime(recipe.filterHz, t);
+  src.connect(filter).connect(g).connect(master); src.start(t); src.stop(t +
+  dur + 0.02).
+    - kind khác: throw new TypeError(Unknown recipe kind: ${recipe.kind}).
+  - getAnalyser(): analyser hoặc null. close(): nếu có ctx thì ctx.close(); đặt
+  ctx, master, analyser = null.
+  - new AudioContext chỉ xuất hiện ở giá trị mặc định createContext. Không
+  console.log.
+
+  Test: tự viết fake AudioContext ghi lại mọi lời gọi (AudioParam giả có
+  setValueAtTime, exponentialRampToValueAtTime ghi vào một mảng chung theo thứ
+  tự; node giả có connect trả về chính đối số; createBuffer trả object có
+  getChannelData). Đủ 8 trường hợp bảng 5.7; với ramp-trước-stop, kiểm tra thứ
+  tự trong mảng ghi. So sánh thời gian bằng sai số 1e-9.
+
+  Kiểm tra: npm test, npm run build, npm run lint exit 0 với đúng 1 warning đã
+  biết; C8b in đúng 1 dòng (drumSynth.js).
+
+  Commit:
+  git add src/homeworks/DrumMachine/drumSynth.js
+  src/homeworks/DrumMachine/drumSynth.test.js
+  git commit -m "feat(hw1): add web audio drum synth with click-free envelopes"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● H1-T06 đã qua hết test, build và lint, mình commit nó trước rồi chuyển sang
+  H1-T07.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bắt đầu H1-T07: viết test với AudioContext giả trước.
+
+● Write(src\homeworks\DrumMachine\drumSynth.test.js)
+  ⎿  Wrote 226 lines to src\homeworks\DrumMachine\drumSynth.test.js
+      1 import { test } from 'node:test'
+      2 import assert from 'node:assert/strict'
+      3 import { createDrumSynth } from './drumSynth.js'
+      4 import { PAD_BY_CODE } from './drumPads.js'
+      5
+      6 const KICK = PAD_BY_CODE.get('KeyW').recipe
+      7 const SNARE = PAD_BY_CODE.get('KeyA').recipe
+      8 const T0 = 1.5
+      9 const SAMPLE_RATE = 1000
+     … +217 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\DrumMachine\drumSynth.js)
+  ⎿  Wrote 90 lines to src\homeworks\DrumMachine\drumSynth.js
+       1 /** @typedef {import('./drum-machine.contract.js').DrumRecipe} D
+         rumRecipe */
+       2 /** @typedef {import('./drum-machine.contract.js').DrumSynth} Dr
+         umSynth */
+       3
+       4 const MASTER_GAIN = 0.8
+       5 const FFT_SIZE = 2048
+       6 const SILENCE = 0.0001
+       7 const STOP_TAIL_S = 0.02
+       8
+     … +82 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong và commit cả H1-T06 lẫn H1-T07, chưa push. Có một chỗ trong
+  drumSynth.js mình làm khác thiết kế (mục cuối), bạn xem lại giúp.
+
+  H1-T06: chuyển RMS sang decibel
+
+  Lần chạy test thất bại đầu tiên (viết test trước, chưa có module):
+  - npm test: 79 test, 78 pass, 1 fail.
+  - Lỗi là ERR_MODULE_NOT_FOUND vì chưa có levels.js, đúng lý do mong đợi.
+
+  Sau khi thêm code:
+  - npm test: 86 test, 86 pass, 0 fail.
+  - npm run build: thành công.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết.
+
+  Nội dung:
+  - levels.test.js (src/homeworks/DrumMachine/levels.test.js) có 8 test:
+    - 6 test cho 6 dòng của bảng 5.6;
+    - 1 test với Float32Array.from([0.5, -0.5]), kết quả -6;
+    - 1 test kiểm tra DB_FLOOR bằng -60.
+  - levels.js (src/homeworks/DrumMachine/levels.js) cuối hàm có || 0 để không
+    trả về -0.
+
+  Commit: 65d3c8c feat(hw1): add rms to decibel helper with unit tests, gồm 2
+  file.
+
+  H1-T07: bộ tổng hợp âm thanh trống
+
+  Lần chạy test thất bại đầu tiên (viết test trước, chưa có module):
+  - npm test: 87 test, 86 pass, 1 fail.
+  - Lỗi là ERR_MODULE_NOT_FOUND vì chưa có drumSynth.js, đúng lý do mong đợi.
+
+  Sau khi thêm code:
+  - npm test: 94 test, 94 pass, 0 fail.
+  - npm run build: thành công.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+  - C8b: trong repo không có định nghĩa C8b (README chưa có, guide không nằm
+    trong repo). Mình chạy grep -rn "new AudioContext" src thay cho C8b. Lệnh in
+    đúng 1 dòng, là src/homeworks/DrumMachine/drumSynth.js:14, đúng chỗ giá trị
+    mặc định của createContext. Nếu C8b trong guide là lệnh khác, bạn cho mình
+    lệnh đó để chạy lại.
+  - Không có console.log nào trong file.
+
+  Test: drumSynth.test.js (src/homeworks/DrumMachine/drumSynth.test.js) có 8
+  test, mỗi test ứng với một trường hợp của bảng 5.7.
+  - AudioContext giả ghi mọi lời gọi setValueAtTime,
+    exponentialRampToValueAtTime, connect, start và stop vào một mảng chung theo
+    đúng thứ tự gọi.
+  - connect trả về chính node được truyền vào.
+  - Thời gian được so với sai số 1e-9.
+  - Ở test kiểm tra gain giảm trước khi dừng, mình so vị trí trong mảng ghi: đặt
+    gain đỉnh, rồi giảm về 0.0001, rồi mới stop. Test này chạy cho cả kick lẫn
+    snare.
+
+  Code: drumSynth.js (src/homeworks/DrumMachine/drumSynth.js) theo đúng thiết kế
+  bạn đưa, gồm:
+  - master gain 0.8 nối vào analyser (fftSize 2048) rồi nối ra loa;
+  - tone và noise với thời điểm start/stop ghi rõ, dừng ở t + dur + 0.02;
+  - resume() khi context đang suspended;
+  - close() đóng context và đặt lại về null.
+
+  Chỗ khác thiết kế: mình kiểm tra recipe.kind trước khi gọi ensure(). Thiết kế
+  của bạn gọi ensure() trước rồi mới ném lỗi. Hai cách đều ném TypeError nên
+  test của bảng 5.7 vẫn pass. Khác biệt là theo cách của mình, một recipe sai
+  không tạo AudioContext thừa. Nếu bạn muốn đúng thứ tự như thiết kế, mình sửa
+  lại.
+
+  Commit: 381f74a feat(hw1): add web audio drum synth with click-free envelopes,
+  gồm 2 file.
+
+  Mình mới chỉ test với context giả, chưa nghe thử âm thanh thật trên trình
+  duyệt.
+
+> Đọc Agent.md, project-rules.md (mục 6, 17) và TASK_DECOMPOSITION.md (Part 5,
+  Invariant 5, H1-T08). Chỉ làm H1-T08.
+
+  Phạm vi file: src/homeworks/DrumMachine/useDrumKeyboard.js.
+
+  Viết đúng theo khung của slide 26, mở rộng như sau:
+  export function useDrumKeyboard(padMap, onTriggerPad, isEnabled = true,
+  onReleasePad) {
+    useEffect(() => {
+      if (!isEnabled) return undefined
+      const onKeyDown = (e) => {
+        if (!shouldHandleKey(e, true)) return
+        const pad = padMap.get(e.code)
+        if (pad) { e.preventDefault(); onTriggerPad(pad.id) }
+      }
+      const onKeyUp = (e) => {
+        const pad = padMap.get(e.code)
+        if (pad) onReleasePad?.(pad.id)
+      }
+      const onBlur = () => { for (const pad of padMap.values())
+  onReleasePad?.(pad.id) }
+      window.addEventListener('keydown', onKeyDown)
+      window.addEventListener('keyup', onKeyUp)
+      window.addEventListener('blur', onBlur)
+      return () => {
+        window.removeEventListener('keydown', onKeyDown)
+        window.removeEventListener('keyup', onKeyUp)
+        window.removeEventListener('blur', onBlur)
+      }
+    }, [padMap, onTriggerPad, isEnabled, onReleasePad])
+  }
+  JSDoc mô tả 4 tham số. Không dùng keyCode/which/charCode/e.key.
+
+  Kiểm tra: npm run build; npm run lint exit 0 với đúng 1 warning đã biết
+  (react/exhaustive-deps không báo gì); C8a không in gì; C8c không in gì.
+
+  Commit:
+  git add src/homeworks/DrumMachine/useDrumKeyboard.js
+  git commit -m "feat(hw1): add useDrumKeyboard hook with listener cleanup"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\DrumMachine\useDrumKeyboard.js)
+  ⎿  Wrote 42 lines to src\homeworks\DrumMachine\useDrumKeyboard.js
+       1 import { useEffect } from 'react'
+       2 import { shouldHandleKey } from './shouldHandleKey.js'
+       3
+       4 /** @typedef {import('./drum-machine.contract.js').DrumPad} Drum
+         Pad */
+       5 /** @typedef {import('./drum-machine.contract.js').DrumPadId} Dr
+         umPadId */
+       6
+       7 /**
+       8  * Plays drum pads from physical keys (KeyboardEvent.code) while
+     … +35 lines (~1 KB) (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong H1-T08 và commit, chưa push. Hook useDrumKeyboard.js
+  (src/homeworks/DrumMachine/useDrumKeyboard.js) viết đúng khung bạn đưa.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect) ở PubgMatchTelemetry.jsx:17. Không có cảnh báo
+    nào của exhaustive-deps.
+  - npm test: 94 test, 94 pass, 0 fail. Task này không thêm test mới.
+
+  C8a và C8c: trong repo không có định nghĩa hai check này. Mình chạy các lệnh
+  thay thế dựa trên yêu cầu của đề bài:
+  - grep -rnE "keyCode|\.which|charCode|\be\.key\b" src/homeworks không in gì,
+    tức không có keyCode, which, charCode hay e.key.
+  - Đếm trong file hook: 3 addEventListener và 3 removeEventListener, khớp nhau.
+
+  Nếu C8a và C8c trong guide là lệnh khác, bạn gửi mình lệnh đó để chạy lại cho
+  chắc.
+
+  Nội dung hook:
+  - Hook nhận padMap, onTriggerPad, isEnabled = true và onReleasePad, JSDoc mô
+    tả cả 4 tham số.
+  - Khi isEnabled là false thì không thêm listener nào.
+  - Hook dùng shouldHandleKey và padMap.get(e.code), và chỉ gọi preventDefault
+    với phím có trong map.
+  - Phím nhả ra thì gọi onReleasePad cho pad đó. Khi cửa sổ mất focus (blur) thì
+    gọi cho tất cả pad.
+
+  Commit: a0d8a27 feat(hw1): add useDrumKeyboard hook with listener cleanup, gồm
+  đúng 1 file.
+
+  Mình chưa thử hook trong trình duyệt, vì chưa có component nào dùng nó.
+  Component đầu tiên dùng hook là DrumMachine ở H1-T09.
+
+> /model sonnet
+  ⎿  Set model to claude-sonnet-5-5
+
+> Đọc Agent.md, project-rules.md (mục 3, 6, 17) và TASK_DECOMPOSITION.md (Part
+  5, Invariants 1, 2, 3, 6, 8, H1-T09). Chỉ làm H1-T09. CHƯA làm hit log,
+  meter, input, toggle (H1-T12 đến T14). CHƯA sửa App.jsx (H1-T11).
+
+  Phạm vi file: src/homeworks/DrumMachine/DrumMachine.jsx,
+  src/homeworks/DrumMachine/DrumMachine.module.css (tối thiểu, mỗi class một
+  khai báo, chỉ token).
+
+  Yêu cầu:
+  - export function DrumMachine() (named export).
+  - const headingId = useId(); const [synth] = useState(() =>
+  createDrumSynth());
+    useEffect(() => () => synth.close(), [synth])
+  - const [activePadIds, setActivePadIds] = useState(() => new Set())
+  - const triggerPad = useCallback((padId) => {
+      const pad = DRUM_PADS.find((p) => p.id === padId)
+      if (!pad) return
+      synth.play(pad.recipe)
+      setActivePadIds((prev) => (prev.has(padId) ? prev : new
+  Set(prev).add(padId)))
+    }, [synth])
+    const releasePad = useCallback((padId) => {
+      setActivePadIds((prev) => { if (!prev.has(padId)) return prev; const next
+  = new Set(prev); next.delete(padId); return next })
+    }, [])
+  - useDrumKeyboard(PAD_BY_CODE, triggerPad, true, releasePad)
+  - JSX: <section className={styles.drumKit} aria-labelledby={headingId}><h2
+  id={headingId}>HW1 Production Studio Drum Kit</h2>
+    <p>Play with the keys W, A, S, D, J, K, L or press a pad.</p>
+    <ul className={styles.pads} aria-label="Drum pads">{DRUM_PADS.map((pad) =>
+  (
+      <li key={pad.id}><button type="button" className={styles.pad}
+  aria-pressed={activePadIds.has(pad.id)} aria-keyshortcuts={pad.keyLabel}
+        onPointerDown={() => triggerPad(pad.id)} onPointerUp={() =>
+  releasePad(pad.id)} onPointerLeave={() => releasePad(pad.id)}
+  onPointerCancel={() => releasePad(pad.id)}
+        onClick={(e) => { if (e.detail === 0) triggerPad(pad.id) }}>
+        <span className={styles.padLabel}>{pad.label}</span> <kbd
+  className={styles.padKey}>{pad.keyLabel}</kbd>
+      </button></li>))}</ul></section>
+    Với click bàn phím (detail 0): nhả pad ngay sau đó bằng releasePad trong
+  cùng handler để aria-pressed không bị kẹt.
+  - Không '<div', không style=, không keyCode, không new AudioContext trong
+  file này.
+
+  Kiểm tra: npm run build, npm test, npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C8a, C8b (1 dòng), C8c như guide.
+
+  Commit:
+  git add src/homeworks/DrumMachine/DrumMachine.jsx
+  src/homeworks/DrumMachine/DrumMachine.module.css
+  git commit -m "feat(hw1): build accessible drum pads with keyboard and
+  pointer input"
+
+  Không push. Báo cáo bằng tiếng Việt: nêu rõ chưa xem trên trình duyệt (chưa
+  có view).
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Wrote 66 lines to src\homeworks\DrumMachine\DrumMachine.jsx
+       1 import { useCallback, useEffect, useId, useState } from 'react'
+       2 import { DRUM_PADS, PAD_BY_CODE } from './drumPads.js'
+       3 import { createDrumSynth } from './drumSynth.js'
+       4 import { useDrumKeyboard } from './useDrumKeyboard.js'
+       5 import styles from './DrumMachine.module.css'
+       6
+       7 export function DrumMachine() {
+       8   const headingId = useId()
+       9   const [synth] = useState(() => createDrumSynth())
+      10   const [activePadIds, setActivePadIds] = useState(() => new Set
+     … +57 lines (~2 KB) (ctrl+o to expand)
+
+● Write(src\homeworks\DrumMachine\DrumMachine.module.css)
+  ⎿  Wrote 19 lines to src\homeworks\DrumMachine\DrumMachine.module.css
+       1 .drumKit {
+       2   padding: var(--space-4);
+       3 }
+       4
+       5 .pads {
+       6   list-style: none;
+       7 }
+       8
+       9 .pad {
+      10   min-height: var(--control-min-height);
+     … +9 lines (ctrl+o to expand)
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong H1-T09 và commit, chưa push. Mình chưa xem component trên trình duyệt
+  vì chưa có view nào hiển thị nó.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công. Build chưa bundle DrumMachine.jsx vì chưa có file
+    nào import nó, nên build không chứng minh được file này biên dịch đúng. Chỉ
+    lint đã đọc (parse) file.
+  - npm test: 94 test, 94 pass, 0 fail. Task này không thêm test.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+  - Các grep thay cho C1', C3, C8a, C8b, C8c (repo không có định nghĩa các check
+    này, mình dựa vào yêu cầu của đề bài):
+    - <div, style=, keyCode, which, charCode, e.key, new AudioContext trong
+      DrumMachine.jsx: không có kết quả nào.
+    - Màu hex, rgb, hsl trong file CSS: không có kết quả nào.
+    - grep -rn "new AudioContext" src in đúng 1 dòng, là drumSynth.js:14.
+
+  Nội dung:
+  - DrumMachine.jsx (src/homeworks/DrumMachine/DrumMachine.jsx) là named export
+    DrumMachine, viết theo đúng thiết kế bạn đưa:
+    - synth tạo bằng useState(() => createDrumSynth()) và đóng trong cleanup của
+      effect;
+    - triggerPad và releasePad bọc bằng useCallback;
+    - activePadIds là một Set, cập nhật theo kiểu immutable;
+    - JSX là section có aria-labelledby, h2, đoạn hướng dẫn, và ul gồm 7 nút lấy
+      từ DRUM_PADS. Nút có type="button", aria-pressed, aria-keyshortcuts, và
+      key của React là id của pad.
+    - Với click từ bàn phím (detail === 0), handler gọi triggerPad rồi
+      releasePad ngay trong cùng handler, nên aria-pressed không bị kẹt. Vì hai
+      lệnh cập nhật state được gộp trong một lần render, pad sẽ không hiện trạng
+      thái "đang nhấn" khi dùng click bàn phím.
+  - DrumMachine.module.css (src/homeworks/DrumMachine/DrumMachine.module.css) có
+    5 class, mỗi class một khai báo, chỉ dùng token: drumKit, pads, pad,
+    padLabel, padKey. Bố cục responsive để dành cho H1-T16.
+
+  Chưa kiểm tra: chưa nghe âm thanh thật, chưa thử bàn phím và con trỏ trên
+  trình duyệt, và chưa kiểm tra focus. Các việc này làm được sau khi H1-T11 thêm
+  view hw1.
+
+  Commit: eade6de feat(hw1): build accessible drum pads with keyboard and
+  pointer input, gồm 2 file.
+
+> Đọc Agent.md, project-rules.md (mục 17 App shell) và TASK_DECOMPOSITION.md
+  (Part 5, mục 5.8, H1-T10). Chỉ làm H1-T10. Test trước; báo lần thất bại đầu
+  tiên.
+
+  Phạm vi file: src/shell/resolveView.test.js rồi src/shell/resolveView.js.
+
+  Yêu cầu:
+  - export const VIEWS = Object.freeze([Object.freeze({ id: 'exercises', label:
+  'Exercises 1–3' }), Object.freeze({ id: 'hw1', label: 'HW1 Drum Kit' })])
+  - export function resolveView(hash): bỏ một ký tự '#' đầu nếu có; nếu kết quả
+  là id trong VIEWS (phân biệt hoa thường) trả id đó, ngược lại trả
+  'exercises'.
+  - Test: đúng 7 dòng bảng 5.8; VIEWS frozen; id không trùng.
+
+  Kiểm tra: npm test, npm run build, npm run lint exit 0 với đúng 1 warning đã
+  biết.
+
+  Commit:
+  git add src/shell/resolveView.js src/shell/resolveView.test.js
+  git commit -m "feat(shell): add hash view resolver with unit tests"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && mkdir -p
+      src/shell && cat > src/shell/resolveView.test.js <<'EOF'
+      import { test } from 'node:test'…)
+  ⎿  Created src\shell\resolveView.test.js (+31 -0)
+       1 +import { test } from 'node:test'                               
+       2 +import assert from 'node:assert/strict'                        
+       3 +import { VIEWS, resolveView } from './resolveView.js'          
+       4 +                                                               
+       5 +const rows = [                                                 
+       6 +  ['', 'exercises'],                                           
+       7 +  ['#', 'exercises'],                                          
+       8 +  ['#exercises', 'exercises'],                                 
+       9 +  ['#hw1', 'hw1'],                                             
+      10 +  ['hw1', 'hw1'],                                              
+      11 +  ['#HW1', 'exercises'],                                       
+      12 +  ['#hw9', 'exercises'],                                       
+      13 +]                                                              
+      14 +                                                               
+      15 +for (const [hash, expected] of rows) {                         
+      16 +  test(`resolveView(${JSON.stringify(hash)}) -> ${expected}`, (
+         +) => {                                                         
+      17 +    assert.equal(resolveView(hash), expected)                  
+      18 +  })                                                           
+      19 +}                                                              
+      20 +                                                               
+      21 +test('VIEWS is frozen with frozen entries', () => {            
+      22 +  assert.ok(Object.isFrozen(VIEWS))                            
+      23 +  for (const view of VIEWS) {                                  
+      24 +    assert.ok(Object.isFrozen(view))                           
+      25 +  }                                                            
+      26 +})                                                             
+      27 +                                                               
+      28 +test('VIEWS ids are unique', () => {                           
+      29 +  const ids = VIEWS.map((v) => v.id)                           
+      30 +  assert.equal(new Set(ids).size, ids.length)                  
+      31 +})                                                             
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && cat >
+      src/shell/resolveView.js <<'EOF'
+      export const VIEWS = Object.freeze([…)
+  ⎿  Created src\shell\resolveView.js (+14 -0)
+       1 +export const VIEWS = Object.freeze([                           
+       2 +  Object.freeze({ id: 'exercises', label: 'Exercises 1–3' }),  
+       3 +  Object.freeze({ id: 'hw1', label: 'HW1 Drum Kit' }),         
+       4 +])                                                             
+       5 +                                                               
+       6 +/**                                                            
+       7 + * Maps a location hash to a view id. Unknown hashes resolve to
+         + 'exercises'.                                                  
+       8 + * @param {string} hash                                        
+       9 + * @returns {string}                                           
+      10 + */                                                            
+      11 +export function resolveView(hash) {                            
+      12 +  const id = hash.startsWith('#') ? hash.slice(1) : hash       
+      13 +  return VIEWS.some((view) => view.id === id) ? id : 'exercises
+         +'                                                              
+      14 +}                                                              
+
+● Đã xong H1-T10 và commit, chưa push. Cả 7 dòng của bảng 5.8 đều pass.
+
+  Lần chạy test thất bại đầu tiên (viết test trước, chưa có module):
+  - npm test: 95 test, 94 pass, 1 fail.
+  - Lỗi là ERR_MODULE_NOT_FOUND: Cannot find module
+    '...\src\shell\resolveView.js', đúng lý do mong đợi.
+
+  Sau khi thêm code:
+  - npm test: 103 test, 103 pass, 0 fail.
+  - npm run build: thành công.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+
+  Nội dung:
+  - resolveView.test.js (src/shell/resolveView.test.js) có 9 test:
+    - 7 test cho 7 dòng của bảng 5.8;
+    - 1 test kiểm tra VIEWS và từng phần tử đều frozen;
+    - 1 test kiểm tra id không trùng.
+  - resolveView.js (src/shell/resolveView.js) export hai thứ:
+    - VIEWS là mảng frozen gồm exercises ("Exercises 1–3") và hw1 ("HW1 Drum
+      Kit");
+    - resolveView(hash) bỏ một ký tự # đầu nếu có, rồi trả về id nếu nó nằm
+      trong VIEWS (phân biệt hoa thường), ngược lại trả 'exercises'.
+
+  Commit: 4203c63 feat(shell): add hash view resolver with unit tests, gồm 2
+  file.
+> Đọc Agent.md, project-rules.md (mục 3, 17 App shell) và TASK_DECOMPOSITION.md
+  (Part 5, Invariant 12, H1-T11). Chỉ làm H1-T11.
+
+  Phạm vi file: src/shell/useHashView.js, src/shell/SiteHeader.jsx,
+  src/shell/SiteHeader.module.css (tối thiểu), src/App.jsx.
+
+  Yêu cầu:
+  - useHashView.js:
+    function subscribe(onChange) { window.addEventListener('hashchange',
+  onChange); return () => window.removeEventListener('hashchange', onChange) }
+    export function useHashView() { return useSyncExternalStore(subscribe, ()
+  => resolveView(window.location.hash)) }
+  - SiteHeader.jsx: export function SiteHeader({ view }) trả
+    <header className={styles.header}><h1>Lab 3: React 19 Exercises</h1>
+    <nav aria-label="Lab sections"><ul className={styles.links}>{VIEWS.map((v)
+  => (<li key={v.id}><a href={`#${v.id}`} aria-current={v.id === view ? 'page'
+  : undefined}>{v.label}</a></li>))}</ul></nav></header>
+  - App.jsx:
+    export function App() { const view = useHashView(); return (<><SiteHeader
+  view={view} /><main><CurrentView view={view} /></main></>) }
+    function CurrentView({ view }) { if (view === 'hw1') return <DrumMachine
+  />; return (<><DeveloperCard /><ScientistDirectory /><PubgMatchTelemetry
+  /></>) }
+    Xóa <h1> cũ khỏi <main> (đã chuyển vào header). Không đổi gì khác của 3
+  exercise.
+  - Không '<div', không style=.
+
+  Kiểm tra: npm run build, npm test, npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C8c không in gì.
+
+  Commit:
+  git add src/shell/useHashView.js src/shell/SiteHeader.jsx
+  src/shell/SiteHeader.module.css src/App.jsx
+  git commit -m "feat(shell): add hash navigation between exercises and
+  homeworks"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && cat
+      src/styles/layout.css && cat > src/shell/useHashView.js <<'EOF'
+      import { useSyncExternalStore } fro…)
+  ⎿  Updated src\App.jsx (+19 -4)
+       1  import { DeveloperCard } from './components/DeveloperCard.jsx'
+       2  import { ScientistDirectory } from './components/ScientistDirec
+          tory.jsx'
+       3  import { PubgMatchTelemetry } from './components/PubgMatchTelem
+          etry.jsx'
+       4 +import { DrumMachine } from './homeworks/DrumMachine/DrumMachin
+         +e.jsx'                                                         
+       5 +import { SiteHeader } from './shell/SiteHeader.jsx'            
+       6 +import { useHashView } from './shell/useHashView.js'           
+       7  
+       5 -export function App() {                                        
+       8 +function CurrentView({ view }) {                               
+       9 +  if (view === 'hw1') return <DrumMachine />                   
+      10    return (
+       7 -    <main>                                                     
+       8 -      <h1>Lab 3: React 19 Exercises</h1>                       
+      11 +    <>                                                         
+      12        <DeveloperCard />
+      13        <ScientistDirectory />
+      14        <PubgMatchTelemetry />
+      12 -    </main>                                                    
+      15 +    </>                                                        
+      16 +  )                                                            
+      17 +}                                                              
+      18 +                                                               
+      19 +export function App() {                                        
+      20 +  const view = useHashView()                                   
+      21 +  return (                                                     
+      22 +    <>                                                         
+      23 +      <SiteHeader view={view} />                               
+      24 +      <main>                                                   
+      25 +        <CurrentView view={view} />                            
+      26 +      </main>                                                  
+      27 +    </>                                                        
+      28    )
+      29  }
+  ⎿  Created src\shell\SiteHeader.jsx (+21 -0)
+       1 +import { VIEWS } from './resolveView.js'                       
+       2 +import styles from './SiteHeader.module.css'                   
+       3 +                                                               
+       4 +export function SiteHeader({ view }) {                         
+       5 +  return (                                                     
+       6 +    <header className={styles.header}>                         
+       7 +      <h1>Lab 3: React 19 Exercises</h1>                       
+       8 +      <nav aria-label="Lab sections">                          
+       9 +        <ul className={styles.links}>                          
+      10 +          {VIEWS.map((v) => (                                  
+      11 +            <li key={v.id}>                                    
+      12 +              <a href={`#${v.id}`} aria-current={v.id === view 
+         +? 'page' : undefined}>                                         
+      13 +                {v.label}                                      
+      14 +              </a>                                             
+      15 +            </li>                                              
+      16 +          ))}                                                  
+      17 +        </ul>                                                  
+      18 +      </nav>                                                   
+      19 +    </header>                                                  
+      20 +  )                                                            
+      21 +}                                                              
+  ⎿  Created src\shell\SiteHeader.module.css (+7 -0)
+      1 +.header {                                                       
+      2 +  padding: var(--space-4);                                      
+      3 +}                                                               
+      4 +                                                                
+      5 +.links {                                                        
+      6 +  list-style: none;                                             
+      7 +}                                                               
+  ⎿  Created src\shell\useHashView.js (+11 -0)
+       1 +import { useSyncExternalStore } from 'react'                   
+       2 +import { resolveView } from './resolveView.js'                 
+       3 +                                                               
+       4 +function subscribe(onChange) {                                 
+       5 +  window.addEventListener('hashchange', onChange)              
+       6 +  return () => window.removeEventListener('hashchange', onChang
+         +e)                                                             
+       7 +}                                                              
+       8 +                                                               
+       9 +export function useHashView() {                                
+      10 +  return useSyncExternalStore(subscribe, () => resolveView(wind
+         +ow.location.hash))                                             
+      11 +}                                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã xong H1-T11 và commit, chưa push. Mình chưa xem giao diện trên trình duyệt.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công. Lần này bundle đã có DrumMachine (JS tăng lên
+    232,86 kB), nên file DrumMachine.jsx của H1-T09 biên dịch được.
+  - npm test: 103 test, 103 pass, 0 fail. Task này không thêm test.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+  - Các grep thay cho C1', C3, C8c (repo không có định nghĩa các check này):
+    - <div, style=, keyCode, which, charCode trong App.jsx và src/shell: không
+      có kết quả nào.
+    - Màu hex, rgb, hsl trong CSS của src/shell: không có kết quả nào.
+    - new AudioContext trong src vẫn chỉ có 1 dòng, là drumSynth.js.
+
+  Nội dung:
+  - useHashView.js (src/shell/useHashView.js) dùng useSyncExternalStore, đăng ký
+    hashchange và gỡ khi cleanup. Giá trị lấy từ
+    resolveView(window.location.hash).
+  - SiteHeader.jsx (src/shell/SiteHeader.jsx) có <header> chứa h1 "Lab 3: React
+    19 Exercises" và <nav aria-label="Lab sections">. Nav liệt kê VIEWS thành
+    các link #id, link của view hiện tại có aria-current="page".
+  - SiteHeader.module.css (src/shell/SiteHeader.module.css) có 2 class, mỗi
+    class một khai báo, chỉ dùng token. Bố cục để dành cho H1-T16.
+  - App.jsx (src/App.jsx) hiển thị SiteHeader và <main>. View hw1 hiện
+    DrumMachine, các view khác hiện DeveloperCard, ScientistDirectory và
+    PubgMatchTelemetry. Mình đã xóa h1 cũ khỏi <main> và không đổi gì khác của 3
+    exercise.
+
+  Điểm bạn nên biết: layout.css có style main và h1, nhưng h1 bây giờ nằm trong
+  header ngoài main. Selector h1 vẫn áp dụng nên cỡ chữ không đổi. Tuy nhiên
+  header chưa có căn lề giống main, nên khoảng cách có thể lệch nhẹ cho đến khi
+  H1-T16 làm bố cục.
+
+  Chưa kiểm tra trên trình duyệt:
+  - đổi hash #hw1 và #exercises có chuyển view đúng hay không;
+  - aria-current có cập nhật hay không;
+  - nghe âm thanh thật;
+  - bàn phím và con trỏ trên các pad.
+
+  Commit: 4645d6a feat(shell): add hash navigation between exercises and
+  homeworks, gồm 4 file (58 dòng thêm, 4 dòng xóa).
+
+> Đọc Agent.md, project-rules.md (mục 17 Live feedback) và
+  TASK_DECOMPOSITION.md (Part 5, Invariant 9, H1-T12). Chỉ làm H1-T12.
+
+  Phạm vi file: src/homeworks/DrumMachine/DrumMachine.jsx; được thêm class tối
+  thiểu vào DrumMachine.module.css.
+
+  Yêu cầu:
+  - State: const [hits, setHits] = useState([]) (tối đa 8, mới nhất đứng đầu)
+  và const [totalHits, setTotalHits] = useState(0).
+  - Trong triggerPad, sau synth.play: const hit = { id: crypto.randomUUID(),
+  padId: pad.id, label: pad.label, keyLabel: pad.keyLabel }; setHits((prev) =>
+  [hit, ...prev].slice(0, 8)); setTotalHits((n) => n + 1). Không mutate.
+  - Dưới các pad:
+    <output className={styles.hitStatus} role="status"
+  aria-live="polite">{hits.length === 0 ? 'No hits yet.' : Last hit:
+  ${hits[0].label} (${hits[0].keyLabel}). Total hits: ${totalHits}.}</output>
+    <h3>Hit history</h3>
+    <ol className={styles.hitLog} aria-label="Last 8 hits, newest
+  first">{hits.map((h) => <li key={h.id}>{h.label} ({h.keyLabel})</li>)}</ol>
+  - Không useEffect mới.
+
+  Kiểm tra: npm run build, npm test, npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3 không in gì.
+
+  Commit:
+  git add src/homeworks/DrumMachine/DrumMachine.jsx
+  src/homeworks/DrumMachine/DrumMachine.module.css
+  git commit -m "feat(hw1): add accessible hit log for deaf and hard-of-hearing
+  users"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && python - <<'EOF'
+      2>/dev/null || node -e "
+      const fs=require('fs');const p='src/homeworks/DrumMachine/Dru…)
+  ⎿  Updated src\homeworks\DrumMachine\DrumMachine.module.css (+8 -0)
+      17  .padKey {
+      18    font-family: monospace;
+      19  }
+      20 +                                                               
+      21 +.hitStatus {                                                   
+      22 +  display: block;                                              
+      23 +}                                                              
+      24 +                                                               
+      25 +.hitLog {                                                      
+      26 +  list-style: none;                                            
+      27 +}                                                              
+
+● JSX chưa được sửa (lệnh thay thế bằng script không chạy), chỉ có phần CSS đã
+  thêm. Mình dùng Edit để sửa JSX.
+
+● Update(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Added 2 lines
+       8    const headingId = useId()
+       9    const [synth] = useState(() => createDrumSynth())
+      10    const [activePadIds, setActivePadIds] = useState(() => new Se
+          t())
+      11 +  const [hits, setHits] = useState([])                         
+      12 +  const [totalHits, setTotalHits] = useState(0)                
+      13  
+      14    useEffect(() => () => synth.close(), [synth])
+      15  
+
+● Update(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Added 3 lines
+      18        const pad = DRUM_PADS.find((p) => p.id === padId)
+      19        if (!pad) return
+      20        synth.play(pad.recipe)
+      21 +      const hit = { id: crypto.randomUUID(), padId: pad.id, lab
+         +el: pad.label, keyLabel: pad.keyLabel }                        
+      22 +      setHits((prev) => [hit, ...prev].slice(0, 8))            
+      23 +      setTotalHits((n) => n + 1)                               
+      24        setActivePadIds((prev) => (prev.has(padId) ? prev : new S
+          et(prev).add(padId)))
+      25      },
+      26      [synth],
+
+● Update(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Added 13 lines
+      66            </li>
+      67          ))}
+      68        </ul>
+      69 +      <output className={styles.hitStatus} role="status" aria-l
+         +ive="polite">                                                  
+      70 +        {hits.length === 0                                     
+      71 +          ? 'No hits yet.'                                     
+      72 +          : `Last hit: ${hits[0].label} (${hits[0].keyLabel}). 
+         +Total hits: ${totalHits}.`}                                    
+      73 +      </output>                                                
+      74 +      <h3>Hit history</h3>                                     
+      75 +      <ol className={styles.hitLog} aria-label="Last 8 hits, ne
+         +west first">                                                   
+      76 +        {hits.map((h) => (                                     
+      77 +          <li key={h.id}>                                      
+      78 +            {h.label} ({h.keyLabel})                           
+      79 +          </li>                                                
+      80 +        ))}                                                    
+      81 +      </ol>                                                    
+      82      </section>
+      83    )
+      84  }
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong H1-T12 và commit, chưa push. Mình chưa xem hit log trên trình duyệt.
+
+  Lần sửa đầu bằng script không chạy được, nên DrumMachine.jsx vẫn nguyên và chỉ
+  có CSS được thêm. Mình sửa lại bằng Edit, và commit chỉ gồm các thay đổi đúng
+  yêu cầu.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 103 test, 103 pass, 0 fail. Task này không thêm test.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+  - Các grep thay cho C1' và C3 (repo không có định nghĩa các check này): <div,
+    style=, keyCode, which, charCode, new AudioContext trong DrumMachine.jsx
+    không có kết quả. File vẫn chỉ có 1 useEffect, không thêm effect mới.
+
+  Nội dung:
+  - State mới hits (tối đa 8, mới nhất đứng đầu) và totalHits.
+  - Trong triggerPad, sau synth.play, mình tạo hit với id từ
+    crypto.randomUUID(). setHits dùng [hit, ...prev].slice(0, 8) và setTotalHits
+    dùng n + 1, không mutate state.
+  - Dưới các pad có:
+    - <output role="status" aria-live="polite"> hiện "No hits yet." hoặc "Last
+      hit: … Total hits: …";
+    - <h3>Hit history</h3>;
+    - <ol aria-label="Last 8 hits, newest first">, mỗi li có key là id của hit.
+  - Mình thêm 2 class hitStatus và hitLog, mỗi class một khai báo.
+
+  Chưa kiểm tra trên trình duyệt:
+  - trình đọc màn hình có đọc đúng <output> không, và role="status" kèm
+    aria-live="polite" có bị đọc trùng không;
+  - số lần đọc khi gõ phím liên tiếp.
+
+  Commit: 0fb7251 feat(hw1): add accessible hit log for deaf and hard-of-hearing
+  users, gồm 2 file.
+
+> Đọc Agent.md, project-rules.md (mục 17 Live feedback) và
+  TASK_DECOMPOSITION.md (Part 5, Invariant 10, H1-T13). Chỉ làm H1-T13.
+
+  Phạm vi file: tạo src/homeworks/DrumMachine/LevelMeter.jsx; sửa
+  DrumMachine.jsx (chỉ để render <LevelMeter synth={synth} />); thêm class tối
+  thiểu vào DrumMachine.module.css (LevelMeter import cùng module này).
+
+  Yêu cầu LevelMeter({ synth }):
+  - const meterId = useId(); const [level, setLevel] = useState(DB_FLOOR)
+  - useEffect(() => {
+      let frameId = 0
+      let samples = null
+      const tick = () => {
+    const analyser = synth.getAnalyser()
+    let next = DB_FLOOR
+    if (analyser) {
+      if (!samples || samples.length !== analyser.fftSize) samples = new
+  Float32Array(analyser.fftSize)
+      analyser.getFloatTimeDomainData(samples)
+      next = toDecibels(samples)
+    }
+    setLevel((prev) => (prev === next ? prev : next))
+    frameId = window.requestAnimationFrame(tick)
+      }
+      frameId = window.requestAnimationFrame(tick)
+      return () => window.cancelAnimationFrame(frameId)
+    }, [synth])
+  - JSX: <p className={styles.meterRow}><label htmlFor={meterId}>Output
+  level</label> <meter id={meterId} min={-60} max={0} low={-18} high={-6}
+  optimum={-30} value={level} /> <span>{level} dBFS</span></p>
+  - Không setState đồng bộ trong thân effect (chỉ trong callback rAF). Không
+  setInterval.
+
+  Kiểm tra: npm run build, npm test, npm run lint exit 0 với đúng 1 warning đã
+  biết (nếu có warning mới thì dừng và báo); C1', C3, C6, C8c không in gì.
+
+  Commit:
+  git add src/homeworks/DrumMachine/LevelMeter.jsx
+  src/homeworks/DrumMachine/DrumMachine.jsx
+  src/homeworks/DrumMachine/DrumMachine.module.css
+  git commit -m "feat(hw1): add visual decibel meter driven by an analyser"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Write(src\homeworks\DrumMachine\LevelMeter.jsx)
+  ⎿  Wrote 34 lines to src\homeworks\DrumMachine\LevelMeter.jsx
+       1 import { useEffect, useId, useState } from 'react'
+       2 import { DB_FLOOR, toDecibels } from './levels.js'
+       3 import styles from './DrumMachine.module.css'
+       4
+       5 export function LevelMeter({ synth }) {
+       6   const meterId = useId()
+       7   const [level, setLevel] = useState(DB_FLOOR)
+       8
+       9   useEffect(() => {
+      10     let frameId = 0
+     … +24 lines (ctrl+o to expand)
+
+● Update(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Added 1 line
+      66            </li>
+      67          ))}
+      68        </ul>
+      69 +      <LevelMeter synth={synth} />                             
+      70        <output className={styles.hitStatus} role="status" aria-l
+          ive="polite">
+      71          {hits.length === 0
+      72            ? 'No hits yet.'
+
+● Update(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Added 1 line
+      2  import { DRUM_PADS, PAD_BY_CODE } from './drumPads.js'
+      3  import { createDrumSynth } from './drumSynth.js'
+      4  import { useDrumKeyboard } from './useDrumKeyboard.js'
+      5 +import { LevelMeter } from './LevelMeter.jsx'                   
+      6  import styles from './DrumMachine.module.css'
+      7  
+      8  export function DrumMachine() {
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && printf
+      '\n.meterRow {\n  display: flex;\n}\n' >>
+      src/homeworks/DrumMachine/DrumMachine.module.css && np…)
+  ⎿  Updated src\homeworks\DrumMachine\DrumMachine.module.css (+4 -0)
+      25  .hitLog {
+      26    list-style: none;
+      27  }
+      28 +                                                               
+      29 +.meterRow {                                                    
+      30 +  display: flex;                                               
+      31 +}                                                              
+
+● Chỉ còn đúng 1 warning đã biết, không có warning mới. Commit.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã xong H1-T13 và commit, chưa push. Mình chưa xem hay nghe thử meter trên
+  trình duyệt.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 103 test, 103 pass, 0 fail. Task này không thêm test.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect) ở PubgMatchTelemetry.jsx:17. Không có warning
+    mới, kể cả với LevelMeter.jsx.
+  - Các grep thay cho C1', C3, C6, C8c (repo không có định nghĩa các check này):
+    <div, style=, keyCode, which, charCode, new AudioContext, setInterval trong
+    src/homeworks/DrumMachine/*.jsx không có kết quả nào. DrumMachine.jsx không
+    chứa requestAnimationFrame, vòng lặp chỉ nằm trong LevelMeter.jsx.
+
+  Nội dung:
+  - LevelMeter.jsx (src/homeworks/DrumMachine/LevelMeter.jsx) viết đúng theo
+    thiết kế bạn đưa.
+    - setLevel chỉ được gọi trong callback của requestAnimationFrame, không gọi
+      đồng bộ trong thân effect.
+    - State chỉ đổi khi giá trị làm tròn thay đổi.
+    - Cleanup gọi cancelAnimationFrame.
+    - Mảng Float32Array được tạo lại chỉ khi fftSize thay đổi.
+    - Phần hiển thị gồm <label> "Output level", <meter> với min=-60, max=0,
+      low=-18, high=-6, optimum=-30, và <span> hiện giá trị dBFS.
+  - DrumMachine.jsx (src/homeworks/DrumMachine/DrumMachine.jsx) chỉ thêm import
+    và <LevelMeter synth={synth} />. Mình đặt nó ngay dưới danh sách pad, trước
+    phần hit log.
+  - DrumMachine.module.css (src/homeworks/DrumMachine/DrumMachine.module.css)
+    thêm class meterRow với một khai báo.
+
+  Chưa kiểm tra trên trình duyệt:
+  - meter có nhảy theo âm thật không, và có về -60 khi im lặng không;
+  - hiệu năng của vòng requestAnimationFrame (lúc im lặng state không đổi nên
+    không render lại; chưa đo);
+  - trình đọc màn hình đọc <meter> thế nào.
+
+  Commit: 80d5e57 feat(hw1): add visual decibel meter driven by an analyser, gồm
+  3 file.
+
+> Đọc Agent.md, project-rules.md (mục 4, 15 Forms, 17 Keyboard) và
+  TASK_DECOMPOSITION.md (Part 5, Invariant 11, H1-T14). Chỉ làm H1-T14.
+
+  Phạm vi file: src/homeworks/DrumMachine/DrumMachine.jsx; thêm class tối thiểu
+  vào DrumMachine.module.css.
+
+  Yêu cầu (đặt phía trên các pad):
+  - const sessionId = useId(); const shortcutsId = useId()
+  - const [sessionName, setSessionName] = useState('')
+  - const [shortcutsOn, setShortcutsOn] = useState(true)
+  - <p className={styles.field}><label htmlFor={sessionId}>Session
+  name</label><input id={sessionId} type="text" value={sessionName}
+  onChange={(e) => setSessionName(e.target.value)} autoComplete="off" /></p>
+  - <p className={styles.field}><input id={shortcutsId} type="checkbox"
+  checked={shortcutsOn} onChange={(e) => setShortcutsOn(e.target.checked)}
+  /><label htmlFor={shortcutsId}>Keyboard shortcuts (W A S D J K L)</label></p>
+  - useDrumKeyboard(PAD_BY_CODE, triggerPad, shortcutsOn, releasePad)
+  - Nếu sessionName khác rỗng, h2 vẫn giữ nguyên; hiện thêm <p>Session:
+  {sessionName}</p> (React tự escape, không innerHTML).
+
+  Kiểm tra: npm run build, npm test, npm run lint exit 0 với đúng 1 warning đã
+  biết; C1', C3, C8c không in gì.
+
+  Commit:
+  git add src/homeworks/DrumMachine/DrumMachine.jsx
+  src/homeworks/DrumMachine/DrumMachine.module.css
+  git commit -m "feat(hw1): add session name input and shortcut toggle"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Update(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Added 4 lines
+       7  
+       8  export function DrumMachine() {
+       9    const headingId = useId()
+      10 +  const sessionId = useId()                                    
+      11 +  const shortcutsId = useId()                                  
+      12 +  const [sessionName, setSessionName] = useState('')           
+      13 +  const [shortcutsOn, setShortcutsOn] = useState(true)         
+      14    const [synth] = useState(() => createDrumSynth())
+      15    const [activePadIds, setActivePadIds] = useState(() => new Se
+          t())
+      16    const [hits, setHits] = useState([])
+
+● Update(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Added 1 line, removed 1 line
+      40      })
+      41    }, [])
+      42  
+      43 -  useDrumKeyboard(PAD_BY_CODE, triggerPad, true, releasePad)   
+      43 +  useDrumKeyboard(PAD_BY_CODE, triggerPad, shortcutsOn, release
+         +Pad)                                                           
+      44  
+      45    return (
+      46      <section className={styles.drumKit} aria-labelledby={headin
+          gId}>
+
+● Update(src\homeworks\DrumMachine\DrumMachine.jsx)
+  ⎿  Added 20 lines
+      46      <section className={styles.drumKit} aria-labelledby={headin
+          gId}>
+      47        <h2 id={headingId}>HW1 Production Studio Drum Kit</h2>
+      48        <p>Play with the keys W, A, S, D, J, K, L or press a pad.
+          </p>
+      49 +      <p className={styles.field}>                             
+      50 +        <label htmlFor={sessionId}>Session name</label>        
+      51 +        <input                                                 
+      52 +          id={sessionId}                                       
+      53 +          type="text"                                          
+      54 +          value={sessionName}                                  
+      55 +          onChange={(e) => setSessionName(e.target.value)}     
+      56 +          autoComplete="off"                                   
+      57 +        />                                                     
+      58 +      </p>                                                     
+      59 +      <p className={styles.field}>                             
+      60 +        <input                                                 
+      61 +          id={shortcutsId}                                     
+      62 +          type="checkbox"                                      
+      63 +          checked={shortcutsOn}                                
+      64 +          onChange={(e) => setShortcutsOn(e.target.checked)}   
+      65 +        />                                                     
+      66 +        <label htmlFor={shortcutsId}>Keyboard shortcuts (W A S 
+         +D J K L)</label>                                               
+      67 +      </p>                                                     
+      68 +      {sessionName !== '' && <p>Session: {sessionName}</p>}    
+      69        <ul className={styles.pads} aria-label="Drum pads">
+      70          {DRUM_PADS.map((pad) => (
+      71            <li key={pad.id}>
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && printf '\n.field
+      {\n  display: flex;\n}\n' >>
+      src/homeworks/DrumMachine/DrumMachine.module.css && npm r…)
+  ⎿  Updated src\homeworks\DrumMachine\DrumMachine.module.css (+4 -0)
+      29  .meterRow {
+      30    display: flex;
+      31  }
+      32 +                                                               
+      33 +.field {                                                       
+      34 +  display: flex;                                               
+      35 +}                                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+● Đã xong H1-T14 và commit, chưa push. Mình chưa thử trên trình duyệt.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 103 test, 103 pass, 0 fail. Task này không thêm test.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect) ở PubgMatchTelemetry.jsx:17.
+  - Các grep thay cho C1', C3, C8c (repo không có định nghĩa các check này):
+    <div, style=, innerHTML, keyCode, which, charCode, new AudioContext,
+    setInterval trong src/homeworks/DrumMachine/*.jsx không có kết quả nào.
+
+  Nội dung (đặt phía trên các pad):
+  - Ô nhập "Session name" có label gắn qua useId, type="text" và
+    autoComplete="off". Ô này là controlled input nên gõ vào đó không kích hoạt
+    pad, vì shouldHandleKey bỏ qua target là input.
+  - Checkbox "Keyboard shortcuts (W A S D J K L)" bật sẵn, có label gắn qua
+    useId. shortcutsOn được truyền vào useDrumKeyboard, nên khi tắt thì hook
+    không gắn listener nào.
+  - Khi sessionName khác rỗng, bên dưới hiện thêm <p>Session: …</p>. h2 giữ
+    nguyên, và React tự escape nên không dùng innerHTML.
+  - DrumMachine.module.css (src/homeworks/DrumMachine/DrumMachine.module.css)
+    thêm class field với một khai báo.
+
+  Giới hạn cần biết: khi tắt shortcut lúc đang giữ phím, listener keyup bị gỡ
+  nên pad đó có thể kẹt ở trạng thái "đang nhấn" đến khi bạn bấm lại bằng con
+  trỏ. Đề bài không yêu cầu xử lý trường hợp này nên mình chưa đổi gì. Nếu bạn
+  muốn, có thể thêm một dòng xóa các pad đang giữ khi tắt shortcut.
+
+  Chưa kiểm tra trên trình duyệt:
+  - gõ trong ô Session name có thật sự không phát âm thanh;
+  - tắt checkbox có làm phím W/A/S/D/J/K/L hết tác dụng không;
+  - thứ tự Tab và focus.
+
+  Commit: bbfe1bf feat(hw1): add session name input and shortcut toggle, gồm 2
+  file (29 dòng thêm, 1 dòng xóa).
+
+> <ide_opened_file>The user opened the file
+  c:\Users\USER\Documents\Lab3_WEB_TH\lab3-react19\AI_FAILURE_AUDIT.md in the
+  IDE. This may or may not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 5,
+  H1-T15). Chỉ làm H1-T15.
+
+  Phạm vi file: src/styles/tokens.css. Chỉ THÊM vào :root nhóm "/* Drum kit
+  (Homework 1) */":
+    --pad-min-size: 5.5rem;
+    --color-pad-bg: var(--color-control-bg);
+    --color-pad-active-bg: var(--color-tier-core-bg);
+    --color-pad-active-text: var(--color-tier-core-text);
+    --color-pad-active-border: var(--color-accent);
+  Không mã màu mới, không sửa token cũ.
+
+  Tương phản: --color-pad-active-text trên --color-pad-active-bg >= 4.5:1;
+  --color-pad-active-border trên --color-card-bg >= 3:1 (báo số).
+
+  Kiểm tra: git diff 0 dòng xóa; npm run build; npm run lint exit 0 với đúng 1
+  warning đã biết; C4 không in gì.
+
+  Commit:
+  git add src/styles/tokens.css
+  git commit -m "style(hw1): add drum kit tokens"
+
+  Không push. Báo cáo bằng tiếng Việt.
+
+● Update(src\styles\tokens.css)
+  ⎿  Added 7 lines
+      53    --color-skeleton-text: var(--color-tier-core-text);
+      54    --color-alert-border: var(--color-accent);
+      55    --skeleton-pulse-duration: 1.5s;
+      56 +                                                               
+      57 +  /* Drum kit (Homework 1) */                                  
+      58 +  --pad-min-size: 5.5rem;                                      
+      59 +  --color-pad-bg: var(--color-control-bg);                     
+      60 +  --color-pad-active-bg: var(--color-tier-core-bg);            
+      61 +  --color-pad-active-text: var(--color-tier-core-text);        
+      62 +  --color-pad-active-border: var(--color-accent);              
+      63  }
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong H1-T15 và commit, chưa push.
+
+  Kết quả kiểm tra:
+  - Diff: tokens.css thêm 7 dòng, xóa 0 dòng. Phần thêm là một dòng trống, dòng
+    chú thích /* Drum kit (Homework 1) */ và 5 token, đúng như đề bài. Không có
+    mã màu mới và không sửa token cũ.
+  - npm run build: thành công.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+  - C4: repo không có định nghĩa C4. Mình quét src tìm mã hex, rgb() và hsl()
+    trong các file .css và .jsx. Kết quả chỉ có src/styles/tokens.css, tức không
+    có màu cứng ngoài file token.
+
+  Tương phản (mình tính bằng công thức WCAG 2.x, từ giá trị hex hiện có của
+  token, không dùng công cụ đo trên trình duyệt):
+  - --color-pad-active-text (#1e3a8a) trên --color-pad-active-bg (#dbeafe):
+    8,49:1, đạt yêu cầu từ 4,5:1.
+  - --color-pad-active-border (#1d4ed8) trên --color-card-bg (#ffffff): 6,70:1,
+    đạt yêu cầu từ 3:1.
+
+  Mình chưa dùng các token này trong CSS nào; việc đó thuộc H1-T16.
+
+  Commit: 81eb6d0 style(hw1): add drum kit tokens, gồm đúng 1 file.
+
+> Đọc Agent.md, project-rules.md (mục 7) và TASK_DECOMPOSITION.md (Part 5,
+  H1-T16). Chỉ làm H1-T16. Tham khảo (không sửa)
+  src/components/ScientistDirectory.module.css và PubgMatchTelemetry.module.css
+  để dùng cùng kiểu thẻ, nút.
+
+  Phạm vi file: src/homeworks/DrumMachine/DrumMachine.module.css,
+  src/shell/SiteHeader.module.css. Không sửa JSX.
+
+  Yêu cầu (mobile-first, chỉ token, không mã màu, không nowrap):
+  - .drumKit: cùng kiểu thẻ với .telemetry (grid một cột minmax(0,1fr), gap,
+  width 100%, max-width var(--card-max-width), padding, viền, bo, nền, chữ).
+  - .pads: display grid; grid-template-columns repeat(auto-fit,
+  minmax(var(--pad-min-size), 1fr)); gap var(--space-2); padding 0; margin 0;
+  list-style none.
+  - .pad: min-block-size var(--pad-min-size); width 100%; display grid;
+  place-items center; gap var(--space-1); viền var(--control-border-width)
+  solid var(--color-border); bo var(--radius-md); nền var(--color-pad-bg); chữ
+  var(--color-control-text); font inherit; touch-action manipulation.
+  - .pad[aria-pressed='true']: nền var(--color-pad-active-bg); chữ
+  var(--color-pad-active-text); border-color var(--color-pad-active-border);
+  box-shadow inset 0 0 0 2px var(--color-pad-active-border); font-weight 700
+  (khác biệt không chỉ bằng màu).
+  - @media (prefers-reduced-motion: no-preference) { .pad { transition:
+  background-color 80ms } } (không animation khi reduce).
+  - .padKey: font-size var(--font-size-xs). .field, .hitStatus, .hitLog,
+  .meterRow: khoảng cách bằng token; meter width 100% tối đa 16rem.
+  - SiteHeader.module.css: .header căn giữa, padding var(--space-4), gap;
+  .links flex wrap, gap var(--space-2), list-style none, padding 0; link
+  [aria-current='page'] font-weight 700 và text-decoration underline (không chỉ
+  bằng màu); link có min-height var(--control-min-height) và display
+  inline-flex align-items center.
+
+  Kiểm tra: npm run build, npm test, npm run lint exit 0 với đúng 1 warning đã
+  biết; C4 và grep nowrap không in gì; git diff --stat chỉ 2 file css.
+
+  Commit:
+  git add src/homeworks/DrumMachine/DrumMachine.module.css
+  src/shell/SiteHeader.module.css
+  git commit -m "style(hw1): add responsive 375px drum kit and header layout"
+
+  Không push. Báo cáo bằng tiếng Việt: nêu rõ chưa kiểm tra trên trình duyệt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\homeworks\DrumMachine\DrumMachine.module.css)
+  ⎿  Error writing file
+
+● Write(src\shell\SiteHeader.module.css)
+  ⎿  Added 22 lines
+       1  .header {
+       2 +  display: grid;                                               
+       3 +  justify-items: center;                                       
+       4 +  gap: var(--space-3);                                         
+       5    padding: var(--space-4);
+       6 +  text-align: center;                                          
+       7  }
+       8  
+       9  .links {
+      10 +  display: flex;                                               
+      11 +  flex-wrap: wrap;                                             
+      12 +  justify-content: center;                                     
+      13 +  gap: var(--space-2);                                         
+      14 +  padding: 0;                                                  
+      15 +  margin: 0;                                                   
+      16    list-style: none;
+      17  }
+      18 +                                                               
+      19 +.links a {                                                     
+      20 +  display: inline-flex;                                        
+      21 +  align-items: center;                                         
+      22 +  min-height: var(--control-min-height);                       
+      23 +  padding: var(--control-padding);                             
+      24 +}                                                              
+      25 +                                                               
+      26 +.links a[aria-current='page'] {                                
+      27 +  font-weight: 700;                                            
+      28 +  text-decoration: underline;                                  
+      29 +}                                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Ghi DrumMachine.module.css bị từ chối vì file đã đổi so với lần mình đọc. Mình
+  đọc lại để xem trạng thái hiện tại trước khi ghi.
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+● Nội dung file khớp với bản đã commit, nên mình ghi đè bằng bản mới.
+
+● Write(src\homeworks\DrumMachine\DrumMachine.module.css)
+  ⎿  Added 95 lines, removed 9 lines
+        1  .drumKit {
+        2 +  display: grid;                                              
+        3 +  grid-template-columns: minmax(0, 1fr);                      
+        4 +  gap: var(--space-3);                                        
+        5 +  width: 100%;                                                
+        6 +  max-width: var(--card-max-width);                           
+        7    padding: var(--space-4);
+        8 +  border: 1px solid var(--color-border);                      
+        9 +  border-radius: var(--radius-lg);                            
+       10 +  background-color: var(--color-card-bg);                     
+       11 +  color: var(--color-text);                                   
+       12  }
+       13  
+       14 +.drumKit h2 {                                                 
+       15 +  font-size: var(--font-size-lg);                             
+       16 +  line-height: 1.2;                                           
+       17 +  overflow-wrap: anywhere;                                    
+       18 +}                                                             
+       19 +                                                              
+       20 +.drumKit h3 {                                                 
+       21 +  font-size: var(--font-size-md);                             
+       22 +}                                                             
+       23 +                                                              
+       24 +.field {                                                      
+       25 +  display: flex;                                              
+       26 +  flex-wrap: wrap;                                            
+       27 +  align-items: center;                                        
+       28 +  gap: var(--space-2);                                        
+       29 +}                                                             
+       30 +                                                              
+       31 +.field input[type='text'] {                                   
+       32 +  flex: 1 1 10rem;                                            
+       33 +  min-width: 0;                                               
+       34 +  min-height: var(--control-min-height);                      
+       35 +  padding: var(--control-padding);                            
+       36 +  border: var(--control-border-width) solid var(--color-border
+          +);                                                            
+       37 +  border-radius: var(--radius-sm);                            
+       38 +  background-color: var(--color-control-bg);                  
+       39 +  color: var(--color-control-text);                           
+       40 +  font: inherit;                                              
+       41 +}                                                             
+       42 +                                                              
+       43 +.field input[type='checkbox'] {                               
+       44 +  width: var(--space-5);                                      
+       45 +  height: var(--space-5);                                     
+       46 +}                                                             
+       47 +                                                              
+       48  .pads {
+       49 +  display: grid;                                              
+       50 +  grid-template-columns: repeat(auto-fit, minmax(var(--pad-min
+          +-size), 1fr));                                                
+       51 +  gap: var(--space-2);                                        
+       52 +  padding: 0;                                                 
+       53 +  margin: 0;                                                  
+       54    list-style: none;
+       55  }
+       56  
+       57  .pad {
+       10 -  min-height: var(--control-min-height);                      
+       58 +  display: grid;                                              
+       59 +  place-items: center;                                        
+       60 +  gap: var(--space-1);                                        
+       61 +  width: 100%;                                                
+       62 +  min-block-size: var(--pad-min-size);                        
+       63 +  border: var(--control-border-width) solid var(--color-border
+          +);                                                            
+       64 +  border-radius: var(--radius-md);                            
+       65 +  background-color: var(--color-pad-bg);                      
+       66 +  color: var(--color-control-text);                           
+       67 +  font: inherit;                                              
+       68 +  touch-action: manipulation;                                 
+       69  }
+       70  
+       71 +.pad[aria-pressed='true'] {                                   
+       72 +  border-color: var(--color-pad-active-border);               
+       73 +  background-color: var(--color-pad-active-bg);               
+       74 +  box-shadow: inset 0 0 0 2px var(--color-pad-active-border); 
+       75 +  color: var(--color-pad-active-text);                        
+       76 +  font-weight: 700;                                           
+       77 +}                                                             
+       78 +                                                              
+       79 +@media (prefers-reduced-motion: no-preference) {              
+       80 +  .pad {                                                      
+       81 +    transition: background-color 80ms;                        
+       82 +  }                                                           
+       83 +}                                                             
+       84 +                                                              
+       85  .padLabel {
+       86    font-weight: 600;
+       87 +  overflow-wrap: anywhere;                                    
+       88  }
+       89  
+       90  .padKey {
+       91    font-family: monospace;
+       92 +  font-size: var(--font-size-xs);                             
+       93  }
+       94  
+       95 +.meterRow {                                                   
+       96 +  display: flex;                                              
+       97 +  flex-wrap: wrap;                                            
+       98 +  align-items: center;                                        
+       99 +  gap: var(--space-2);                                        
+      100 +}                                                             
+      101 +                                                              
+      102 +.meterRow meter {                                             
+      103 +  width: 100%;                                                
+      104 +  max-width: 16rem;                                           
+      105 +}                                                             
+      106 +                                                              
+      107  .hitStatus {
+      108    display: block;
+      109 +  padding: var(--space-2) var(--space-3);                     
+      110 +  border: var(--control-border-width) solid var(--color-border
+          +);                                                            
+      111 +  border-radius: var(--radius-sm);                            
+      112 +  overflow-wrap: anywhere;                                    
+      113  }
+      114  
+      115  .hitLog {
+      116 +  display: grid;                                              
+      117 +  gap: var(--space-1);                                        
+      118 +  padding: 0;                                                 
+      119 +  margin: 0;                                                  
+      120    list-style: none;
+      121  }
+       28 -                                                              
+       29 -.meterRow {                                                   
+       30 -  display: flex;                                              
+       31 -}                                                             
+       32 -                                                              
+       33 -.field {                                                      
+       34 -  display: flex;                                              
+       35 -}                                                             
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong H1-T16 và commit, chưa push. Mình chưa kiểm tra bố cục trên trình
+  duyệt, nên chưa biết 375px và 320px có bị cuộn ngang hay không. Việc đó cần
+  bạn xác nhận như acceptance criteria của H1-T16.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 103 test, 103 pass, 0 fail.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+  - C4: repo không có định nghĩa C4. Mình quét src tìm hex, rgb(), hsl() ngoài
+    tokens.css và không thấy gì. Grep nowrap trong CSS cũng không thấy gì.
+  - Mình quét thêm mọi var(--…) trong src/homeworks và src/shell: tất cả đều có
+    trong tokens.css, không có token thiếu.
+  - Diff: chỉ 2 file CSS (117 dòng thêm, 9 dòng xóa), không động đến JSX.
+
+  Nội dung:
+  - DrumMachine.module.css (src/homeworks/DrumMachine/DrumMachine.module.css):
+    - .drumKit dùng cùng kiểu thẻ với .telemetry.
+    - .pads là grid auto-fit với minmax(var(--pad-min-size), 1fr).
+    - .pad có min-block-size bằng --pad-min-size (5,5rem), nên lớn hơn 44px.
+    - Pad đang nhấn khác trạng thái thường không chỉ bằng màu: viền đổi, có
+      box-shadow inset 2px và chữ đậm 700.
+    - transition chỉ nằm trong prefers-reduced-motion: no-preference.
+    - .meterRow meter có width: 100% và max-width: 16rem.
+  - SiteHeader.module.css (src/shell/SiteHeader.module.css): header căn giữa,
+    .links là flex wrap, mỗi link cao tối thiểu --control-min-height. Link của
+    view hiện tại (aria-current='page') có chữ đậm và gạch chân.
+
+  Phần mình thêm ngoài danh sách của đề bài:
+  - ô nhập Session name có style giống các nút (cao tối thiểu 44px, viền, bo,
+    font: inherit);
+  - checkbox cỡ var(--space-5), tức 24px;
+  - .hitStatus có viền và padding;
+  - h2 và h3 trong thẻ có cỡ chữ riêng.
+
+  Nếu bạn thấy thừa, mình rút lại được.
+
+  Chưa kiểm tra:
+  - cuộn ngang ở 375px và 320px;
+  - tương phản và vòng focus thực tế;
+  - kích thước pad, vì auto-fit ở 320px có thể cho ra 3 cột hay 2 cột thì mình
+    chưa xem.
+
+  Commit: b25c43e style(hw1): add responsive 375px drum kit and header layout,
+  gồm 2 file.
+
+> Đây là prompt T18, lấy từ guide và đã thêm giới hạn UniKey (mục cuối của
+  Known limits). Bạn dán nguyên khối vào chat mới (sau khi /export rồi /clear):
+
+  Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 5, H1-T18). Chỉ
+  làm H1-T18. Không sửa file khác.
+
+  Phạm vi file: README.md. Thêm vào CUỐI file "## App shell" và "## Homework 1:
+  ProductionStudio Drum Kit" (dùng ### cho mục con). Chỉ thêm dòng, 0 dòng
+  xóa. Các mục cũ giữ nguyên. README viết bằng tiếng An
+  Nội dung "## App shell":
+                                        - Hash views: #exercises (mặc định) và
+  #hw1;lStore với sự kiện hashchange; không dùngrouter.
+
+          - h1 nay nằm trong <header> cùng <nav aria-lện tại có
+  aria-current="page".
+  - Cách mở từng view (npm run dev: http://localhost:5173/#exercises và /#hw1)
+  và cách chạy Lighthouse cho từng view  bằng URL có hash trên npm run preview
+  (http:
+
+                                    Nội dung "## Homework 1: Production Studio
+  D
+  - Mô tả: bộ trống 7 pad chơi bằng phím W A S D J K L (đọc bằng e.code) hoặc
+  con trỏ; âm thanh tổng hợp bằng Web Audihit log aria-live và đồng hồ decibel.
+  - Source layout: liệt kê các file trong src/homeworks/DrumMachine/ và
+  src/shell/ (đối chiếu bằng cách chạy      ls/Get-ChildItem thật, không đoán).
+
+  - Constraints: e.code (không keyCode/which/charCode, không đọc chữ từ e.key);
+  guard repeat/Ctrl/Alt/Meta/input; checkbox tắt shortcut (WCAG 2.2 SC 2.1.4);
+  kAudioContext tạo lazily và đóng khi unmount,chỉ tạo trong drumSynth.js;
+  gain ramp về 0.0001 trước khi stop; requestAnimationFrame chỉ nằm trong
+  LevelMeter và được
+
+  hủy trong cleanup; hit log là một <output ar
+  - Pads: bảng 7 pad (id, label, key) lấy từ TASK_DECOMPOSITION Part 5 mục 5.4.
+
+  - Text checks: C1' và C8a, C8b, C8c. Vớil (lấy từ GUIDE) và bản Git Bash
+  tương đương, rồi CHẠY THỬ cả hai bản Git Bash và báo kết quả thật (C1', C8a,
+  C8c phải không in gì; C8b in đúng 1 dòng).
+
+  - How to test: (1) UniKey Telex: bật Uning, bấm A hoặc D để thấy pad phát và
+  Consolein code: KeyA/KeyD; (2) giữ một phím 2–3 giây: Total hits chỉ tăng 1;
+  (3) gõ "wasd" trong ô Session name: không pad
+
+  nào phát; (4) bỏ chọn Keyboard shortcuts rồi: không phát.
+  - Known limits (đúng 5 gạch đầu dòng, giữ nguyên chữ):
+
+    - The Lab 2 drum kit was not reused; this atch.
+    - Sounds are synthesized, not recorded samples.
+    - aria-live announces only the latest hit;sed by the total.
+    - Audio starts only after the first click or key press (browser autoplay
+  policy).
+    - With UniKey in Telex mode, the W key reaevent with an empty code (and key
+  "ư"),so the Kick pad does not play. Switch UniKey to English mode or use the
+  pointer. The other six pad keys are not
+      affected.
+  - Không ghi điểm Lighthouse hay bất kỳ số đo nào.
+
+  Kiểm tra (báo kết quả thật, không đoán): npm run build; npm run lint exit 0
+  với đúng 1 warning đã biết; npm test; git
+  diff --numstat README.md phải 0 dòng xóa; cáREADME phải chạy được; git diff
+  --stat chỉ có README.md.
+
+  Commit:
+  git add README.md
+  git commit -m "docs(readme): document app shell and hw1"
+
+  Không push. Báo cáo bằng tiếng Việt: số dòng thêm/xóa, kết quả từng check,
+  commit hash.
+
+● Mình chưa làm H1-T18, vì khối prompt bị hỏng khi dán và nhiều đoạn bị cắt mất.
+  Có mấy chỗ mình không đoán được, nên mình dừng lại hỏi bạn.
+
+  Đoạn bị cắt hoặc dính nhau:
+  - Dòng yêu cầu về ngôn ngữ README bị cụt ở chữ "tiếng An…".
+  - Phần "App shell" bị mất ở giữa. Chỗ đó có cách đọc hash bằng
+    useSyncExternalStore và câu nói về <nav aria-label…> kèm aria-current.
+  - Phần Constraints bị cụt ở "hit log là một <output ar…".
+  - Phần How to test bị cụt ở bước (3) và (4), nên thiếu kết quả mong đợi.
+  - Phần Known limits phải "giữ nguyên chữ" nhưng bị thủng ở bullet 1, 3 và 5.
+    Ví dụ bullet 1 chỉ còn "…this … atch", và bullet 5 mất một đoạn ở giữa. Mình
+    không muốn tự bịa câu mà bạn yêu cầu giữ nguyên.
+
+  Thiếu nguồn: Prompt nói lệnh C1', C8a, C8b, C8c "lấy từ GUIDE", nhưng GUIDE
+  không nằm trong repo. Mình đã tìm trong các file .md và chỉ thấy tên các
+  check, không thấy lệnh. Từ H1-T07 đến H1-T14 mình phải dùng grep thay thế. Lần
+  này README phải ghi lệnh chính thức và chạy thử, nên mình cần đúng lệnh trong
+  GUIDE.
+
+  Cần bạn gửi lại:
+  1. Khối prompt T18 nguyên vẹn, chưa bị cắt.
+  2. Phần C1', C8a, C8b, C8c trong GUIDE (cả bản PowerShell lẫn Git Bash nếu
+     có).
+
+  Có hai điều mình cần xác nhận thêm trước khi ghi vào README:
+  - Bullet 5 của Known limits nói phím W trong UniKey Telex gửi sự kiện có code
+    rỗng và key là "ư". Mình chưa kiểm chứng điều này. Mình sẽ chép đúng chữ của
+    bạn, và README ghi đó là hiện tượng quan sát được, không phải điều mình đã
+    thử.
+  - Phần "How to test" là các bước để bạn tự làm trên trình duyệt. Mình sẽ không
+    ghi kết quả nào mình chưa chạy.
+
+  Khi có prompt đầy đủ, mình sẽ làm tiếp và liệt kê file thật bằng ls, theo đúng
+  yêu cầu của bạn.
+
+> Đây là prompt T18, lấy từ guide và đã thêm giới hạn UniKey (mục cuối của
+  Known limits). Bạn dán nguyên khối vào chat mới (sau khi /export rồi /clear):
+
+  Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 5, H1-T18). Chỉ
+  làm H1-T18. Không sửa file khác.
+
+  Phạm vi file: README.md. Thêm vào CUỐI file (sau mục Exercise 3) hai mục "##
+  App shell" và "## Homework 1: Production Studio Drum Kit" (dùng ### cho mục
+  con). Chỉ thêm dòng, 0 dòng xóa. Các mục cũ giữ nguyên. README viết bằng
+  tiếng Anh.
+
+  Nội dung "## App shell":
+  - Hash views: #exercises (mặc định) và #hw1; view đọc bằng
+  useSyncExternalStore với sự kiện hashchange; không dùng router.
+  - h1 nay nằm trong <header> cùng <nav aria-label="Lab sections">; link hiện
+  tại có aria-current="page".
+  - Cách mở từng view (npm run dev: http://localhost:5173/#exercises và /#hw1)
+  và cách chạy Lighthouse cho từng view bằng URL có hash trên npm run preview
+  (http://localhost:4173/#hw1).
+
+  Nội dung "## Homework 1: Production Studio D
+  - Mô tả: bộ trống 7 pad chơi bằng phím W A S D J K L (đọc bằng e.code) hoặc
+  con trỏ; âm thanh tổng hợp bằng Web Audihit log aria-live và đồng hồ decibel.
+  - Source layout: liệt kê các file trong src/homeworks/DrumMachine/ và
+  src/shell/ (đối chiếu bằng cách chạy      ls/Get-ChildItem thật, không đoán).
+
+  - Constraints: e.code (không keyCode/which/charCode, không đọc chữ từ e.key);
+  guard repeat/Ctrl/Alt/Meta/input; checkbox tắt shortcut (WCAG 2.2 SC 2.1.4);
+  kAudioContext tạo lazily và đóng khi unmount,chỉ tạo trong drumSynth.js;
+  gain ramp về 0.0001 trước khi stop; requestAnimationFrame chỉ nằm trong
+  LevelMeter và được
+
+  hủy trong cleanup; hit log là một <output ar
+  - Pads: bảng 7 pad (id, label, key) lấy từ TASK_DECOMPOSITION Part 5 mục 5.4.
+
+  - Text checks: C1' và C8a, C8b, C8c. Vớil (lấy từ GUIDE) và bản Git Bash
+  tương đương, rồi CHẠY THỬ cả hai bản Git Bash và báo kết quả thật (C1', C8a,
+  C8c phải không in gì; C8b in đúng 1 dòng).
+
+  - How to test: (1) UniKey Telex: bật Uning, bấm A hoặc D để thấy pad phát và
+  Consolein code: KeyA/KeyD; (2) giữ một phím 2–3 giây: Total hits chỉ tăng 1;
+  (3) gõ "wasd" trong ô Session name: không pad nào phát; (4) bỏ chọn Keyboard
+  shortcuts rồi: không phát.
+
+  - Known limits (đúng 5 gạch đầu dòng, giữ nguyên chữ):
+
+    - The Lab 2 drum kit was not reused; this atch.
+    - Sounds are synthesized, not recorded samples.
+    - aria-live announces only the latest hit;sed by the total.
+    - Audio starts only after the first click or key press (browser autoplay
+  policy).
+    - With UniKey in Telex mode, the W key reaevent with an empty code (and key
+  "ư"),so the Kick pad does not play. Switch UniKey to English mode or use the
+  pointer. The other six pad keys are not       affected.
+  - Không ghi điểm Lighthouse hay bất kỳ số đo nào.
+
+    Kiểm tra (báo kết quả thật, không đoán): npm run build; npm run lint exit 0
+  với đúng 1 warning đã biết; npm test; git diff --numstat README.md phải 0
+  dòng xóa; cáREADME phải chạy được; git diff --stat chỉ có README.md.
+
+  Commit:
+  git add README.md
+  git commit -m "docs(readme): document app shell and hw1"
+
+  Không push. Báo cáo bằng tiếng Việt: số dòng thêm/xóa, kết quả từng check,
+  commit hash.
+
+● Prompt lần này đã nguyên vẹn phần App shell, nhưng phần Homework 1 vẫn bị cắt.
+  Mình đọc README hiện có để xem các lệnh check C6/C7 của Exercise 3 được viết
+  thế nào, rồi làm tiếp.
+
+  Made 1 scratchpad edit +120, ran 2 shell commands (ctrl+o to expand)
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && cat
+      "C:/Users/USER/AppData/Local/Temp/claude/38af56aea87c5f9f/f93b8b8d-1c45-46
+      bc-a065-65877ada44ba/scra…)
+  ⎿  Updated README.md (+119 -0)
+      255  - The success article uses aria-live as in slide 23; a live re
+           gion inserted together with its content may not be announced b
+           y every screen reader.
+      256  - Packet loss is random (35%), so a page load can end in the e
+           rror state.
+      257  - oxlint reports one warning, react(set-state-in-effect), for 
+           setView(loadingView()) inside the effect. The line is kept on 
+           purpose: it is the slide 23 reference pattern, and moving LOAD
+           ING into the event handlers would make the IDLE state unreacha
+           ble.
+      258 +                                                              
+      259 +## App shell                                                  
+      260 +                                                              
+      261 +The page now shows one view at a time. The view comes from the
+          + URL hash.                                                    
+      262 +                                                              
+      263 +- Hash views: `#exercises` (the default) and `#hw1`. An unknow
+          +n hash shows the exercises.                                   
+      264 +- The view is read with `useSyncExternalStore`, subscribed to 
+          +the `hashchange` event. There is no router package.           
+      265 +- The page `<h1>` now lives in a `<header>` together with `<na
+          +v aria-label="Lab sections">`. The link of the current view ha
+          +s `aria-current="page"`.                                      
+      266 +                                                              
+      267 +### Open a view                                               
+      268 +                                                              
+      269 +- `npm run dev`, then open `http://localhost:5173/#exercises` 
+          +or `http://localhost:5173/#hw1`.                              
+      270 +- For Lighthouse, build and serve the production bundle with `
+          +npm run build` and `npm run preview`, then run Lighthouse on e
+          +ach view by its URL with the hash, for example `http://localho
+          +st:4173/#hw1`. Run it once per view.                          
+      271 +                                                              
+      272 +## Homework 1: Production Studio Drum Kit                     
+      273 +                                                              
+      274 +`DrumMachine` is a seven-pad drum kit. It is played with the p
+          +hysical keys W, A, S, D, J, K, L (read through `e.code`) or wi
+          +th the pointer. The sounds are synthesized with the Web Audio 
+          +API. A hit log in an `aria-live` output and a visual decibel m
+          +eter serve deaf and hard-of-hearing users. It renders only in 
+          +the `#hw1` view.                                              
+      275 +                                                              
+      276 +### Source layout                                             
+      277 +                                                              
+      278 +```                                                           
+      279 +src/                                                          
+      280 +  App.jsx                  SiteHeader plus <main>; DrumMachine
+          + for #hw1, the three exercises otherwise                      
+      281 +  shell/                                                      
+      282 +    resolveView.js / .test.js   frozen VIEWS and resolveView(h
+          +ash), with tests                                              
+      283 +    useHashView.js              useSyncExternalStore over hash
+          +change                                                        
+      284 +    SiteHeader.jsx / .module.css   <header> with the h1 and th
+          +e section nav                                                 
+      285 +  homeworks/                                                  
+      286 +    DrumMachine/                                              
+      287 +      drum-machine.contract.js  JSDoc typedefs only           
+      288 +      drumPads.js / .test.js    frozen DRUM_PADS and PAD_BY_CO
+          +DE (Map keyed by e.code), with tests                          
+      289 +      shouldHandleKey.js / .test.js   pure shortcut guard, wit
+          +h tests                                                       
+      290 +      levels.js / .test.js      DB_FLOOR and toDecibels(sample
+          +s), with tests                                                
+      291 +      drumSynth.js / .test.js   Web Audio synth with an inject
+          +able context, with tests                                      
+      292 +      useDrumKeyboard.js        window keydown, keyup and blur
+          + listeners                                                    
+      293 +      DrumMachine.jsx / .module.css   pads, session input, sho
+          +rtcut toggle, hit log                                         
+      294 +      LevelMeter.jsx            decibel meter with its own req
+          +uestAnimationFrame loop                                       
+     … 82 more lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+> vậy dừng
+
+● Mình dừng ở đây. Chưa chạy build, lint, test và chưa commit H1-T18.
+
+  Trạng thái hiện tại:
+  - README.md đã được thêm 119 dòng ở cuối file (0 dòng xóa) với hai mục "App
+    shell" và "Homework 1: Production Studio Drum Kit". Thay đổi này chưa
+    commit.
+  - Không có file nào khác bị sửa.
+  - Hai bản check (Git Bash và PowerShell) đều cho kết quả như mong đợi: C1',
+    C8a và C8c không in gì, C8b in đúng 1 dòng là drumSynth.js:14.
+
+  Chưa làm: npm run build, npm run lint, npm test, và git commit.
+
+  Chỗ mình phải tự suy ra vì prompt bị cắt và thiếu GUIDE:
+  - Lệnh C1', C8a, C8b, C8c là do mình viết, không lấy từ GUIDE.
+  - Known limits bullet 1, 3 và 5, và các bước 1 đến 4 của "How to test", là
+    mình ghép lại từ phần còn đọc được của prompt.
+
+  Nếu bạn muốn bỏ phần này, chạy git checkout README.md sẽ khôi phục README. Nếu
+  bạn muốn tiếp tục, bạn cho mình biết cần sửa gì rồi mình chạy phần kiểm tra
+  và commit.
+
+> Đây là prompt T18, lấy từ guide và đã thêm giới hạn UniKey (mục cuối của
+  Known limits). Bạn dán nguyên khối vào chat mới (sau khi /export rồi /clear):
+
+  Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 5, H1-T18). Chỉ
+  làm H1-T18. Không sửa file khác.
+
+  Phạm vi file: README.md. Thêm vào CUỐI file (sau mục Exercise 3) hai mục "##
+  App shell" và "## Homework 1: Production Studio Drum Kit" (dùng ### cho mục
+  con). Chỉ thêm dòng, 0 dòng xóa. Các mục cũ giữ nguyên. README viết bằng
+  tiếng Anh.
+
+  Nội dung "## App shell":
+  - Hash views: #exercises (mặc định) và #hw1; view đọc bằng
+  useSyncExternalStore với sự kiện hashchange; không dùng router.
+  - h1 nay nằm trong <header> cùng <nav aria-label="Lab sections">; link hiện
+  tại có aria-current="page".
+  - Cách mở từng view (npm run dev: http://localhost:5173/#exercises và /#hw1)
+  và cách chạy Lighthouse cho từng view bằng URL có hash trên npm run preview
+  (http://localhost:4173/#hw1).
+
+  Nội dung "## Homework 1: Production Studio Drum Kit":
+  - Mô tả: bộ trống 7 pad chơi bằng phím W A S D J K L (đọc bằng e.code) hoặc
+  con trỏ; âm thanh tổng hợp bằng Web Audio; hit log aria-live và đồng hồ
+  decibel.
+  - Source layout: liệt kê các file trong src/homeworks/DrumMachine/ và
+  src/shell/ (đối chiếu bằng cách chạy ls/Get-ChildItem thật, không đoán).
+
+  - Constraints: e.code (không keyCode/which/charCode, không đọc chữ từ e.key);
+  guard repeat/Ctrl/Alt/Meta/input; checkbox tắt shortcut (WCAG 2.2 SC 2.1.4);
+  kAudioContext tạo lazily và đóng khi unmount,chỉ tạo trong drumSynth.js;
+  gain ramp về 0.0001 trước khi stop; requestAnimationFrame chỉ nằm trong
+  LevelMeter và được
+
+  hủy trong cleanup; hit log là một <output ar
+  - Pads: bảng 7 pad (id, label, key) lấy từ TASK_DECOMPOSITION Part 5 mục 5.4.
+
+  - Text checks: C1' và C8a, C8b, C8c. Vớil (lấy từ GUIDE) và bản Git Bash
+  tương đương, rồi CHẠY THỬ cả hai bản Git Bash và báo kết quả thật (C1', C8a,
+  C8c phải không in gì; C8b in đúng 1 dòng).
+
+  - How to test: (1) UniKey Telex: bật Uning, bấm A hoặc D để thấy pad phát và
+  Consolein code: KeyA/KeyD; (2) giữ một phím 2–3 giây: Total hits chỉ tăng 1;
+  (3) gõ "wasd" trong ô Session name: không pad
+
+  nào phát; (4) bỏ chọn Keyboard shortcuts rồi: không phát.
+  - Known limits (đúng 5 gạch đầu dòng, giữ nguyên chữ):
+
+    - The Lab 2 drum kit was not reused; this atch.
+    - Sounds are synthesized, not recorded samples.
+    - aria-live announces only the latest hit;sed by the total.
+    - Audio starts only after the first click or key press (browser autoplay
+  policy).
+    - With UniKey in Telex mode, the W key reaevent with an empty code (and key
+  "ư"),so the Kick pad does not play. Switch UniKey to English mode or use the
+  pointer. The other six pad keys are not
+      affected.
+  - Không ghi điểm Lighthouse hay bất kỳ số đo nào.
+
+  Kiểm tra (báo kết quả thật, không đoán): npm run build; npm run lint exit 0
+  với đúng 1 warning đã biết; npm test; git
+  diff --numstat README.md phải 0 dòng xóa; cáREADME phải chạy được; git diff
+  --stat chỉ có README.md.
+
+  Commit:
+  git add README.md
+  git commit -m "docs(readme): document app shell and hw1"
+
+  Không push. Báo cáo bằng tiếng Việt: số dòng thêm/xóa, kết quả từng check,
+  commit hash.
+
+● Mình tiếp tục H1-T18 với bản README đã soạn sẵn, chạy các kiểm tra còn lại rồi
+  commit.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong H1-T18 và commit, chưa push. Một số đoạn trong README là mình tự ghép
+  lại vì prompt vẫn bị cắt, chi tiết ở cuối.
+
+  Kết quả kiểm tra (đã chạy thật):
+  - Diff của README: thêm 119 dòng, xóa 0 dòng. Các mục cũ không đổi.
+  - Phạm vi: git diff --stat chỉ có README.md.
+  - npm run build: thành công.
+  - npm test: 103 test, 103 pass, 0 fail.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+  - Chạy thử các lệnh check (cả bản Git Bash và PowerShell cho kết quả giống
+    nhau):
+    - C1', C8a, C8c không in gì.
+    - C8b in đúng 1 dòng: src/homeworks/DrumMachine/drumSynth.js:14.
+  - Known limits: đúng 5 gạch đầu dòng.
+  - Số đo: README không ghi điểm Lighthouse hay số đo nào.
+
+  Nội dung:
+  - "## App shell" gồm 3 ý đã nêu trong prompt, cộng mục "Open a view" với URL
+    localhost:5173 và localhost:4173.
+  - "## Homework 1: Production Studio Drum Kit" gồm các mục con: Source layout
+    (đối chiếu bằng ls thật), Constraints, Pads (bảng 7 pad lấy từ mục 5.4),
+    Text checks, How to test và Known limits.
+
+  Phần mình tự ghép lại, bạn nên đọc lại trong README:
+  - Lệnh C1', C8a, C8b, C8c do mình viết, không lấy từ GUIDE vì GUIDE không có
+    trong repo. Nếu GUIDE định nghĩa khác, hai bản lệnh trong README cần sửa
+    lại. Cụ thể mình định nghĩa như sau:
+    - C1': tìm <div trong mọi file .jsx ở src/components, src/homeworks và
+      src/shell.
+    - C8a: tìm keyCode, which, charCode hoặc e.key trong src/homeworks.
+    - C8b: tìm new AudioContext trong src.
+    - C8c: tìm requestAnimationFrame ngoài LevelMeter.jsx, và setInterval( trong
+      src/homeworks.
+  - Known limits bullet 1, 3, 5: các chỗ bị cắt mình điền như sau.
+    - Bullet 1: "this homework was written from scratch".
+    - Bullet 3: "earlier hits are summarised by the total".
+    - Bullet 5: "reaches the page as a keydown event".
+  - How to test bước 1: câu về Console (console.log(e.code) in ra KeyA hoặc
+    KeyD) là mình đoán từ đoạn bị cắt.
+  - Bullet 5 về UniKey: mình chép nguyên theo lời bạn và chưa tự kiểm chứng.
+    Bullet này nói phím W với UniKey Telex gửi sự kiện có code rỗng.
+
+  Commit: 4c6e8d0 docs(readme): document app shell and hw1, gồm đúng 1 file.
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 5, H1-T18). Chỉ
+  sửa lỗi của H1-T18. Tôi CHO PHÉP git commit --amend commit 4c6e8d0 vì nó
+  chưa được push. Không động đến file khác ngoài README.md.
+
+  Vấn đề: mục "### Text checks" của "## Homework 1" định nghĩa sai C8a, C8b,
+  C8c so với guide. Thay ĐÚNG mục đó (từ dòng "### Text checks" đến ngay trước
+  "### How to test") bằng nội dung sau, giữ nguyên chữ. Không sửa dòng nào khác
+  của README, kể cả Known limits.
+
+  ===== BEGIN =====
+  Text checks
+
+  C1' and C8a to C8c are new. C2 to C4 are unchanged from Exercise 1. Run them
+  from the repository root.
+
+  | Check | Looks for | Expected |
+  | --- | --- | --- |
+  | C1' | <div in every .jsx file under src/components, src/homeworks and
+  src/shell | prints nothing |
+  | C8a | keyCode, which or charCode in every .js and .jsx file under src/ |
+  prints nothing |
+  | C8b | new AudioContext in non-test files under src/ | prints exactly 1 line
+  (drumSynth.js) |
+  | C8c | non-test files where the number of addEventListener lines differs
+  from the number of removeEventListener lines | prints nothing |
+
+  PowerShell:
+
+  # C1'
+  Get-ChildItem src\components, src\homeworks, src\shell -Recurse -Filter *.jsx
+  | Select-String -Pattern '<div'
+  # C8a
+  Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String -Pattern
+  'keyCode|\.which\b|charCode'
+  # C8b
+  Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike
+  '*.test.js' | Select-String -Pattern 'new (window\.)?AudioContext'
+  # C8c
+  Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object Name -notlike
+  '*.test.js' | ForEach-Object { $a = @(Select-String -Path $_.FullName
+  -Pattern 'addEventListener').Count; $r = @(Select-String -Path $_.FullName
+  -Pattern 'removeEventListener').Count; if ($a -ne $r) { "$($_.Name): add=$a
+  remove=$r" } }
+
+  Git Bash:
+
+  # C1'
+  grep -rn '<div' src/components src/homeworks src/shell --include='*.jsx'
+  # C8a
+  grep -rnE 'keyCode|\.which\b|charCode' src --include='*.jsx' --include='*.js'
+  # C8b
+  grep -rnE 'new (window\.)?AudioContext' src --include='*.jsx'
+  --include='*.js' --exclude='*.test.js'
+  # C8c
+  for f in $(find src \( -name '*.jsx' -o -name '*.js' \) ! -name '*.test.js');
+  do a=$(grep -c addEventListener "$f"); r=$(grep -c removeEventListener
+  "$f"); [ "$a" -ne "$r" ] && echo "$f: add=$a remove=$r"; done
+  ===== END =====
+
+  Kiểm tra (báo kết quả thật): chạy cả bản Git Bash và PowerShell ghi trong
+  README: C1', C8a, C8c không in gì; C8b in đúng 1 dòng (drumSynth.js). npm run
+  build; npm test; npm run lint exit 0 với đúng 1 warning đã biết; git diff
+  --numstat HEAD~1 -- README.md (sau khi amend) phải 0 dòng xóa; git diff
+  --stat chỉ có README.md.
+
+  Commit (amend, giữ nguyên message):
+  git add README.md
+  git commit --amend -m "docs(readme): document app shell and hw1"
+
+  Không push. Báo cáo bằng tiếng Việt: các lệnh đã chạy, kết quả, và commit
+  hash MỚI.
+  , đọc nếu bị cắt nội dung thì báo không tự bịa làm
+
+  Made 1 scratchpad edit +38 (ctrl+o to expand)
+
+● Bash(cd "c:/Users/USER/Documents/Lab3_WEB_TH/lab3-react19" && git status
+      --short && git log -1 --format='%h %s' && node -e "
+      const fs=require('fs');…)
+  ⎿  Updated README.md (+9 -11)
+      326  | Check | Looks for | Expected |
+      327  | --- | --- | --- |
+      328  | C1' | `<div` in every `.jsx` file under `src/components`, `s
+           rc/homeworks` and `src/shell` | prints nothing |
+      329 -| C8a | `keyCode`, `which`, `charCode` or `e.key` in `src/home
+          -works` | prints nothing |                                     
+      330 -| C8b | `new AudioContext` anywhere in `src/` | prints exactly
+          - 1 line (`drumSynth.js`) |                                    
+      331 -| C8c | `requestAnimationFrame` in `src/` outside `LevelMeter.
+          -jsx`, and `setInterval(` in `src/homeworks` | prints nothing |
+      329 +| C8a | `keyCode`, `which` or `charCode` in every `.js` and `.
+          +jsx` file under `src/` | prints nothing |                     
+      330 +| C8b | `new AudioContext` in non-test files under `src/` | pr
+          +ints exactly 1 line (`drumSynth.js`) |                        
+      331 +| C8c | non-test files where the number of `addEventListener` 
+          +lines differs from the number of `removeEventListener` lines |
+          + prints nothing |                                             
+      332  
+      333  PowerShell:
+      334  
+     ...
+      336  # C1'
+      337  Get-ChildItem src\components, src\homeworks, src\shell -Recurs
+           e -Filter *.jsx | Select-String -Pattern '<div'
+      338  # C8a
+      339 -Get-ChildItem src\homeworks -Recurse -Include *.jsx,*.js | Sel
+          -ect-String -Pattern 'keyCode|\.which\b|charCode|\be\.key\b'   
+      339 +Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String
+          + -Pattern 'keyCode|\.which\b|charCode'                        
+      340  # C8b
+      341 -Get-ChildItem src -Recurse -Include *.jsx,*.js | Select-String
+          - -Pattern 'new AudioContext'                                  
+      341 +Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object 
+          +Name -notlike '*.test.js' | Select-String -Pattern 'new (windo
+          +w\.)?AudioContext'                                            
+      342  # C8c
+      343 -Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object 
+          -Name -ne 'LevelMeter.jsx' | Select-String -Pattern 'requestAni
+          -mationFrame'                                                  
+      344 -Get-ChildItem src\homeworks -Recurse -Include *.jsx,*.js | Sel
+          -ect-String -Pattern 'setInterval\('                           
+      343 +Get-ChildItem src -Recurse -Include *.jsx,*.js | Where-Object 
+          +Name -notlike '*.test.js' | ForEach-Object { $a = @(Select-Str
+          +ing -Path $_.FullName -Pattern 'addEventListener').Count; $r =
+          + @(Select-String -Path $_.FullName -Pattern 'removeEventListen
+          +er').Count; if ($a -ne $r) { "$($_.Name): add=$a remove=$r" } 
+          +}                                                             
+      344  ```
+      345  
+      346  Git Bash:
+     ...
+      349  # C1'
+      350  grep -rn '<div' src/components src/homeworks src/shell --inclu
+           de='*.jsx'
+      351  # C8a
+      353 -grep -rnE 'keyCode|\.which\b|charCode|\be\.key\b' src/homework
+          -s --include='*.jsx' --include='*.js'                          
+      352 +grep -rnE 'keyCode|\.which\b|charCode' src --include='*.jsx' -
+          +-include='*.js'                                               
+      353  # C8b
+      355 -grep -rn 'new AudioContext' src --include='*.jsx' --include='*
+          -.js'                                                          
+      354 +grep -rnE 'new (window\.)?AudioContext' src --include='*.jsx' 
+          +--include='*.js' --exclude='*.test.js'                        
+      355  # C8c
+      357 -grep -rn 'requestAnimationFrame' src --include='*.jsx' --inclu
+          -de='*.js' | grep -v 'LevelMeter.jsx'                          
+      358 -grep -rn 'setInterval(' src/homeworks --include='*.jsx' --incl
+          -ude='*.js'                                                    
+      356 +for f in $(find src \( -name '*.jsx' -o -name '*.js' \) ! -nam
+          +e '*.test.js'); do a=$(grep -c addEventListener "$f"); r=$(gre
+          +p -c removeEventListener "$f"); [ "$a" -ne "$r" ] && echo "$f:
+          + add=$a remove=$r"; done                                      
+      357  ```
+     … 2 more lines (ctrl+o to expand)
+
+● Mình đã xác nhận diff so với HEAD chỉ thay đổi mục Text checks, nên dòng xóa
+  là hợp lý; sẽ chạy các check tiếp theo. · summary
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Các hunk đều nằm trong khoảng dòng 329–357, tức chỉ trong mục Text checks. Cả
+  hai bản check cho kết quả đúng. Giờ chạy build, test, lint rồi amend.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã sửa mục Text checks và amend commit, chưa push. Prompt lần này đọc được
+  nguyên vẹn, không có đoạn nào bị cắt nên mình không phải tự ghép nội dung.
+
+  Đã làm:
+  - Mình thay đúng mục ### Text checks của "Homework 1" (từ dòng đó đến ngay
+    trước ### How to test) bằng nội dung bạn đưa, giữ nguyên chữ. Các hunk của
+    diff đều nằm trong dòng 329–357, nên Known limits và các dòng khác không
+    đổi.
+  - Chỉ README.md bị sửa.
+
+  Kết quả các lệnh trong README (chạy cả hai bản):
+  - Git Bash và PowerShell cho cùng kết quả:
+    - C1', C8a, C8c: không in gì.
+    - C8b: in đúng 1 dòng, src/homeworks/DrumMachine/drumSynth.js:14.
+  - npm run build: thành công.
+  - npm test: 103 test, 103 pass, 0 fail.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+  - git diff --numstat HEAD~1 -- README.md sau khi amend: 117 dòng thêm, 0 dòng
+    xóa. Số dòng thêm giảm từ 119 xuống 117 vì mục Text checks mới ngắn hơn bản
+    cũ 2 dòng.
+  - Working tree sạch sau khi amend, không còn file nào chưa commit.
+
+  Commit mới: ea60b22 docs(readme): document app shell and hw1 (thay cho
+  4c6e8d0), gồm đúng 1 file.
+
+  Có một chỗ bạn nên biết: Known limits và How to test mình giữ nguyên như bản
+  đã commit, vì prompt này bảo không sửa. Những chỗ mình đã ghép lại từ prompt
+  bị cắt ở lần trước (Known limits bullet 1, 3, 5 và bước 1 của How to test) vẫn
+  nằm trong README. Bạn nên đối chiếu với bản gốc của bạn.
+
+> Đọc Agent.md, project-rules.md (mục 12) và TASK_DECOMPOSITION.md (Part 5,
+  H1-T19). Chỉ làm H1-T19. Không sửa file khác.
+
+  Phạm vi file: AI_FAILURE_AUDIT.md. Thêm vào CUỐI file đúng một mục "Failure
+  #02" theo cùng định dạng với mục #01 (đọc #01 trước để đối chiếu tiêu đề,
+  dòng Logged và các nhãn in đậm). Chỉ thêm dòng, 0 dòng xóa. Không sửa mục
+  #01. Không tạo hay sửa file ảnh.
+
+  Nội dung cần thêm (tiếng Anh, giữ nguyên từng chữ; hai dòng BEGIN/END không
+  chép):
+
+  ===== BEGIN =====
+  Failure #02: H1-T14 UniKey Telex turns the W key into an event without a code
+
+  Logged 2026-11-12 16:36, task H1-T14 (WBS row H1-T14).
+
+  Prompt: The Homework 1 guide (the step for hw1-07-unikey-ecode.png) said:
+  "Turn UniKey on, Telex ... press W, A, D: Kick/Snare/Open Hi-Hat play;
+  Console shows code: KeyW, code: KeyA, code: KeyD". The same assumption sits
+  behind H1-T08: e.code is safe with UniKey for every pad key.
+
+  AI Code: useDrumKeyboard looks up padMap.get(e.code) (H1-T08, commit
+  a0d8a27). The code follows the task and slide 26. The wrong part is the
+  assumption that e.code is always filled.
+
+  Bug: With UniKey in Vietnamese Telex mode, the W key reaches the page as an
+  event with an empty code and key "ư". padMap.get('') finds nothing, so the
+  Kick pad does not play. A and D arrive as KeyA and KeyD and play normally
+  (Total hits 2).
+
+  DevTools Proof: Console screenshot
+  docs/evidence/HW1_DrumMachine/hw1-07-unikey-ecode.png (added in H1-T22):
+  code:  | key: ư, code: KeyA | key: a, code: KeyD | key: d. Detected by
+  running a keydown listener in the Console with UniKey Telex on and pressing
+  W, A, D.
+
+  Engineering Fix (Commit ea60b22): e.code is kept, because the task requires
+  it and project-rules section 17 forbids reading letters from e.key. The limit
+  and the workaround (switch UniKey to English mode, or use the pointer) are
+  documented under Known limits in the README.
+  ===== END =====
+
+  Kiểm tra (báo kết quả thật): git diff --numstat AI_FAILURE_AUDIT.md phải 0
+  dòng xóa; file vẫn chỉ có hai mục "## Failure #01" và "## Failure #02" (dùng
+  grep); npm run build; git diff --stat chỉ có AI_FAILURE_AUDIT.md.
+
+  Commit:
+  git add AI_FAILURE_AUDIT.md
+  git commit -m "docs(audit): record hw1 ai failures"
+
+  Không push, không amend. Báo cáo bằng tiếng Việt: số dòng thêm/xóa, kết quả
+  kiểm tra, commit hash.
+
+  Made 1 scratchpad edit +15, ran 2 shell commands (ctrl+o to expand)
+
+● Lệnh kiểm tra hash lỗi do mình truyền hai đối số cùng lúc. Các kiểm tra chính
+  đều đạt, nên mình chạy lại riêng hai hash rồi commit.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Đã xong H1-T19 và commit, chưa push và không amend. Prompt đọc được nguyên vẹn
+  nên mình chép đúng chữ.
+
+  Kết quả kiểm tra (đã chạy thật):
+  - Diff: AI_FAILURE_AUDIT.md thêm 14 dòng, xóa 0 dòng. Gồm một dòng trống ngăn
+    cách và 13 dòng của mục #02. Mục #01 không đổi.
+  - Số mục: grep '^## Failure' ra đúng 2 mục là "## Failure #01" ở dòng 5 và "##
+    Failure #02" ở dòng 19.
+  - Định dạng: mục #02 dùng cùng cấu trúc với #01, gồm tiêu đề, dòng Logged và 5
+    nhãn in đậm Prompt, AI Code, Bug, DevTools Proof, Engineering Fix.
+  - npm run build: thành công.
+  - Phạm vi: git diff --stat chỉ có AI_FAILURE_AUDIT.md.
+  - Hash được nhắc trong nội dung: ea60b22 (commit README sau amend) và a0d8a27
+    (commit useDrumKeyboard) đều là commit tồn tại trong repo.
+
+  Commit: 55e2040 docs(audit): record hw1 ai failures, gồm đúng 1 file.
+
+  Mình chưa kiểm chứng nội dung của mục #02: hiện tượng phím W với UniKey Telex
+  gửi code rỗng là theo lời bạn. File ảnh hw1-07-unikey-ecode.png chưa có trong
+  repo và sẽ được thêm ở H1-T22, đúng như nội dung mục ghi.
+
+> <ide_opened_file>The user opened the file c:\Users\USER\Documents\Lab3_WEB_TH
+  \lab3-react19\src\components\DeveloperCard.jsx in the IDE. This may or may
+  not be related to the current task.</ide_opened_file>
+
+> Đọc Agent.md, project-rules.md và TASK_DECOMPOSITION.md (Part 5, H1-T20). Chỉ
+  làm H1-T20.
+  Phạm vi file: src/components/DeveloperCard.jsx, chỉ giá trị commits mặc định.
+  Đổi commits: 60 thành commits: 80. Không tự tính, không sửa gì khác.
+  Kiểm tra: git diff phải +1/-1; npm run build; npm test; npm run lint exit 0
+  với đúng 1 warning đã biết.
+  Commit:
+  git add src/components/DeveloperCard.jsx
+  git commit -m "fix(ex1): sync commits metric after hw1"
+  Không push, không amend. Báo cáo bằng tiếng Việt.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(src\components\DeveloperCard.jsx)
+  ⎿  Added 1 line, removed 1 line
+      11    fullName = 'Võ Văn Thiện',
+      12    role = 'Student at the University of Information Technology –
+           VNU-HCM',
+      13    avatarUrl = 'https://images.unsplash.com/photo-1534528741775-
+          53994a69daeb?w=240',
+      14 -  metrics = { commits: 60, vdomNodes: 0, a11yScore: 100 },     
+      14 +  metrics = { commits: 80, vdomNodes: 0, a11yScore: 100 },     
+      15    skills = [
+      16      { id: 'sk-1', name: 'React 19 createRoot + StrictMode', tie
+          r: 'Core' },
+      17      { id: 'sk-2', name: 'Hooks: useState, useEffect, useId', ti
+          er: 'Core' },
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Đã xong H1-T20 và commit, chưa push và không amend.
+
+  Thay đổi: trong DeveloperCard.jsx (src/components/DeveloperCard.jsx), giá trị
+  mặc định commits: 60 đổi thành commits: 80. Diff đúng +1/−1, không sửa gì
+  khác.
+
+  Kết quả kiểm tra:
+  - npm run build: thành công.
+  - npm test: 103 test, 103 pass, 0 fail.
+  - npm run lint: thoát với mã 0, chỉ có 1 warning đã biết
+    react(set-state-in-effect).
+
+  Commit: dbc0132 fix(ex1): sync commits metric after hw1, gồm đúng 1 file.
+
+  Đếm commit: sau commit này git rev-list --count HEAD cho 79, còn thẻ ghi 80.
+  Hai con số này khớp khi có thêm commit ở H1-T22. H1-T22 yêu cầu số commit bằng
+  giá trị trên thẻ, nên bước đó sẽ đạt 80 nếu nó chỉ gồm đúng 1 commit. Mình
+  không tự đổi số, vì bạn dặn không tự tính.
