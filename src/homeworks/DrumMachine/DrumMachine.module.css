@@ -17,3 +17,11 @@
 .padKey {
   font-family: monospace;
 }
+
+.hitStatus {
+  display: block;
+}
+
+.hitLog {
+  list-style: none;
+}

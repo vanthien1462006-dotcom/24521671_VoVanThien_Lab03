@@ -8,6 +8,8 @@ export function DrumMachine() {
   const headingId = useId()
   const [synth] = useState(() => createDrumSynth())
   const [activePadIds, setActivePadIds] = useState(() => new Set())
+  const [hits, setHits] = useState([])
+  const [totalHits, setTotalHits] = useState(0)
 
   useEffect(() => () => synth.close(), [synth])
 
@@ -16,6 +18,9 @@ export function DrumMachine() {
       const pad = DRUM_PADS.find((p) => p.id === padId)
       if (!pad) return
       synth.play(pad.recipe)
+      const hit = { id: crypto.randomUUID(), padId: pad.id, label: pad.label, keyLabel: pad.keyLabel }
+      setHits((prev) => [hit, ...prev].slice(0, 8))
+      setTotalHits((n) => n + 1)
       setActivePadIds((prev) => (prev.has(padId) ? prev : new Set(prev).add(padId)))
     },
     [synth],
@@ -61,6 +66,19 @@ export function DrumMachine() {
           </li>
         ))}
       </ul>
+      <output className={styles.hitStatus} role="status" aria-live="polite">
+        {hits.length === 0
+          ? 'No hits yet.'
+          : `Last hit: ${hits[0].label} (${hits[0].keyLabel}). Total hits: ${totalHits}.`}
+      </output>
+      <h3>Hit history</h3>
+      <ol className={styles.hitLog} aria-label="Last 8 hits, newest first">
+        {hits.map((h) => (
+          <li key={h.id}>
+            {h.label} ({h.keyLabel})
+          </li>
+        ))}
+      </ol>
     </section>
   )
 }
