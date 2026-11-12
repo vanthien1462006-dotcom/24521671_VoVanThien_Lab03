@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { delay } from '../GrandPiano88/replay.js'
 import {
   appendSignal,
@@ -18,6 +18,7 @@ export function SituationshipAnalyzer() {
   const myId = useId()
   const rivalId = useId()
   const meterId = useId()
+  const myInputRef = useRef(null)
   const [phase, setPhase] = useState('DATING_NO_LOVE')
   const [myTries, setMyTries] = useState(100)
   const [rivalTries, setRivalTries] = useState(1)
@@ -36,6 +37,11 @@ export function SituationshipAnalyzer() {
       })
     return () => controller.abort()
   }, [phase, myTries])
+
+  function apply(event) {
+    setPhase((p) => transition(p, event))
+    myInputRef.current?.focus()
+  }
 
   function sendMessage() {
     setSignals((prev) => appendSignal(prev, createSignal('EM', 1)))
@@ -78,6 +84,7 @@ export function SituationshipAnalyzer() {
           <label htmlFor={myId}>Em cố (số lần)</label>
           <input
             id={myId}
+            ref={myInputRef}
             type="number"
             min="0"
             step="1"
@@ -103,6 +110,26 @@ export function SituationshipAnalyzer() {
           <button type="button" onClick={rivalPart}>
             Ai đó một phần
           </button>
+          {phase === 'FRIENDS' && (
+            <button type="button" onClick={() => apply('START_DATING')}>
+              Bắt đầu hẹn hò
+            </button>
+          )}
+          {phase === 'DATING_NO_LOVE' && !redFlag && (
+            <button type="button" onClick={() => apply('CONFIRM_LOVE')}>
+              Xác nhận yêu
+            </button>
+          )}
+          {phase !== 'GHOSTED_EXIT' && (
+            <button type="button" onClick={() => apply('UNBIND')}>
+              <span lang="en">Unbind & Free Memory</span>
+            </button>
+          )}
+          {phase === 'GHOSTED_EXIT' && (
+            <button type="button" onClick={() => apply('RESET')}>
+              Bắt đầu lại
+            </button>
+          )}
         </p>
         <h3>Signal log</h3>
         {recent.length === 0 ? (
