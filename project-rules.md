@@ -202,3 +202,19 @@ This file is the project constitution. Read it fully before proposing or making 
 - The UI mode is one state value: 'idle' | 'recording' | 'playing'.
 - Recording stores { midi, freqHz, durationMs, deltaMs } in order. Replay is computed by a pure schedule function and awaited with an abortable delay.
 - Stop and unmount abort the replay's AbortController, stop all voices and release every pressed key. AbortError is a normal outcome.
+
+## 19. Homework 3 rules: anti-drift timer, optimistic claims and sample data
+
+### Anti-drift timer
+- Countdowns are derived from a target epoch: remaining = Math.max(0, targetEpochMs - (nowMs + serverOffsetMs)). Never count down by subtracting from a stored value.
+- Clock state holds the current time only; remaining time is computed during render. The effect ticks the clock with setInterval and resyncs on visibilitychange; it never sets state synchronously in its body.
+- setInterval is allowed only in src/homeworks/KraftonPubgVnArena/usePubgAirdropTimer.js (this homework asks for it) and is cleared in the cleanup. This narrows the setInterval rule of section 16.
+
+### Optimistic claims
+- Claims update the UI before the server answers, through a pure reducer. A pending claimId per crate locks further clicks. A 409 restores the optimistic change and applies the server value.
+- Buttons that are temporarily unavailable keep focus with aria-disabled and a handler guard instead of the disabled attribute.
+- Every pending request receives an AbortSignal and is aborted on unmount.
+
+### Sample data
+- Numbers, prices and stock that are not official are labelled "Sample data, not official PVS results or prices." in the UI and in the README.
+- Money is formatted with Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).
