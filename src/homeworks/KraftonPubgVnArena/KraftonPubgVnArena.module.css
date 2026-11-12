@@ -1,10 +1,12 @@
+/* Mobile first: the base rules fit 375px and also 320px. Nothing here forces horizontal page scroll. */
+
 .arena {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
   width: 100%;
   min-width: 0;
-  max-width: min(100%, 72rem);
+  max-width: min(100%, 64rem);
   padding: var(--space-4);
   border: var(--control-border-width) solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -24,103 +26,19 @@
 }
 
 .notice {
-  color: var(--color-text);
-}
-
-.alert {
-  margin: 0 0 var(--space-3);
+  margin: 0;
   padding: var(--space-3);
-  border: var(--control-border-width) solid var(--color-alert-border);
   border-radius: var(--radius-sm);
-  background-color: var(--color-tier-awareness-bg);
-  color: var(--color-tier-awareness-text);
+  background-color: var(--color-notice-bg);
+  color: var(--color-notice-text);
+  overflow-wrap: anywhere;
 }
 
-.alert button {
-  min-height: var(--control-min-height);
-  padding: var(--control-padding);
-  font: inherit;
-}
-
-.filters {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-3);
-}
-
-.filters p {
-  display: grid;
-  gap: var(--space-1);
-  margin: 0;
-}
-
-.filters select {
-  min-height: var(--control-min-height);
-  padding: var(--control-padding);
-  border: var(--control-border-width) solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-control-bg);
-  color: var(--color-control-text);
-  font: inherit;
-}
-
-.tableScroll {
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table caption {
-  padding-bottom: var(--space-2);
-  color: var(--color-text-muted);
-  text-align: left;
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: var(--control-border-width) solid var(--color-border);
-  text-align: left;
-}
-
-.table th[aria-sort] {
-  background-color: var(--color-tier-core-bg);
-  color: var(--color-tier-core-text);
-}
-
-.tableScroll:focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus-ring);
-  outline-offset: var(--focus-ring-offset);
-}
-
-.feedScroll {
-  max-block-size: 20rem;
-  overflow-y: auto;
-}
-
-.feedScroll:focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus-ring);
-  outline-offset: var(--focus-ring-offset);
-}
-
-.feed {
-  margin: 0;
-  padding: 0 0 0 var(--space-5);
-}
-
-.feedRow {
-  padding: var(--space-1) 0;
-  content-visibility: auto;
-  contain-intrinsic-size: auto var(--control-min-height);
-}
+/* Crates */
 
 .crates {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--crate-min-width)), 1fr));
   gap: var(--space-3);
   margin: 0;
   padding: 0;
@@ -156,9 +74,61 @@
 
 .crateFacts dd {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .claim {
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-claim-bg);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-claim-bg);
+  color: var(--color-claim-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Unavailable is shown by a dashed border and the cursor, not only by color. */
+.claim[aria-disabled='true'] {
+  border: var(--control-border-width) dashed var(--color-border);
+  background-color: var(--color-control-bg);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+/* Error message */
+
+.alert {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border: var(--control-border-width) solid var(--color-alert-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-tier-awareness-bg);
+  color: var(--color-tier-awareness-text);
+  overflow-wrap: anywhere;
+}
+
+.alert button {
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  font: inherit;
+}
+
+/* Filters */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.filters p {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.filters select {
   min-height: var(--control-min-height);
   padding: var(--control-padding);
   border: var(--control-border-width) solid var(--color-border);
@@ -166,15 +136,69 @@
   background-color: var(--color-control-bg);
   color: var(--color-control-text);
   font: inherit;
-  cursor: pointer;
 }
 
-.claim[aria-disabled='true'] {
+/* Leaderboard: the table scrolls inside its own container, never the page */
+
+.tableScroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table caption {
+  padding-bottom: var(--space-2);
   color: var(--color-text-muted);
-  cursor: not-allowed;
+  text-align: start;
 }
 
-.claim:focus-visible {
+.table th,
+.table td {
+  padding: var(--space-2);
+  border-bottom: var(--control-border-width) solid var(--color-border);
+  text-align: start;
+}
+
+.table thead th:nth-child(n + 3),
+.table tbody td:nth-child(n + 3) {
+  text-align: end;
+}
+
+.table th[aria-sort] {
+  background-color: var(--color-tier-core-bg);
+  color: var(--color-tier-core-text);
+}
+
+/* Kill feed */
+
+.feedScroll {
+  max-block-size: 20rem;
+  overflow-y: auto;
+}
+
+.feed {
+  margin: 0;
+  padding: 0 0 0 var(--space-5);
+}
+
+.feedRow {
+  padding: var(--space-1) 0;
+  overflow-wrap: anywhere;
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--feed-row-height);
+}
+
+/* Focus */
+
+.claim:focus-visible,
+.alert button:focus-visible,
+.filters select:focus-visible,
+.tableScroll:focus-visible,
+.feedScroll:focus-visible {
   outline: var(--focus-ring-width) solid var(--color-focus-ring);
   outline-offset: var(--focus-ring-offset);
 }
