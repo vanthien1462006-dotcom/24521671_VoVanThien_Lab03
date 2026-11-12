@@ -1,0 +1,11 @@
+.key {
+  min-height: var(--control-min-height);
+}
+
+.keyWhite {
+  background-color: var(--color-card-bg);
+}
+
+.keyBlack {
+  background-color: var(--color-text);
+}
