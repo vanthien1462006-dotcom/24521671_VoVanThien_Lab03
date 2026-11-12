@@ -164,3 +164,24 @@ This file is the project constitution. Read it fully before proposing or making 
 - Errors render in an element with role='alert' and a type='button' retry control. Never window.alert().
 - When the control that has focus disappears (for example a retry button), move focus to a stable control in the same click handler. Never with useEffect.
 - Every animation stops under prefers-reduced-motion: reduce.
+
+## 17. Homework 1 and app shell rules
+
+### App shell
+- One view is shown at a time, chosen from the URL hash by src/shell/resolveView.js; an unknown hash shows the exercises. The hash is read with useSyncExternalStore subscribed to hashchange. No router package.
+- Shell code lives in src/shell/. Each homework adds its view id, its nav link and its view branch in its own commits.
+
+### Keyboard
+- Global shortcuts listen on window with e.code. Never keyCode, which or charCode, and never read physical letters from e.key.
+- Ignore e.repeat, Ctrl, Alt and Meta combinations, and events whose target is an input, textarea, select or contenteditable element.
+- Shortcuts can be turned off by the user (WCAG 2.2 SC 2.1.4). Listeners are removed in the effect cleanup and are not added while shortcuts are off.
+- Held pads are released on keyup and on window blur.
+
+### Web Audio
+- Create the AudioContext lazily inside a user gesture, never at module load or during render. Close it when the homework unmounts.
+- Every source is started and stopped with explicit times. Gain ramps to 0.0001 with exponentialRampToValueAtTime before the stop, so there is no click.
+- Audio code takes an injectable context factory so unit tests run with a fake context.
+
+### Live feedback
+- Hits are announced in one output with aria-live='polite'. Lists are capped and keyed by stable ids.
+- Animation-frame loops live in the smallest component that needs them and are cancelled in the effect cleanup.
