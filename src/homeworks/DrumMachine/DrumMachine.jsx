@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useState } from 'react'
 import { DRUM_PADS, PAD_BY_CODE } from './drumPads.js'
 import { createDrumSynth } from './drumSynth.js'
 import { useDrumKeyboard } from './useDrumKeyboard.js'
+import { LevelMeter } from './LevelMeter.jsx'
 import styles from './DrumMachine.module.css'
 
 export function DrumMachine() {
@@ -66,6 +67,7 @@ export function DrumMachine() {
           </li>
         ))}
       </ul>
+      <LevelMeter synth={synth} />
       <output className={styles.hitStatus} role="status" aria-live="polite">
         {hits.length === 0
           ? 'No hits yet.'

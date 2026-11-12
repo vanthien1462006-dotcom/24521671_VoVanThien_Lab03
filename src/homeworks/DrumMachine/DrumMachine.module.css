@@ -25,3 +25,7 @@
 .hitLog {
   list-style: none;
 }
+
+.meterRow {
+  display: flex;
+}
