@@ -9,3 +9,23 @@
 .keyBlack {
   background-color: var(--color-text);
 }
+
+.piano {
+  width: 100%;
+  max-width: var(--card-max-width);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-card-bg);
+}
+
+.keyboardScroll {
+  overflow-x: auto;
+}
+
+.keyboard {
+  display: flex;
+}
+
+.slot {
+  display: flex;
+}
