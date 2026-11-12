@@ -2,6 +2,7 @@ export const VIEWS = Object.freeze([
   Object.freeze({ id: 'exercises', label: 'Exercises 1–3' }),
   Object.freeze({ id: 'hw1', label: 'HW1 Drum Kit' }),
   Object.freeze({ id: 'hw2', label: 'HW2 Piano 88' }),
+  Object.freeze({ id: 'hw3', label: 'HW3 PUBG VN Arena' }),
 ])
 
 /**
