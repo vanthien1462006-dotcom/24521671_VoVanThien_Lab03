@@ -21,10 +21,10 @@ Always open the pages through Vite. Never open `index.html` through `file://`.
 
 ```
 project-rules.md, TASK_DECOMPOSITION.md, AI_FAILURE_AUDIT.md (added once a real AI defect exists)
-docs/evidence/     screenshots, one folder per assignment (EX1_DeveloperCard/ ... HW4_BonusSituationship/)
+docs/evidence/     screenshots, one folder per assignment (EX1_DeveloperCard/ ... BONUS_Situationship/)
 docs/prompt_logs/  AI prompt log, one file per assignment (EX1_DeveloperCard.txt ...)
 src/components/    in-class exercises: DeveloperCard (EX1), ScientistDirectory (EX2), PubgMatchTelemetry (EX3)
-src/homeworks/     DrumMachine (HW1), GrandPiano88 (HW2), KraftonPubgVnArena (HW3), BonusSituationship (HW4, bonus)
+src/homeworks/     DrumMachine (HW1), GrandPiano88 (HW2), KraftonPubgVnArena (HW3), BonusSituationship (Bonus Exercise)
 src/contracts/ src/utils/ src/styles/
 ```
 
@@ -651,3 +651,88 @@ These steps are done by hand in the browser at `http://localhost:5173/#hw3`.
 - Kill-feed rows rely on `content-visibility`; browsers without it render every row normally.
 - The Lab 2 code (anti-drift timer, virtual scroller) was not reused; this homework was written from scratch.
 - The mock server is in memory only; there is no real network or server, and claim IDs come from `crypto.randomUUID`, which needs localhost or HTTPS.
+
+## Bonus Exercise: Hẹn Hò Nhưng Không Yêu Situationship FSM
+
+`SituationshipAnalyzer` models a relationship as a finite state machine with four phases (FRIENDS, DATING_NO_LOVE, OFFICIAL_LOVE, GHOSTED_EXIT). The red flag is derived during render from the phase and two effort counters, never stored. A 5 second ghosting timer is an abortable promise, and the effect cleanup aborts it. Every effort signal is appended to an immutable log.
+
+### Source layout
+
+```
+src/
+  shell/resolveView.js             VIEWS gains { id: 'bonus', label: 'Bonus Exercise' } (and resolveView.test.js)
+  App.jsx                          renders SituationshipAnalyzer for the bonus view
+  styles/tokens.css                "Situationship (Bonus)" token group
+  homeworks/
+    BonusSituationship/
+      situationship.contract.js    JSDoc typedefs only
+      situationshipModel.js / .test.js   PHASES, EFFORT_WEIGHTS, transition, computeImpacts, isRedFlag, createSignal, appendSignal, latestSignals, sanitizeCount, with tests
+      SituationshipAnalyzer.jsx    the component: inputs, meter, buttons, ghost timer, signal log
+      SituationshipAnalyzer.module.css   mobile-first layout
+```
+
+The view id `#bonus` lives in `src/shell/resolveView.js`. The abortable `delay` is imported from `src/homeworks/GrandPiano88/replay.js`.
+
+### Constraints
+
+- The phase is one value changed only by the pure `transition(phase, event)`. An unknown phase and event pair returns the current phase, and an unknown phase throws a TypeError. There are no boolean flags for the relationship (check C13).
+- Transitions: FRIENDS + START_DATING gives DATING_NO_LOVE; DATING_NO_LOVE + CONFIRM_LOVE gives OFFICIAL_LOVE; DATING_NO_LOVE + GHOST_TIMEOUT gives GHOSTED_EXIT; FRIENDS, DATING_NO_LOVE and OFFICIAL_LOVE + UNBIND give GHOSTED_EXIT; GHOSTED_EXIT + RESET gives FRIENDS.
+- Weights: `myImpact = myTries * 0.1` and `rivalImpact = rivalTries * 50`. The start values 100 and 1 give 10 against 50.
+- `isRedFlag(phase, myImpact, rivalImpact)` is true only in DATING_NO_LOVE when `myImpact` is below `rivalImpact`. It is computed during render. "Xác nhận yêu" is offered only when it is not a red flag.
+- The meter shows Em's share of the total impact (0 when both are 0).
+- One effect with deps `[phase, myTries]` starts the 5 second wait only in DATING_NO_LOVE. It creates an `AbortController`, and the cleanup aborts it, so a new try, a phase change or leaving the page cancels the old timer (check C14).
+- The signal log is immutable: each signal is a frozen object with an id from `crypto.randomUUID`, appended as `[...log, signal]`. The list shows the last 10, newest first.
+- The Vietnamese UI text is inside an element with `lang="vi"`, English phrases carry `lang="en"`, the result is an `<output role="status" aria-live="polite">`, and the two number inputs have labels linked with `useId`.
+
+### Text checks
+
+C13, C14 and C15 apply to this exercise. Run them from the repository root.
+
+| Check | Looks for | Expected |
+| --- | --- | --- |
+| C13 | `isDating`, `isLoved` or `hasTitle` in `src/homeworks/BonusSituationship/` | prints nothing |
+| C14 | `new AbortController()` and `.abort()` in `SituationshipAnalyzer.jsx` | prints 2 lines |
+| C15 | the two required commit messages in `git log` | prints 2 lines |
+
+PowerShell:
+
+```powershell
+# C13
+Get-ChildItem src\homeworks\BonusSituationship -Include *.js,*.jsx -Recurse | Select-String -Pattern 'isDating|isLoved|hasTitle'
+# C14
+Select-String -Path src\homeworks\BonusSituationship\SituationshipAnalyzer.jsx -Pattern 'new AbortController\(\)|\.abort\(\)'
+# C15
+git --no-pager log --oneline | Select-String -Pattern 'feat\(fsm\): model HenHoKhongYeu state machine|feat\(ui\): add derived red-flag meter & ghosting cleanup'
+```
+
+Git Bash:
+
+```sh
+# C13
+grep -rnE 'isDating|isLoved|hasTitle' src/homeworks/BonusSituationship --include='*.js' --include='*.jsx'
+# C14
+grep -nE 'new AbortController\(\)|\.abort\(\)' src/homeworks/BonusSituationship/SituationshipAnalyzer.jsx
+# C15
+git --no-pager log --oneline | grep -E 'feat\(fsm\): model HenHoKhongYeu state machine|feat\(ui\): add derived red-flag meter & ghosting cleanup'
+```
+
+### How to test
+
+These steps are done by hand in the browser at `http://localhost:5173/#bonus`.
+
+1. Open the page. The phase is DATING_NO_LOVE, the red-flag text is shown, the meter is low and the numbers read "Em: 10.0 · Ai đó: 50.0". There is no "Xác nhận yêu" button.
+2. Wait 5 seconds without touching anything. The phase becomes GHOSTED_EXIT, the text is "[OK] Stable", and only "Bắt đầu lại" remains next to the signal buttons.
+3. Timer reset: reload and click "Gửi tin nhắn" every 3 seconds for about 15 seconds. The phase stays DATING_NO_LOVE and the signal log grows, newest first.
+4. Set "Em cố (số lần)" to 500. The text becomes "[OK] Stable", and "Xác nhận yêu" appears. Click it within 5 seconds, before the ghosting timer fires, to reach OFFICIAL_LOVE (no timer runs there).
+5. Click "Unbind & Free Memory". The phase becomes GHOSTED_EXIT at once. "Bắt đầu lại" gives FRIENDS, and "Bắt đầu hẹn hò" gives DATING_NO_LOVE, which starts the timer again.
+6. Unmount: reload, and within 5 seconds click HW1 in the nav. Wait 6 seconds. The Console stays clean.
+
+### Known limits
+
+- Phase names and weights follow the slide 32 reference code (FRIENDS / DATING_NO_LOVE / OFFICIAL_LOVE / GHOSTED_EXIT, 0.1 against 50), not the alternative names and multipliers in the text of slide 31.
+- "Dừng Lại" in slide 32 is implemented as the "Unbind & Free Memory" button.
+- Only short phrases from the slides are used; no song lyrics.
+- Only `phase` and `myTries` restart the 5 second timer, as in slide 32. "Ai đó một phần" changes the numbers and the log but does not restart it.
+- The signal buttons stay enabled in GHOSTED_EXIT, so the log can still grow there until "Bắt đầu lại" is clicked.
+- `transition` reads events from a plain object, so an event named like an `Object.prototype` property (`constructor`, `toString`) returns that property instead of the current phase. The page only sends the five known events, so this cannot happen from the UI.
+- Reloading the page resets the phase, the counters and the log; nothing is stored.
