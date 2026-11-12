@@ -3,6 +3,8 @@ import { flushSync } from 'react-dom'
 import { PolyphonicSynth } from './PolyphonicSynth.js'
 import { PianoKey } from './PianoKey.jsx'
 import { FIRST_MIDI, KEY_SLOTS, PIANO_KEYS } from './pianoKeys.js'
+import { DEFAULT_OCTAVE, OCTAVES, computerKeyToMidi } from './computerKeyMap.js'
+import { shouldHandleKey } from '../DrumMachine/shouldHandleKey.js'
 import { createTakeRecorder } from './recorder.js'
 import { REPLAY_SPEEDS, buildReplaySchedule, playSequence } from './replay.js'
 import styles from './GrandPiano88.module.css'
@@ -12,12 +14,16 @@ const MAX_VOICES = 8
 export function GrandPiano88() {
   const headingId = useId()
   const speedName = useId()
+  const octaveId = useId()
+  const kbId = useId()
   const [synth] = useState(() => new PolyphonicSynth(MAX_VOICES))
   const [pressedMidis, setPressedMidis] = useState(() => new Set())
   const [mode, setMode] = useState('idle')
   const [take, setTake] = useState([])
   const [speed, setSpeed] = useState(1)
   const [voiceCount, setVoiceCount] = useState(0)
+  const [octave, setOctave] = useState(DEFAULT_OCTAVE)
+  const [shortcutsOn, setShortcutsOn] = useState(true)
   const recorderRef = useRef(null)
   const replayRef = useRef(null)
   const playButtonRef = useRef(null)
@@ -56,6 +62,38 @@ export function GrandPiano88() {
     },
     [synth],
   )
+
+  useEffect(() => {
+    if (!shortcutsOn || mode === 'playing') return undefined
+
+    function handleKeyDown(e) {
+      if (!shouldHandleKey(e, true)) return
+      const midi = computerKeyToMidi(e.code, octave)
+      if (midi === null) return
+      e.preventDefault()
+      noteOn(midi)
+    }
+    function handleKeyUp(e) {
+      const midi = computerKeyToMidi(e.code, octave)
+      if (midi === null) return
+      noteOff(midi)
+    }
+    function releaseAll() {
+      synth.stopAll()
+      setPressedMidis(new Set())
+      setVoiceCount(synth.activeCount)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    window.addEventListener('blur', releaseAll)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+      window.removeEventListener('blur', releaseAll)
+      releaseAll()
+    }
+  }, [shortcutsOn, mode, octave, noteOn, noteOff, synth])
 
   function handleRecord() {
     if (mode === 'idle') {
@@ -152,6 +190,25 @@ export function GrandPiano88() {
           </label>
         ))}
       </fieldset>
+      <p className={styles.field}>
+        <label htmlFor={octaveId}>Keyboard octave</label>
+        <select id={octaveId} value={octave} onChange={(e) => setOctave(Number(e.target.value))}>
+          {OCTAVES.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+      </p>
+      <p className={styles.field}>
+        <input
+          id={kbId}
+          type="checkbox"
+          checked={shortcutsOn}
+          onChange={(e) => setShortcutsOn(e.target.checked)}
+        />
+        <label htmlFor={kbId}>Keyboard shortcuts (A W S E D F T G Y H U J K)</label>
+      </p>
       <output className={styles.status} role="status" aria-live="polite">
         {statusText}. Voices: {voiceCount} of {MAX_VOICES}.
       </output>
