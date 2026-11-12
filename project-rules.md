@@ -185,3 +185,20 @@ This file is the project constitution. Read it fully before proposing or making 
 ### Live feedback
 - Hits are announced in one output with aria-live='polite'. Lists are capped and keyed by stable ids.
 - Animation-frame loops live in the smallest component that needs them and are cancelled in the effect cleanup.
+
+## 18. Homework 2 rules: polyphony, memo and sequencer
+
+### Generated keys
+- Piano keys are generated from midi numbers with f = 440 × 2^((midi − 69) / 12). Never hard-code key lists, note names or frequencies outside tests.
+
+### Voices
+- Active voices live in a Map in insertion order. At the voice limit, release voices.keys().next().value first (FIFO stealing).
+- Every voice ramps its gain with exponentialRampToValueAtTime to 0.0001 before oscillator.stop. Never stop a voice at full gain.
+
+### Memo
+- Each piano key is a React.memo component. Callbacks passed to it are stable (useCallback) and its pressed prop is a boolean, so one press re-renders one key. Verify with the React DevTools Profiler.
+
+### Sequencer
+- The UI mode is one state value: 'idle' | 'recording' | 'playing'.
+- Recording stores { midi, freqHz, durationMs, deltaMs } in order. Replay is computed by a pure schedule function and awaited with an abortable delay.
+- Stop and unmount abort the replay's AbortController, stop all voices and release every pressed key. AbortError is a normal outcome.
