@@ -1,48 +1,58 @@
-.bonus {
-  display: grid;
-  gap: var(--space-4);
-  min-width: 0;
-  color: var(--color-text);
-}
+/* Mobile first: the base rules fit 375px and also 320px. Nothing here forces horizontal page scroll. */
 
+.bonus,
 .analyzer {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
+  width: 100%;
   min-width: 0;
+  max-width: var(--card-max-width);
   padding: var(--space-4);
   border: var(--control-border-width) solid var(--color-border);
   border-radius: var(--radius-lg);
   background-color: var(--color-card-bg);
+  color: var(--color-text);
+}
+
+.analyzer {
+  padding: var(--space-3);
+}
+
+.bonus h2 {
+  font-size: var(--font-size-lg);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.analyzer h3 {
+  font-size: var(--font-size-md);
 }
 
 .phase {
   margin: 0;
-}
-
-.field {
-  display: grid;
-  gap: var(--space-1);
-  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .stable,
 .redFlag {
   display: block;
   padding: var(--space-3);
-  border: var(--control-border-width) solid var(--color-border);
   border-radius: var(--radius-md);
   overflow-wrap: anywhere;
 }
 
 .stable {
-  background-color: var(--color-tier-core-bg);
-  color: var(--color-tier-core-text);
+  border: var(--control-border-width) solid var(--color-border);
+  background-color: var(--color-stable-bg);
+  color: var(--color-stable-text);
 }
 
 .redFlag {
-  border-width: var(--focus-ring-width);
-  background-color: var(--color-tier-awareness-bg);
-  color: var(--color-tier-awareness-text);
+  border: var(--control-border-width) solid var(--color-border);
+  border-left: 0.25rem solid var(--color-red-flag-border);
+  background-color: var(--color-red-flag-bg);
+  color: var(--color-text);
   font-weight: 700;
 }
 
@@ -54,6 +64,29 @@
   margin: 0;
 }
 
+.meterRow meter {
+  width: 100%;
+  max-width: 16rem;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.field input {
+  width: 100%;
+  max-width: 12rem;
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -61,8 +94,19 @@
   margin: 0;
 }
 
+.actions button {
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
+  touch-action: manipulation;
+}
+
 .log {
   margin: 0;
-  padding-left: var(--space-5);
+  padding-inline-start: var(--space-5);
   overflow-wrap: anywhere;
 }
