@@ -50,3 +50,48 @@ export function computeImpacts(myTries, rivalTries) {
 export function isRedFlag(phase, myImpact, rivalImpact) {
   return phase === 'DATING_NO_LOVE' && myImpact < rivalImpact
 }
+
+/**
+ * @param {'EM' | 'AI_DO'} actor
+ * @param {number} steps
+ * @param {() => string} [makeId]
+ * @returns {import('./situationship.contract.js').EffortSignal}
+ */
+export function createSignal(actor, steps, makeId = () => crypto.randomUUID()) {
+  if (!Object.hasOwn(EFFORT_WEIGHTS, actor)) {
+    throw new TypeError(`Unknown effort actor: ${String(actor)}`)
+  }
+  const multiplier = EFFORT_WEIGHTS[actor]
+  return Object.freeze({
+    id: makeId(),
+    actor,
+    type: actor,
+    steps,
+    multiplier,
+    impact: steps * multiplier,
+  })
+}
+
+/**
+ * @param {readonly import('./situationship.contract.js').EffortSignal[]} log
+ * @param {import('./situationship.contract.js').EffortSignal} signal
+ */
+export function appendSignal(log, signal) {
+  return Object.freeze([...log, signal])
+}
+
+/**
+ * @param {readonly import('./situationship.contract.js').EffortSignal[]} log
+ * @param {number} [limit]
+ */
+export function latestSignals(log, limit = 10) {
+  return log.slice(-limit).toReversed()
+}
+
+/**
+ * @param {number} value A valueAsNumber from an input.
+ * @returns {number}
+ */
+export function sanitizeCount(value) {
+  return Number.isNaN(value) ? 0 : Math.max(0, Math.floor(value))
+}
