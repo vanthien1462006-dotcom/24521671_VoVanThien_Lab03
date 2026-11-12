@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useCallback, useEffect, useId, useState } from 'react'
 import { PolyphonicSynth } from './PolyphonicSynth.js'
 import { PianoKey } from './PianoKey.jsx'
 import { FIRST_MIDI, KEY_SLOTS, PIANO_KEYS } from './pianoKeys.js'
@@ -11,21 +11,27 @@ export function GrandPiano88() {
 
   useEffect(() => () => synth.close(), [synth])
 
-  function noteOn(midi) {
-    const key = PIANO_KEYS[midi - FIRST_MIDI]
-    synth.noteOn(midi, key.freqHz)
-    setPressedMidis((prev) => (prev.has(midi) ? prev : new Set(prev).add(midi)))
-  }
+  const noteOn = useCallback(
+    (midi) => {
+      const key = PIANO_KEYS[midi - FIRST_MIDI]
+      synth.noteOn(midi, key.freqHz)
+      setPressedMidis((prev) => (prev.has(midi) ? prev : new Set(prev).add(midi)))
+    },
+    [synth],
+  )
 
-  function noteOff(midi) {
-    synth.noteOff(midi)
-    setPressedMidis((prev) => {
-      if (!prev.has(midi)) return prev
-      const next = new Set(prev)
-      next.delete(midi)
-      return next
-    })
-  }
+  const noteOff = useCallback(
+    (midi) => {
+      synth.noteOff(midi)
+      setPressedMidis((prev) => {
+        if (!prev.has(midi)) return prev
+        const next = new Set(prev)
+        next.delete(midi)
+        return next
+      })
+    },
+    [synth],
+  )
 
   return (
     <section className={styles.piano} aria-labelledby={headingId}>
