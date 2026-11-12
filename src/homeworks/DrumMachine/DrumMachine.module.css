@@ -1,0 +1,19 @@
+.drumKit {
+  padding: var(--space-4);
+}
+
+.pads {
+  list-style: none;
+}
+
+.pad {
+  min-height: var(--control-min-height);
+}
+
+.padLabel {
+  font-weight: 600;
+}
+
+.padKey {
+  font-family: monospace;
+}
