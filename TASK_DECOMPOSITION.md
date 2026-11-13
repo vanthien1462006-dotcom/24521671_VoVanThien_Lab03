@@ -93,6 +93,7 @@ Sprint 2 asks for 3 atomic commits: `feat: form context` (E13-T03), `feat: input
 | --- | --- | --- | --- | --- |
 | L4-T01 | Page title and description | `index.html` | Title "Lab 4: Multi-Route SPA". | `chore(html): update page title for lab 4` |
 | L4-T02 | README for Lab 4 | `README.md` | Commands, routes, server, checks, known limits. | `docs(readme): document lab 4 exercises` |
+| L4-T04 | Narrow check K2 (unplanned: `\bexact\b` matched "the exact label" in a Lab 3 test) | `TASK_DECOMPOSITION.md`, `README.md` | K2 only matches `exact` on a `<Route>` and prints nothing. | `docs(spec): narrow legacy router check to route props` |
 | L4-T03 | Evidence (author) | `docs/evidence/L4_*/`, `docs/prompt_logs/L4_*.txt` | Copied by the author. | `docs(evidence): archive lab 4 exercise screenshots` |
 
 ## Checks
@@ -103,7 +104,7 @@ Run from the repository root. Each must print nothing.
 # K1. No div in src (index.html keeps the root div)
 grep -rn '<div' src --include='*.jsx'
 # K2. No legacy router or form patterns
-grep -rnE '<Switch|<Redirect|activeClassName|component=\{|\bexact\b|withRouter|useHistory' src --include='*.jsx' --include='*.js'
+grep -rnE '<Switch|<Redirect|activeClassName|component=\{|<Route[^>]*\bexact\b|withRouter|useHistory' src --include='*.jsx' --include='*.js'
 # K3. No useEffect in the form engine
 grep -rn 'useEffect' src/lab4/form
 # K4. No hard-coded database URI in client or server code

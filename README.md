@@ -81,7 +81,7 @@ Each command must print nothing (Git Bash, from the repository root):
 
 ```sh
 grep -rn '<div' src --include='*.jsx'                                                         # K1
-grep -rnE '<Switch|<Redirect|activeClassName|component=\{|\bexact\b|withRouter|useHistory' src  # K2
+grep -rnE '<Switch|<Redirect|activeClassName|component=\{|<Route[^>]*\bexact\b|withRouter|useHistory' src  # K2
 grep -rn 'useEffect' src/lab4/form                                                             # K3
 grep -rnE 'mongodb(\+srv)?://' src server/src                                                  # K4
 grep -rn 'http://' src --include='*.js' --include='*.jsx' --include='*.css'                    # K5
