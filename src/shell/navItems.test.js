@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { NAV_ITEMS } from './navItems.js'
 
 const LAB3_PATHS = ['/', '/hw1', '/hw2', '/hw3', '/bonus']
+const LAB4_PATHS = ['/people']
 
 test('NAV_ITEMS is frozen with frozen entries', () => {
   assert.ok(Object.isFrozen(NAV_ITEMS))
@@ -24,6 +25,11 @@ test('nav paths are unique (they are also the React keys)', () => {
 test('every Lab 3 hash view has a route path', () => {
   const paths = NAV_ITEMS.map((item) => item.to)
   for (const path of LAB3_PATHS) assert.ok(paths.includes(path), path)
+})
+
+test('every Lab 4 exercise route has a nav link', () => {
+  const paths = NAV_ITEMS.map((item) => item.to)
+  for (const path of LAB4_PATHS) assert.ok(paths.includes(path), path)
 })
 
 test('only the home link matches exactly (end), so it is not active on every page', () => {
