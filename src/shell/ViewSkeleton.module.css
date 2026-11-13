@@ -1,0 +1,50 @@
+.skeleton {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: var(--view-max-width);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-card-bg);
+}
+
+.view {
+  min-block-size: var(--skeleton-view-min-height);
+}
+
+.detail {
+  min-block-size: var(--skeleton-detail-min-height);
+}
+
+.text {
+  color: var(--color-skeleton-text);
+  font-size: var(--font-size-sm);
+}
+
+.bar,
+.barShort {
+  display: block;
+  block-size: var(--space-5);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-skeleton);
+  animation: pulse var(--skeleton-pulse-duration) ease-in-out infinite;
+}
+
+.barShort {
+  inline-size: 60%;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .barShort {
+    animation: none;
+  }
+}

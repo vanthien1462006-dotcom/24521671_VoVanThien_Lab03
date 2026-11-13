@@ -87,4 +87,9 @@
   --color-red-flag-border: var(--color-alert-border);
   --color-stable-bg: var(--color-tier-core-bg);
   --color-stable-text: var(--color-tier-core-text);
+
+  /* Lab 4 shell: lazy views and skeletons (Exercise 1.1) */
+  --view-max-width: 60rem;
+  --skeleton-view-min-height: 32rem;
+  --skeleton-detail-min-height: 14rem;
 }
