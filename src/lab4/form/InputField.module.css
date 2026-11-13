@@ -1,0 +1,29 @@
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field label {
+  font-weight: 700;
+}
+
+.field input {
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--color-alert-border);
+  border-width: 2px;
+}
+
+.error {
+  color: var(--color-tier-awareness-text);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
