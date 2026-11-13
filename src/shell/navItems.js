@@ -14,4 +14,5 @@ export const NAV_ITEMS = Object.freeze([
   Object.freeze({ to: '/bonus', label: 'Bonus Exercise' }),
   Object.freeze({ to: '/people', label: 'Ex 1.2.2 People' }),
   Object.freeze({ to: '/form', label: 'Ex 1.3 Form' }),
+  Object.freeze({ to: '/forum', label: 'Ex 1.7.1 Forum' }),
 ])

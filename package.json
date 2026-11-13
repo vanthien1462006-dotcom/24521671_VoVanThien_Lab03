@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node --test \"src/**/*.test.js\""
+    "test": "node --test \"src/**/*.test.js\"",
+    "server": "npm --prefix server start",
+    "test:server": "npm --prefix server test"
   },
   "dependencies": {
     "react": "^19.3.1",

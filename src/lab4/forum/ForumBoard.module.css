@@ -1,0 +1,124 @@
+.board {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: var(--view-max-width);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-card-bg);
+}
+
+.board h2,
+.board h3 {
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.board h2 {
+  font-size: var(--font-size-lg);
+}
+
+.board h3 {
+  font-size: var(--font-size-md);
+}
+
+.channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.channel,
+.activeChannel {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.activeChannel {
+  background-color: var(--color-tier-core-bg);
+  color: var(--color-tier-core-text);
+  font-weight: 700;
+}
+
+.status {
+  color: var(--color-text-muted);
+}
+
+.status:empty {
+  display: none;
+}
+
+.alert {
+  padding: var(--space-3);
+  border: 2px solid var(--color-alert-border);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.messages {
+  display: grid;
+  gap: var(--space-1);
+  min-block-size: var(--skeleton-detail-min-height);
+  align-content: start;
+}
+
+.messages dt {
+  margin-block-start: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.messages dt time {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.messages dd {
+  padding-inline-start: var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.post {
+  display: grid;
+  gap: var(--space-3);
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field label {
+  font-weight: 700;
+}
+
+.field input,
+.field textarea,
+.post button {
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
+}
+
+.post button {
+  background-color: var(--color-claim-bg);
+  color: var(--color-claim-text);
+  cursor: pointer;
+}
+
+.post button[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}

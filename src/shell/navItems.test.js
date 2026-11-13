@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { NAV_ITEMS } from './navItems.js'
 
 const LAB3_PATHS = ['/', '/hw1', '/hw2', '/hw3', '/bonus']
-const LAB4_PATHS = ['/people', '/form']
+const LAB4_PATHS = ['/people', '/form', '/forum']
 
 test('NAV_ITEMS is frozen with frozen entries', () => {
   assert.ok(Object.isFrozen(NAV_ITEMS))

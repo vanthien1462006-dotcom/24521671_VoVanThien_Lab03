@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { Route, Routes } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router'
 import { DeveloperCard } from './components/DeveloperCard.jsx'
 import { ScientistDirectory } from './components/ScientistDirectory.jsx'
 import { PubgMatchTelemetry } from './components/PubgMatchTelemetry.jsx'
@@ -23,6 +23,7 @@ const SituationshipAnalyzer = lazyNamed(
 // Exercise 1.1: the detail route is its own chunk (slide 9: React.lazy(() => import('./PersonDetail'))).
 const PersonDetail = lazy(() => import('./lab4/people/PersonDetail.jsx'))
 const SimpleForm = lazyNamed(() => import('./lab4/form/SimpleForm.jsx'), 'SimpleForm')
+const ForumBoard = lazyNamed(() => import('./lab4/forum/ForumBoard.jsx'), 'ForumBoard')
 
 function Lab3Exercises() {
   return (
@@ -48,6 +49,10 @@ export function App() {
           <Route path=":id" element={<PersonDetail people={SMART_PEOPLE} />} />
         </Route>
         <Route path="form" element={<SimpleForm />} />
+        <Route path="forum">
+          <Route index element={<Navigate to="nasa" replace />} />
+          <Route path=":channelId" element={<ForumBoard />} />
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
