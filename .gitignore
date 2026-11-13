@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Env files (Lab 4)
+.env
+.env.*
+!.env.example
