@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { Route, Routes } from 'react-router'
 import { DeveloperCard } from './components/DeveloperCard.jsx'
 import { ScientistDirectory } from './components/ScientistDirectory.jsx'
@@ -18,6 +19,9 @@ const SituationshipAnalyzer = lazyNamed(
   () => import('./homeworks/BonusSituationship/SituationshipAnalyzer.jsx'),
   'SituationshipAnalyzer',
 )
+
+// Exercise 1.1: the detail route is its own chunk (slide 9: React.lazy(() => import('./PersonDetail'))).
+const PersonDetail = lazy(() => import('./lab4/people/PersonDetail.jsx'))
 
 function Lab3Exercises() {
   return (
@@ -40,6 +44,7 @@ export function App() {
         <Route path="bonus" element={<SituationshipAnalyzer />} />
         <Route path="people" element={<PeopleLayout people={SMART_PEOPLE} />}>
           <Route index element={<p>Select a pioneer to open the dossier.</p>} />
+          <Route path=":id" element={<PersonDetail people={SMART_PEOPLE} />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>
