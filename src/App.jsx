@@ -22,6 +22,7 @@ const SituationshipAnalyzer = lazyNamed(
 
 // Exercise 1.1: the detail route is its own chunk (slide 9: React.lazy(() => import('./PersonDetail'))).
 const PersonDetail = lazy(() => import('./lab4/people/PersonDetail.jsx'))
+const SimpleForm = lazyNamed(() => import('./lab4/form/SimpleForm.jsx'), 'SimpleForm')
 
 function Lab3Exercises() {
   return (
@@ -46,6 +47,7 @@ export function App() {
           <Route index element={<p>Select a pioneer to open the dossier.</p>} />
           <Route path=":id" element={<PersonDetail people={SMART_PEOPLE} />} />
         </Route>
+        <Route path="form" element={<SimpleForm />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
