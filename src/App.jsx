@@ -1,11 +1,9 @@
-import { Suspense } from 'react'
+import { Route, Routes } from 'react-router'
 import { DeveloperCard } from './components/DeveloperCard.jsx'
 import { ScientistDirectory } from './components/ScientistDirectory.jsx'
 import { PubgMatchTelemetry } from './components/PubgMatchTelemetry.jsx'
-import { SiteHeader } from './shell/SiteHeader.jsx'
-import { useHashView } from './shell/useHashView.js'
+import { AppLayout } from './shell/AppLayout.jsx'
 import { lazyNamed } from './shell/lazyNamed.js'
-import { ViewSkeleton } from './shell/ViewSkeleton.jsx'
 
 const DrumMachine = lazyNamed(() => import('./homeworks/DrumMachine/DrumMachine.jsx'), 'DrumMachine')
 const GrandPiano88 = lazyNamed(() => import('./homeworks/GrandPiano88/GrandPiano88.jsx'), 'GrandPiano88')
@@ -18,11 +16,7 @@ const SituationshipAnalyzer = lazyNamed(
   'SituationshipAnalyzer',
 )
 
-function CurrentView({ view }) {
-  if (view === 'hw1') return <DrumMachine />
-  if (view === 'hw2') return <GrandPiano88 />
-  if (view === 'hw3') return <KraftonPubgVnArena />
-  if (view === 'bonus') return <SituationshipAnalyzer />
+function Lab3Exercises() {
   return (
     <>
       <DeveloperCard />
@@ -33,15 +27,15 @@ function CurrentView({ view }) {
 }
 
 export function App() {
-  const view = useHashView()
   return (
-    <>
-      <SiteHeader view={view} />
-      <main>
-        <Suspense fallback={<ViewSkeleton />}>
-          <CurrentView view={view} />
-        </Suspense>
-      </main>
-    </>
+    <Routes>
+      <Route path="/" element={<AppLayout />}>
+        <Route index element={<Lab3Exercises />} />
+        <Route path="hw1" element={<DrumMachine />} />
+        <Route path="hw2" element={<GrandPiano88 />} />
+        <Route path="hw3" element={<KraftonPubgVnArena />} />
+        <Route path="bonus" element={<SituationshipAnalyzer />} />
+      </Route>
+    </Routes>
   )
 }

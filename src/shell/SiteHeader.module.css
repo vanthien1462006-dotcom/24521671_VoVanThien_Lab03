@@ -16,14 +16,15 @@
   list-style: none;
 }
 
-.links a {
+.link,
+.active {
   display: inline-flex;
   align-items: center;
   min-height: var(--control-min-height);
   padding: var(--control-padding);
 }
 
-.links a[aria-current='page'] {
+.active {
   font-weight: 700;
   text-decoration: underline;
 }

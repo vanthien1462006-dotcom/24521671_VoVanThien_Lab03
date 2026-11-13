@@ -1,17 +1,22 @@
-import { VIEWS } from './resolveView.js'
+import { NavLink } from 'react-router'
+import { NAV_ITEMS } from './navItems.js'
 import styles from './SiteHeader.module.css'
 
-export function SiteHeader({ view }) {
+export function SiteHeader() {
   return (
     <header className={styles.header}>
-      <h1>Lab 3: React 19 Exercises</h1>
+      <h1>Lab 4: Multi-Route SPA</h1>
       <nav aria-label="Lab sections">
         <ul className={styles.links}>
-          {VIEWS.map((v) => (
-            <li key={v.id}>
-              <a href={`#${v.id}`} aria-current={v.id === view ? 'page' : undefined}>
-                {v.label}
-              </a>
+          {NAV_ITEMS.map((item) => (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) => (isActive ? styles.active : styles.link)}
+              >
+                {item.label}
+              </NavLink>
             </li>
           ))}
         </ul>
