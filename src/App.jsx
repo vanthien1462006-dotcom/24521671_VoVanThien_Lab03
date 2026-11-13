@@ -1,12 +1,22 @@
+import { Suspense } from 'react'
 import { DeveloperCard } from './components/DeveloperCard.jsx'
 import { ScientistDirectory } from './components/ScientistDirectory.jsx'
 import { PubgMatchTelemetry } from './components/PubgMatchTelemetry.jsx'
-import { DrumMachine } from './homeworks/DrumMachine/DrumMachine.jsx'
-import { GrandPiano88 } from './homeworks/GrandPiano88/GrandPiano88.jsx'
-import { KraftonPubgVnArena } from './homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx'
-import { SituationshipAnalyzer } from './homeworks/BonusSituationship/SituationshipAnalyzer.jsx'
 import { SiteHeader } from './shell/SiteHeader.jsx'
 import { useHashView } from './shell/useHashView.js'
+import { lazyNamed } from './shell/lazyNamed.js'
+import { ViewSkeleton } from './shell/ViewSkeleton.jsx'
+
+const DrumMachine = lazyNamed(() => import('./homeworks/DrumMachine/DrumMachine.jsx'), 'DrumMachine')
+const GrandPiano88 = lazyNamed(() => import('./homeworks/GrandPiano88/GrandPiano88.jsx'), 'GrandPiano88')
+const KraftonPubgVnArena = lazyNamed(
+  () => import('./homeworks/KraftonPubgVnArena/KraftonPubgVnArena.jsx'),
+  'KraftonPubgVnArena',
+)
+const SituationshipAnalyzer = lazyNamed(
+  () => import('./homeworks/BonusSituationship/SituationshipAnalyzer.jsx'),
+  'SituationshipAnalyzer',
+)
 
 function CurrentView({ view }) {
   if (view === 'hw1') return <DrumMachine />
@@ -28,7 +38,9 @@ export function App() {
     <>
       <SiteHeader view={view} />
       <main>
-        <CurrentView view={view} />
+        <Suspense fallback={<ViewSkeleton />}>
+          <CurrentView view={view} />
+        </Suspense>
       </main>
     </>
   )
