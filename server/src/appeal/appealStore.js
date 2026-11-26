@@ -11,7 +11,7 @@ const HOUR_MS = 3_600_000
  * window counted from the moment the store was created, and the window is judged with the same
  * clock, never with a time sent by the client. Lookups go through a `Map`, so ids such as
  * `constructor` or `__proto__` are plain misses. Nothing of an appeal is kept except its receipt:
- * the statement and the email are validated and then dropped.
+ * the free text and the email are validated and then dropped.
  * @param {{ dossiers: readonly DossierRecord[], now?: () => Date, makeId?: () => string }} options
  * @returns {AppealStore}
  */
