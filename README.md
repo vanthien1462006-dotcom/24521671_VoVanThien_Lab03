@@ -191,7 +191,7 @@ grep -rn 'Date\.now' src/lab4/appeal                                           #
 grep -rn 'useEffect' src/lab4/appeal                                           # C3
 grep -rn 'visibilitychange' src/lab4/appeal --include='*.js' --exclude='*.test.js'   # C4
 grep -rnE 'useMemo|setTimeout' src/lab4/appeal --include='*.jsx'               # C5
-grep -rnE '\.sort\(|e\.key|keyCode' src/lab4/appeal                           # C6
+grep -rnE '\.sort\(|e\.key\b|keyCode' src/lab4/appeal                           # C6
 grep -rnE 'console\.|statement' server/src/appeal --include='*.js' --exclude='*.test.js' --exclude='validateAppeal.js' --exclude='appeal.contract.js'   # C7
 ```
 
