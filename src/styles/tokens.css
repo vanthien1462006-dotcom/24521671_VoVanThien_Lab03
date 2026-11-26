@@ -101,4 +101,11 @@
   --color-backdrop: rgba(15, 23, 42, 0.72);
   --color-missing-bg: var(--color-tier-awareness-bg);
   --color-missing-text: var(--color-tier-awareness-text);
+
+  /* Lab 4 Homework 2: swipe deck */
+  --swipe-stage-min-height: 16rem;
+  --swipe-avatar-size: 6rem;
+  --swipe-button-min-width: 5.5rem;
+  --color-swipe-avatar-bg: var(--color-tier-core-bg);
+  --color-swipe-avatar-text: var(--color-tier-core-text);
 }

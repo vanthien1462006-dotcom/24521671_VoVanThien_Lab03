@@ -23,7 +23,7 @@
 
 .stage {
   display: grid;
-  min-height: 16rem;
+  min-height: var(--swipe-stage-min-height);
   align-content: center;
   border-radius: var(--radius-lg);
   touch-action: none;

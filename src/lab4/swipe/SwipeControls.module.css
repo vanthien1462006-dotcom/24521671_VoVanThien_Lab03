@@ -11,7 +11,7 @@
 .button {
   display: grid;
   justify-items: center;
-  min-width: 5.5rem;
+  min-width: var(--swipe-button-min-width);
   min-height: var(--control-min-height);
   padding: var(--control-padding);
   border: var(--control-border-width) solid var(--color-border);
