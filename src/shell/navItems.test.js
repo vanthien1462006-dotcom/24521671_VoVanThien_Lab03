@@ -4,6 +4,7 @@ import { NAV_ITEMS } from './navItems.js'
 
 const LAB3_PATHS = ['/', '/hw1', '/hw2', '/hw3', '/bonus']
 const LAB4_PATHS = ['/people', '/form', '/forum']
+const LAB4_HOMEWORK_PATHS = ['/gallery']
 
 test('NAV_ITEMS is frozen with frozen entries', () => {
   assert.ok(Object.isFrozen(NAV_ITEMS))
@@ -30,6 +31,11 @@ test('every Lab 3 hash view has a route path', () => {
 test('every Lab 4 exercise route has a nav link', () => {
   const paths = NAV_ITEMS.map((item) => item.to)
   for (const path of LAB4_PATHS) assert.ok(paths.includes(path), path)
+})
+
+test('every Lab 4 homework route has a nav link', () => {
+  const paths = NAV_ITEMS.map((item) => item.to)
+  for (const path of LAB4_HOMEWORK_PATHS) assert.ok(paths.includes(path), path)
 })
 
 test('only the home link matches exactly (end), so it is not active on every page', () => {

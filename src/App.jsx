@@ -8,6 +8,7 @@ import { lazyNamed } from './shell/lazyNamed.js'
 import { NotFoundPage } from './shell/NotFoundPage.jsx'
 import { SMART_PEOPLE } from './data/smartPeople.js'
 import { PeopleLayout } from './lab4/people/PeopleLayout.jsx'
+import { PHOTOS } from './lab4/gallery/photos.js'
 
 const DrumMachine = lazyNamed(() => import('./homeworks/DrumMachine/DrumMachine.jsx'), 'DrumMachine')
 const GrandPiano88 = lazyNamed(() => import('./homeworks/GrandPiano88/GrandPiano88.jsx'), 'GrandPiano88')
@@ -24,6 +25,7 @@ const SituationshipAnalyzer = lazyNamed(
 const PersonDetail = lazy(() => import('./lab4/people/PersonDetail.jsx'))
 const SimpleForm = lazyNamed(() => import('./lab4/form/SimpleForm.jsx'), 'SimpleForm')
 const ForumBoard = lazyNamed(() => import('./lab4/forum/ForumBoard.jsx'), 'ForumBoard')
+const PhotoGalleryLayout = lazyNamed(() => import('./lab4/gallery/PhotoGalleryLayout.jsx'), 'PhotoGalleryLayout')
 
 function Lab3Exercises() {
   return (
@@ -53,6 +55,7 @@ export function App() {
           <Route index element={<Navigate to="nasa" replace />} />
           <Route path=":channelId" element={<ForumBoard />} />
         </Route>
+        <Route path="gallery" element={<PhotoGalleryLayout photos={PHOTOS} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

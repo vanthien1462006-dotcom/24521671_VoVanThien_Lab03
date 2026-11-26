@@ -1,0 +1,20 @@
+.gallery {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+}
+
+.notice {
+  color: var(--color-text-muted);
+}
+
+.status {
+  display: block;
+}
+
+.missing {
+  padding: var(--space-3);
+}
