@@ -1,0 +1,32 @@
+.dialog {
+  padding: 0;
+}
+
+.panel {
+  padding: var(--space-4);
+}
+
+.header {
+  display: flex;
+}
+
+.title {
+  font-size: var(--font-size-lg);
+}
+
+.close {
+  min-height: var(--control-min-height);
+}
+
+.figure {
+  margin: 0;
+}
+
+.image {
+  max-width: 100%;
+  height: auto;
+}
+
+.meta {
+  display: grid;
+}
