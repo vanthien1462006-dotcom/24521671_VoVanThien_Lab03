@@ -50,7 +50,7 @@ Logged 2026-11-26, task L4H3-T22 (WBS rows L4H3-T22 and L4H3-T25).
 
 **Prompt:** The Homework 3 request: "oke tiếp tục research và làm chính xác HW3 nhé, dựa trên code cũ của các lab trước nếu có" (in English: continue, research and do HW3 exactly, reusing the code of the earlier labs where possible). The Homework 3 plan lists the check commands C1 to C7, and the README is meant to let the author run them.
 
-**AI Code:** `README.md` in commit `1ddfad7`. The AI wrote the README section from a Python script with a normal (not raw) string, so the regular expression word boundary `` in the C6 command (`grep -rnE '\.sort\(|e\.key|keyCode' src/lab4/appeal`) became the control character 0x08 (backspace).
+**AI Code:** `README.md` in commit `1ddfad7`. The AI wrote the README section from a Python script with a normal (not raw) string, so the regular expression word boundary `\b` in the C6 command (`grep -rnE '\.sort\(|e\.key\b|keyCode' src/lab4/appeal`) became the control character 0x08 (backspace).
 
 **Bug:** The command shown in the README was `e\.key<backspace>|keyCode`. Copied into a shell it does not mean "word boundary", so the check does not do what the README says. It was found because `file README.md` reported "with overstriking", not by running the command. A first attempt to remove the character did nothing (the replacement script searched for the wrong text and the tree stayed clean); the second attempt used `chr(8)` and found and replaced exactly one character.
 
