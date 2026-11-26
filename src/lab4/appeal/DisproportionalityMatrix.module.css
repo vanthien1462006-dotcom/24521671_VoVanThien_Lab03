@@ -1,5 +1,6 @@
 .matrix {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
   min-width: 0;
 }
@@ -14,8 +15,19 @@
   font-size: var(--font-size-sm);
 }
 
+.scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.scroll:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
 .table {
   width: 100%;
+  min-width: var(--appeal-table-min-width);
   border-collapse: collapse;
   font-size: var(--font-size-sm);
 }

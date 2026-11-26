@@ -108,4 +108,8 @@
   --swipe-button-min-width: 5.5rem;
   --color-swipe-avatar-bg: var(--color-tier-core-bg);
   --color-swipe-avatar-text: var(--color-tier-core-text);
+
+  /* Lab 4 Homework 3: appeal tribunal */
+  --appeal-table-min-width: 34rem;
+  --appeal-checkbox-size: 1.5rem;
 }
