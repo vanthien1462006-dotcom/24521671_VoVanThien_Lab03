@@ -1,0 +1,37 @@
+.card {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-card-bg);
+  text-align: center;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 6rem;
+  height: 6rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-tier-core-bg);
+  color: var(--color-tier-core-text);
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.name {
+  font-size: var(--font-size-xl);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.age {
+  font-weight: 400;
+}
+
+.bio {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
