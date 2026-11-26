@@ -40,6 +40,8 @@ cp .env.example .env         # PowerShell: Copy-Item .env.example .env
 | `/forum/:channelId` | `ForumBoard`: `nasa`, `esports-tribunal`, `notNasa` | 1.7.1 |
 | `/gallery` | `PhotoGalleryLayout` (lazy): `?category=` filter and `?photoId=` lightbox | HW1 |
 | `/swipe` | `SwipeDeck` (lazy): card deck with keys, drag, buttons, undo and a saved history | HW2 |
+| `/dossier` | `DossierLayout`: the case list from the API + `<Outlet />` | HW3 |
+| `/dossier/:playerID` | `DossierView` (lazy): SLA countdown, disproportionality matrix, appeal form | HW3 |
 | `*` | `NotFoundPage` | 1.2 |
 
 Old Lab 3 hash links (`#hw1`) are not redirected: use `/hw1`.
@@ -125,6 +127,34 @@ Differences from the plan, found while building it:
 
 Tests: `npm test` covers the pure modules (`swipeRules`, `swipeHistory`, `swipeInput`, `validateSwipe`, `playerId`, `swipeApi`). `npm run test:server` covers the validator parity, the in-memory repository, every route and the Mongoose schemas (validated offline). `server/src/swipe/mongoSwipeRepository.integration.test.js` talks to a real MongoDB and is skipped unless `MONGODB_URI_TEST` is set; the database name must end with `-test` because the test empties its collections.
 
+## Homework 3: Fair-Play Appeal Tribunal (slides 21 and 32)
+
+Plan and decisions: `TASK_DECOMPOSITION.md`, Part 10. It lists the assumptions (A1 to A4) and where the slide snippets were not followed and why.
+
+Run it (the API still starts only with a reachable MongoDB, because of Homework 2; the appeal store itself is in memory):
+
+```sh
+npm run server   # terminal 1
+npm run dev      # terminal 2, open /dossier
+```
+
+All players, cases, match counts and flag counts are **invented sample data** (`server/src/appeal/dossierData.js`). The handles Himass and TanVuu come from the slides only as names; nothing describes a real person or a real incident, and the page says so.
+
+- Countdown: the server decides the deadline and the time. The window of each case (72 h Himass, 48 h TanVuu) is counted from the moment the API starts. The client estimates `offset = serverNow - (sentAt + receivedAt) / 2` and shows `deadline - (Date.now() + offset)`, so a wrong clock on the device does not change the countdown. The value is recomputed from the clock on every tick and never decremented; one self-correcting `setTimeout` is aimed at the moment the displayed second changes (no `setInterval`). A hidden page schedules nothing; when it is visible again (`visibilitychange`, or `pageshow` from the back-forward cache) the value is recomputed and the offset is re-synced with `GET /api/time`. A failed re-sync keeps the old offset and says so; a stale answer is ignored. At zero the clock stops and the form is replaced by a closed message. The server enforces the window too (`409`).
+- The clock is an external store (`createSlaClock`, injectable clock, timers and visibility target) read with `useSyncExternalStore`. It attaches and removes its own listeners when React subscribes and unsubscribes, so StrictMode is safe. The timer element is not a live region (a screen reader would announce every second); only "closed" and "could not re-sync" are announced.
+- Matrix: per play mode, `index = (flags * totalMatches) / (matches * totalFlags)`, computed from integers. Over-flagged above 1.25, under-flagged below 0.8, otherwise proportional; "not enough data" when a mode has no matches or there are fewer than 5 flags in total. The verdict is text, never colour alone. This definition is the author's reading of the slide, not a standard (A2).
+- Form (the Lab 4 context pattern): email, a reason (`select`), a statement of 50 to 1000 characters after trimming with a live counter, and a confirmation checkbox. Errors are derived during render and shown after a field is left or a submit is tried; a failed submit moves focus to the first invalid field. Client and server share one rule set and a parity test feeds both the same 39 cases. The server copies only the four known fields, drops the statement and the email after validation, and never sends either back.
+- Case routes are one dynamic route. The `:playerID` parameter is untrusted: a value that is not a lower-case slug shows "Case not found" without any request, and the server answers a malformed id like an unknown one.
+
+| Method and path | Success | Errors |
+| --- | --- | --- |
+| `GET /api/time` | `200` `{ now }`, never cached | none |
+| `GET /api/dossiers` | `200` `[{ playerId, handle, caseId }]` | `500` |
+| `GET /api/dossiers/:playerId` | `200` the case with `deadlineAt`, `serverNow` and `appeal` (`null` or the receipt) | `404` unknown or malformed id |
+| `POST /api/dossiers/:playerId/appeal` `{ contactEmail, category, statement, confirmed }` | `201` `{ id, playerId, caseId, submittedAt }` | `400` invalid body, `404` unknown case, `409` already appealed or window closed |
+
+Tests: `npm test` covers the matrix, the clock maths, the clock store (fake timers: ticks on the boundary, a five minute freeze, a client clock one hour off, re-sync, stale answers, stopping at zero, listener clean-up), validation and the API client. `npm run test:server` covers the validator parity, the store with an injected clock (the window closes exactly at the deadline) and every route.
+
 ## Checks
 
 Run from the repository root in Git Bash. K1 to K5 and G3 must print nothing; G1 prints one line and G2 two lines, all in `src/lab4/gallery/`:
@@ -153,13 +183,26 @@ grep -rnE '\.sort\(|e\.key\b|keyCode|\.which' src/lab4/swipe   # S6
 
 K4 stays empty: no connection string is written in `src` or `server/src` (the example one lives in `.env.example`).
 
+Homework 3 checks, same shell. C1, C5, C6 and C7 must print nothing. C2 prints the one tick read in `createSlaClock.js`, the round-trip read in `dossierApi.js` and the tests. C3 prints the import and the two effects of `useDossier.js` (the dossier and the case list). C4 prints the add and the remove in `createSlaClock.js` plus two comment lines that name the event:
+
+```sh
+grep -rn 'setInterval' src/lab4/appeal                                         # C1
+grep -rn 'Date\.now' src/lab4/appeal                                           # C2
+grep -rn 'useEffect' src/lab4/appeal                                           # C3
+grep -rn 'visibilitychange' src/lab4/appeal --include='*.js' --exclude='*.test.js'   # C4
+grep -rnE 'useMemo|setTimeout' src/lab4/appeal --include='*.jsx'               # C5
+grep -rnE '\.sort\(|e\.key|keyCode' src/lab4/appeal                           # C6
+grep -rnE 'console\.|statement' server/src/appeal --include='*.js' --exclude='*.test.js' --exclude='validateAppeal.js' --exclude='appeal.contract.js'   # C7
+```
+
 ## Known limits
 
 - Forum messages are kept in memory: restarting the API resets them to the sample data. Only the swipe deck uses MongoDB, and because `server.js` now requires `MONGODB_URI`, the forum also needs the API to start with a reachable MongoDB.
 - `oxlint` reports one warning in the Lab 3 `PubgMatchTelemetry.jsx` (`set-state-in-effect`). It pre-dates Lab 4 and is left unchanged.
 - The Lab 3 `DeveloperCard` still shows `commits: 144`, the value of `lab3-final`.
 - Not verified by the AI: Lighthouse scores, CLS, render counts, the Slow 3G abort behaviour and 375px layout. They are checked by the author in the browser.
-- Homework 3 (slide 21) is not part of this branch yet.
+- Homework 3 was run in headless Chrome against the production build and the real API: the routes and the 404 page, the matrix, validation and focus, a successful appeal and a reload, a duplicate (`409`), a window that really expires (`409` for a late appeal), a client clock set one hour ahead, one hour behind and three days ahead (the countdown still followed the server), a hidden and visible page, a page frozen and resumed through the DevTools lifecycle command, and no horizontal scroll at 375px and 320px. Not verified by the AI: a real browser tab throttled in the background for minutes (headless Chrome is not throttled the same way), Lighthouse, a real phone, a screen reader.
+- Homework 3 state is in memory: restarting the API restarts every appeal window and forgets the appeals. All cases and numbers are invented.
 - Lighthouse (HW1 asks for 100/100), screen-reader behaviour and real-device layout of `/gallery` are not verified by the AI. A headless Chrome run covered the URL behaviour, focus return, Back/Forward, Escape, backdrop click and no horizontal scroll at 375px and 320px.
 - Homework 2 was run in headless Chrome against the real API and a `mongo:8` container (Mongoose 8.24): keys, repeat and modifier keys, a double keydown, buttons, drag thresholds, reload restore, Start over, an offline error, and no horizontal scroll at 375px and 320px. Not verified by the AI: MongoDB Atlas, Lighthouse, real touch on a phone, a screen reader, and Backspace with a Vietnamese IME such as UniKey (an IME can consume the key before the page sees it; the Undo button is the fallback).
 - Anyone who knows a `playerId` can read or clear that player's swipes (no login by design). `sanitizeFilter` and the UUID check keep query operators out, which was tested with `?playerId[$ne]=x` and a JSON object body.
