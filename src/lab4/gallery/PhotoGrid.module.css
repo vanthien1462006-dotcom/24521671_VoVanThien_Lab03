@@ -1,0 +1,22 @@
+.grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.card {
+  display: block;
+  color: var(--color-text);
+}
+
+.figure {
+  margin: 0;
+}
+
+.thumb {
+  width: 100%;
+  height: auto;
+}
+
+.caption {
+  overflow-wrap: anywhere;
+}
