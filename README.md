@@ -37,6 +37,7 @@ cp .env.example .env         # PowerShell: Copy-Item .env.example .env
 | `/form` | `SimpleForm` context form engine + `ShowData` | 1.3 |
 | `/forum` | Redirects to `/forum/nasa` | 1.7.1 |
 | `/forum/:channelId` | `ForumBoard`: `nasa`, `esports-tribunal`, `notNasa` | 1.7.1 |
+| `/gallery` | `PhotoGalleryLayout` (lazy): `?category=` filter and `?photoId=` lightbox | HW1 |
 | `*` | `NotFoundPage` | 1.2 |
 
 Old Lab 3 hash links (`#hw1`) are not redirected: use `/hw1`.
@@ -75,9 +76,20 @@ Old Lab 3 hash links (`#hw1`) are not redirected: use `/hw1`.
 - `useForumMessages(channelId)`: one `AbortController` per request, `controller.abort()` in the cleanup, `signal.aborted` checks after `await`, loading derived from the request key, `postMessage` refetches.
 - `ForumBoard`: channel `NavLink`s, messages in `<dl>` with `<Fragment key={msg.id}>`, post form with labels. The form is `noValidate` so the server's 400 message can be shown.
 
+## Homework 1: Photo & Evidence Gallery (slides 19 and 29)
+
+Plan and decisions: `TASK_DECOMPOSITION.md`, Part 8. The slides number the three homeworks inconsistently; here HW1 is the gallery, HW2 the swipe deck and HW3 the appeal tribunal (only HW1 is done).
+
+- URL is the state. `/gallery?category=replays&photoId=ph-5` shows the Replays filter with the lightbox open on `ph-5`. Both parameters are untrusted: an unknown `category` falls back to `all`; an unknown `photoId` keeps the dialog closed and renders `role="alert"` "404: Photo Not Found" with a link back.
+- Lightbox: native `<dialog>` opened with `showModal()` (focus trap, inert page, Escape, backdrop). One effect keeps the dialog in step with the URL and nothing else; focus returns to the opening link from the dialog's `close` handler.
+- Closing removes only `photoId`, so the category survives. Slide 29 uses `setSearchParams({})`, which would also drop the filter. Opening pushes a history entry (Back closes the lightbox); closing replaces it.
+- Thumbnails are links (the visible title is their name, `alt=""`); the lightbox image carries the full `alt`. The filter is a `fieldset` of labelled radios; the result count is an `<output role="status">`.
+- Data and images are sample data written for the exercise (`src/lab4/gallery/photos.js`, `public/gallery/*.svg`), not real evidence.
+- Pure modules with tests: `photos.js`, `galleryParams.js` (`parseGalleryParams`, `updateGalleryParams`, `toSearchString`), `selectPhotos.js`.
+
 ## Checks
 
-Each command must print nothing (Git Bash, from the repository root):
+Run from the repository root in Git Bash. K1 to K5 and G3 must print nothing; G1 prints one line and G2 two lines, all in `src/lab4/gallery/`:
 
 ```sh
 grep -rn '<div' src --include='*.jsx'                                                         # K1
@@ -85,6 +97,9 @@ grep -rnE '<Switch|<Redirect|activeClassName|component=\{|<Route[^>]*\bexact\b|w
 grep -rn 'useEffect' src/lab4/form                                                             # K3
 grep -rnE 'mongodb(\+srv)?://' src server/src                                                  # K4
 grep -rn 'http://' src --include='*.js' --include='*.jsx' --include='*.css'                    # K5
+grep -rn 'showModal' src --include='*.jsx'                                                     # G1: one line
+grep -rn 'useSearchParams' src --include='*.jsx' --include='*.js'                              # G2: import + call, gallery only
+grep -rn 'setSearchParams({})' src                                                             # G3: nothing
 ```
 
 ## Known limits
@@ -93,4 +108,5 @@ grep -rn 'http://' src --include='*.js' --include='*.jsx' --include='*.css'     
 - `oxlint` reports one warning in the Lab 3 `PubgMatchTelemetry.jsx` (`set-state-in-effect`). It pre-dates Lab 4 and is left unchanged.
 - The Lab 3 `DeveloperCard` still shows `commits: 144`, the value of `lab3-final`.
 - Not verified by the AI: Lighthouse scores, CLS, render counts, the Slow 3G abort behaviour and 375px layout. They are checked by the author in the browser.
-- Homework (slides 19 to 21) is not part of this branch yet.
+- Homework 2 and 3 (slides 20 and 21) are not part of this branch yet.
+- Lighthouse (HW1 asks for 100/100), screen-reader behaviour and real-device layout of `/gallery` are not verified by the AI. A headless Chrome run covered the URL behaviour, focus return, Back/Forward, Escape, backdrop click and no horizontal scroll at 375px and 320px.
