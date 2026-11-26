@@ -169,7 +169,7 @@ test('subscribe, unsubscribe and subscribe again works (React StrictMode) withou
   const seen = []
   const second = clock.subscribe(() => seen.push(1))
   assert.equal(targets.visibilityTarget.added - targets.visibilityTarget.removed, 1)
-  mock.timers.tick(3 * SECOND)
+  for (let i = 0; i < 3; i += 1) mock.timers.tick(SECOND)
   assert.equal(seen.length, 3)
   second()
   assert.equal(targets.visibilityTarget.added - targets.visibilityTarget.removed, 0)
@@ -182,7 +182,7 @@ test('an unsubscribe function called twice does not remove another subscriber', 
   clock.subscribe(() => seen.push(1))
   a()
   a()
-  mock.timers.tick(2 * SECOND)
+  for (let i = 0; i < 2; i += 1) mock.timers.tick(SECOND)
   assert.equal(seen.length, 2)
 })
 
