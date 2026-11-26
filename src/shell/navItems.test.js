@@ -4,7 +4,7 @@ import { NAV_ITEMS } from './navItems.js'
 
 const LAB3_PATHS = ['/', '/hw1', '/hw2', '/hw3', '/bonus']
 const LAB4_PATHS = ['/people', '/form', '/forum']
-const LAB4_HOMEWORK_PATHS = ['/gallery']
+const LAB4_HOMEWORK_PATHS = ['/gallery', '/swipe']
 
 test('NAV_ITEMS is frozen with frozen entries', () => {
   assert.ok(Object.isFrozen(NAV_ITEMS))

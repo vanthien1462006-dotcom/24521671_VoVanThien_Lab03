@@ -1,0 +1,61 @@
+.deck {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: var(--card-max-width);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-card-bg);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.notice,
+.state {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.stage {
+  display: grid;
+  min-height: 16rem;
+  align-content: center;
+  border-radius: var(--radius-lg);
+  touch-action: none;
+  user-select: none;
+}
+
+.stage:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.status {
+  display: block;
+  min-height: 1.5em;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.alert {
+  padding: var(--space-3);
+  border: 2px solid var(--color-alert-border);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.retry {
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
+  cursor: pointer;
+}
