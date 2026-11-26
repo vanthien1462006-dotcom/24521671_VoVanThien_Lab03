@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 import { createApp } from './app.js'
+import { createAppealStore } from './appeal/appealStore.js'
+import { DOSSIERS } from './appeal/dossierData.js'
 import { SEED_MESSAGES, createMessageStore } from './messageStore.js'
 import { Profile } from './swipe/Profile.js'
 import { Swipe } from './swipe/Swipe.js'
@@ -24,6 +26,7 @@ async function main() {
     store: createMessageStore(SEED_MESSAGES),
     clientOrigin: CLIENT_ORIGIN,
     swipeRepository: createMongoSwipeRepository({ Profile, Swipe }),
+    appealStore: createAppealStore({ dossiers: DOSSIERS }),
   })
   const server = app.listen(Number(PORT), () => {
     console.log(`API listening on port ${PORT}, CORS origin ${CLIENT_ORIGIN}, MongoDB connected`)

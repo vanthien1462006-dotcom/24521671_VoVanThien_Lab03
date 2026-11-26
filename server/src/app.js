@@ -1,15 +1,17 @@
 import crypto from 'node:crypto'
 import cors from 'cors'
 import express from 'express'
+import { createAppealRouter } from './appeal/appealRoutes.js'
 import { createSwipeRouter } from './swipe/swipeRoutes.js'
 import { validateMessage } from './validateMessage.js'
 
 /**
  * Builds the REST API. No listen() here, so tests can start it on a random port.
- * The swipe deck routes are mounted only when a `swipeRepository` is given.
- * @param {{ store: ReturnType<typeof import('./messageStore.js').createMessageStore>, clientOrigin: string, now?: () => Date, swipeRepository?: import('./swipe/swipe.contract.js').SwipeRepository }} options
+ * The swipe deck routes are mounted only when a `swipeRepository` is given, the appeal tribunal
+ * routes only when an `appealStore` is given.
+ * @param {{ store: ReturnType<typeof import('./messageStore.js').createMessageStore>, clientOrigin: string, now?: () => Date, swipeRepository?: import('./swipe/swipe.contract.js').SwipeRepository, appealStore?: import('./appeal/appeal.contract.js').AppealStore }} options
  */
-export function createApp({ store, clientOrigin, now = () => new Date(), swipeRepository }) {
+export function createApp({ store, clientOrigin, now = () => new Date(), swipeRepository, appealStore }) {
   const app = express()
   app.disable('x-powered-by')
   app.use(cors({ origin: clientOrigin }))
@@ -40,6 +42,7 @@ export function createApp({ store, clientOrigin, now = () => new Date(), swipeRe
   })
 
   if (swipeRepository) app.use('/api', createSwipeRouter({ repository: swipeRepository }))
+  if (appealStore) app.use('/api', createAppealRouter({ store: appealStore }))
 
   app.use((req, res) => {
     res.status(404).json({ error: 'Not found' })

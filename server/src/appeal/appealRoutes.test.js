@@ -182,16 +182,15 @@ test('POST for an unknown case returns 404, even with a valid body', async () =>
 })
 
 test('POST after the window closed returns 409, judged with the server clock', async () => {
+  clock.ms = START // the window is counted from the moment the store is created
   const closed = createApp({
     store: createMessageStore({}),
     clientOrigin: CLIENT_ORIGIN,
     appealStore: createAppealStore({ dossiers: DOSSIERS, now: () => new Date(clock.ms) }),
   })
-  clock.ms = START
   const s = await listen(closed)
   try {
     const origin = `http://127.0.0.1:${s.address().port}`
-    clock.ms = START + 48 * HOUR - 1
     const send = () =>
       fetch(`${origin}/api/dossiers/tanvuu/appeal`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     clock.ms = START + 48 * HOUR
