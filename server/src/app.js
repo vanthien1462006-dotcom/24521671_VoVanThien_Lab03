@@ -1,13 +1,15 @@
 import crypto from 'node:crypto'
 import cors from 'cors'
 import express from 'express'
+import { createSwipeRouter } from './swipe/swipeRoutes.js'
 import { validateMessage } from './validateMessage.js'
 
 /**
  * Builds the REST API. No listen() here, so tests can start it on a random port.
- * @param {{ store: ReturnType<typeof import('./messageStore.js').createMessageStore>, clientOrigin: string, now?: () => Date }} options
+ * The swipe deck routes are mounted only when a `swipeRepository` is given.
+ * @param {{ store: ReturnType<typeof import('./messageStore.js').createMessageStore>, clientOrigin: string, now?: () => Date, swipeRepository?: import('./swipe/swipe.contract.js').SwipeRepository }} options
  */
-export function createApp({ store, clientOrigin, now = () => new Date() }) {
+export function createApp({ store, clientOrigin, now = () => new Date(), swipeRepository }) {
   const app = express()
   app.disable('x-powered-by')
   app.use(cors({ origin: clientOrigin }))
@@ -36,6 +38,8 @@ export function createApp({ store, clientOrigin, now = () => new Date() }) {
     const message = { id: crypto.randomUUID(), ...result.value, timestamp: now().toISOString() }
     res.status(201).json(store.add(channelId, message))
   })
+
+  if (swipeRepository) app.use('/api', createSwipeRouter({ repository: swipeRepository }))
 
   app.use((req, res) => {
     res.status(404).json({ error: 'Not found' })
