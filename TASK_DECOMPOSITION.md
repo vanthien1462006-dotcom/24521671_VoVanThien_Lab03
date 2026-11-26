@@ -354,6 +354,7 @@ Goal (slide 21): dynamic player case routing at `/dossier/:playerID`, a context-
 | L4H3-T22 | README | `README.md` | Routes, API table, the SLA design, checks, known limits. | `docs(readme): document homework 3 appeal tribunal` |
 | L4H3-T23 | Evidence (author) | `docs/evidence/L4_HW3_AppealTribunal/`, `docs/prompt_logs/L4_HW3_AppealTribunal.txt` | Copied by the author. | `docs(evidence): archive homework 3 screenshots` |
 | L4H3-T24 | Audit (only if a real defect reached a commit) | `AI_FAILURE_AUDIT.md` | One entry per real defect, with the fixing commit. | `docs(audit): add ai failure audit for homework 3` |
+| L4H3-T25 | Defects found by the browser run (row added after the fact: the first two fixes were committed before this row existed) | `server/src/appeal/dossierData.js` (`7042cda`), the `.module.css` files and `DisproportionalityMatrix.jsx` (`622d3f5`), `README.md` (`7810602`) | The sample summary matches the computed verdicts; no horizontal scroll at 320 px; the C6 command in the README runs as written. Each is a real defect that reached a commit, so each has an entry in T24. | `fix(server): make the sample summaries match their numbers`, `style(appeal): add tribunal tokens and fit the layout to 320px`, `docs(readme): fix the key-read check command` |
 
 ### Checks
 
