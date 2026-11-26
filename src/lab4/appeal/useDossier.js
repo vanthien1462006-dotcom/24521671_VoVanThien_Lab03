@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { DossierApiError, fetchDossier, isDossierId } from './dossierApi.js'
+import { DossierApiError, fetchDossier, fetchDossiers, isDossierId } from './dossierApi.js'
 
 /** @typedef {import('./appeal.contract.js').Dossier} Dossier */
 /** @typedef {import('./appeal.contract.js').AppealReceipt} AppealReceipt */
+/** @typedef {import('./appeal.contract.js').DossierSummary} DossierSummary */
 
 const GENERIC_ERROR = 'Could not load the dossier. Check the connection and try again.'
 
@@ -62,5 +63,40 @@ export function useDossier(playerId) {
     error: current?.error ?? null,
     retry: () => setAttempt((n) => n + 1),
     recordAppeal: (receipt) => setSubmitted({ key, receipt }),
+  }
+}
+
+/**
+ * Loads the list of cases for the sidebar. The result is only used when it belongs to the current
+ * attempt, so `status` is derived during render.
+ * @returns {{
+ *   status: 'loading' | 'error' | 'ready',
+ *   dossiers: readonly DossierSummary[],
+ *   error: string | null,
+ *   retry: () => void,
+ * }}
+ */
+export function useDossierList() {
+  const [attempt, setAttempt] = useState(0)
+  /** @type {[{ attempt: number, dossiers?: DossierSummary[], error?: string } | null, Function]} */
+  const [loaded, setLoaded] = useState(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchDossiers({ signal: controller.signal })
+      .then((dossiers) => setLoaded({ attempt, dossiers }))
+      .catch((err) => {
+        if (err?.name === 'AbortError') return
+        setLoaded({ attempt, error: err instanceof DossierApiError ? err.message : GENERIC_ERROR })
+      })
+    return () => controller.abort()
+  }, [attempt])
+
+  const current = loaded !== null && loaded.attempt === attempt ? loaded : null
+  return {
+    status: current === null ? 'loading' : current.error !== undefined ? 'error' : 'ready',
+    dossiers: current?.dossiers ?? [],
+    error: current?.error ?? null,
+    retry: () => setAttempt((n) => n + 1),
   }
 }

@@ -1,0 +1,51 @@
+.view {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.view h2 {
+  font-size: var(--font-size-xl);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.summary,
+.state {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.receipt {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-tier-core-bg);
+  color: var(--color-tier-core-text);
+  overflow-wrap: anywhere;
+}
+
+.closed,
+.alert {
+  padding: var(--space-3);
+  border: 2px solid var(--color-alert-border);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.retry {
+  min-height: var(--control-min-height);
+  padding: var(--control-padding);
+  border: var(--control-border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-control-bg);
+  color: var(--color-control-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.retry:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}

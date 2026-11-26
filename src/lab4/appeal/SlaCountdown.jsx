@@ -1,20 +1,17 @@
 import { useId } from 'react'
 import { formatRemaining } from './slaClock.js'
-import { useAppealSlaTimer } from './useAppealSlaTimer.js'
 import styles from './SlaCountdown.module.css'
 
 /**
- * The SLA countdown. The value comes from the zero-drift clock (server deadline, server offset),
- * and the timer element is not a live region: announcing every second would flood a screen reader.
- * Only the state that matters is announced, in a separate status: the window has closed, or the
- * clock could not be re-synced.
- *
- * Render this with `key={deadlineIso}` so a different case starts a new clock.
- * @param {{ deadlineIso: string, initialOffsetMs: number }} props
+ * The SLA countdown. The snapshot comes from the zero-drift clock (server deadline, server offset)
+ * through `useAppealSlaTimer`, called by the parent so it can also react to `expired`. The timer
+ * element is not a live region: announcing every second would flood a screen reader. Only the state
+ * that matters is announced, in a separate status: the window has closed, or the clock could not be
+ * re-synced.
+ * @param {{ snapshot: Readonly<import('./appeal.contract.js').SlaSnapshot>, deadlineIso: string }} props
  */
-export function SlaCountdown({ deadlineIso, initialOffsetMs }) {
+export function SlaCountdown({ snapshot, deadlineIso }) {
   const labelId = useId()
-  const snapshot = useAppealSlaTimer({ deadlineIso, initialOffsetMs })
   const totalHours = snapshot.days * 24 + snapshot.hours
   const duration = `PT${totalHours}H${snapshot.minutes}M${snapshot.seconds}S`
 

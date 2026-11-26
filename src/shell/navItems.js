@@ -17,4 +17,5 @@ export const NAV_ITEMS = Object.freeze([
   Object.freeze({ to: '/forum', label: 'Ex 1.7.1 Forum' }),
   Object.freeze({ to: '/gallery', label: 'L4 HW1 Gallery' }),
   Object.freeze({ to: '/swipe', label: 'L4 HW2 Swipe Deck' }),
+  Object.freeze({ to: '/dossier', label: 'L4 HW3 Appeal Tribunal' }),
 ])

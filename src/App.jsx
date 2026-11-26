@@ -8,6 +8,7 @@ import { lazyNamed } from './shell/lazyNamed.js'
 import { NotFoundPage } from './shell/NotFoundPage.jsx'
 import { SMART_PEOPLE } from './data/smartPeople.js'
 import { PeopleLayout } from './lab4/people/PeopleLayout.jsx'
+import { DossierLayout } from './lab4/appeal/DossierLayout.jsx'
 import { PHOTOS } from './lab4/gallery/photos.js'
 
 const DrumMachine = lazyNamed(() => import('./homeworks/DrumMachine/DrumMachine.jsx'), 'DrumMachine')
@@ -27,6 +28,7 @@ const SimpleForm = lazyNamed(() => import('./lab4/form/SimpleForm.jsx'), 'Simple
 const ForumBoard = lazyNamed(() => import('./lab4/forum/ForumBoard.jsx'), 'ForumBoard')
 const PhotoGalleryLayout = lazyNamed(() => import('./lab4/gallery/PhotoGalleryLayout.jsx'), 'PhotoGalleryLayout')
 const SwipeDeck = lazyNamed(() => import('./lab4/swipe/SwipeDeck.jsx'), 'SwipeDeck')
+const DossierView = lazyNamed(() => import('./lab4/appeal/DossierView.jsx'), 'DossierView')
 
 function Lab3Exercises() {
   return (
@@ -58,6 +60,10 @@ export function App() {
         </Route>
         <Route path="gallery" element={<PhotoGalleryLayout photos={PHOTOS} />} />
         <Route path="swipe" element={<SwipeDeck />} />
+        <Route path="dossier" element={<DossierLayout />}>
+          <Route index element={<p>Select a case to see its matrix and appeal window.</p>} />
+          <Route path=":playerID" element={<DossierView />} />
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
