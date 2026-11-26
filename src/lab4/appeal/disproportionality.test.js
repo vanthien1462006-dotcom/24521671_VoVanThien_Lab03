@@ -33,7 +33,7 @@ test('the index is the share of flags divided by the share of matches', () => {
 test('an index of exactly 1.25 is still proportional, and just above it is over', () => {
   const edge = byId(computeMatrix([row('a', 40, 6), row('b', 60, 6)]), 'a')
   assert.equal(edge.index, 1.25)
-  assert.equal(edge.verdict, 'over'.replace('over', 'proportional'))
+  assert.equal(edge.verdict, 'proportional')
   const above = byId(computeMatrix([row('a', 40, 7), row('b', 60, 5)]), 'a')
   assert.ok(above.index > 1.25)
   assert.equal(above.verdict, 'over')
