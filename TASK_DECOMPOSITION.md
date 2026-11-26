@@ -362,11 +362,11 @@ Run from the repository root. K1 to K5 above still apply.
 ```sh
 # C1. no setInterval anywhere in the appeal code (prints nothing)
 grep -rn 'setInterval' src/lab4/appeal
-# C2. the clock is read in one module only (prints lines of createSlaClock.js and the tests)
+# C2. the local clock is read in two places only: createSlaClock.js (the tick) and fetchDossier in dossierApi.js (the round trip of the first load); the rest are tests
 grep -rn 'Date\.now' src/lab4/appeal
-# C3. effects only in useDossier.js (prints the import and the one call there)
+# C3. effects only in useDossier.js (prints the import and two calls there: the dossier and the case list)
 grep -rn 'useEffect' src/lab4/appeal
-# C4. the visibilitychange listener is added and removed in the same module (prints 2 lines)
+# C4. the visibilitychange listener is added and removed in the same module (the add and remove lines in createSlaClock.js, plus two comment lines that name the event)
 grep -rn 'visibilitychange' src/lab4/appeal --include='*.js' --exclude='*.test.js'
 # C5. no memo for the matrix and no timer started in a component (prints nothing)
 grep -rnE 'useMemo|setTimeout' src/lab4/appeal --include='*.jsx'
