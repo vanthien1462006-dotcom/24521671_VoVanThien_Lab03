@@ -23,7 +23,7 @@
   cursor: pointer;
 }
 
-.button:disabled {
+.button[aria-disabled='true'] {
   color: var(--color-text-muted);
   cursor: not-allowed;
 }
