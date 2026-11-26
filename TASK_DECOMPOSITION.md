@@ -154,6 +154,7 @@ Goal (slide 19): deep linking with `useSearchParams()` for the category filter a
 | L4H1-T15 | README | `README.md` | Route, URL contract, checks, known limits. | `docs(readme): document homework 1 gallery` |
 | L4H1-T16 | Valid `robots.txt` (Lighthouse SEO) | `public/robots.txt` | `/robots.txt` returns plain text, not the SPA `index.html`. Found by the author's Lighthouse run (SEO 92). | `fix(seo): add robots.txt for the lighthouse seo audit` |
 | L4H1-T17 | Evidence (author) | `docs/evidence/L4_HW1_Gallery/`, `docs/prompt_logs/L4_HW1_Gallery.txt` | Copied by the author. | `docs(evidence): archive homework 1 screenshots` |
+| L4H1-T18 | AI failure audit | `AI_FAILURE_AUDIT.md` | Failure #01 (robots.txt) logged with the fixing commit; only defects that reached a commit. | `docs(audit): add ai failure audit for homework 1` |
 
 ### Checks
 
