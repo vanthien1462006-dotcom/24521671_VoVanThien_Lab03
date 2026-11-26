@@ -12,14 +12,15 @@ npm install --prefix server  # API server
 cp .env.example .env         # PowerShell: Copy-Item .env.example .env
 ```
 
-`.env` is git-ignored. It holds `PORT` (API port, 3001) and `CLIENT_ORIGIN` (the origin CORS allows, http://localhost:5173).
+`.env` is git-ignored. It holds `PORT` (API port, 3001), `CLIENT_ORIGIN` (the origin CORS allows, http://localhost:5173) and `MONGODB_URI` (the swipe deck database, see Homework 2). `npm run server` stops with a clear error when any of the three is missing.
 
 ## Commands
 
 | Command | What it does | URL |
 | --- | --- | --- |
 | `npm run dev` | Vite dev server; `/api` is proxied to the API | http://localhost:5173/ |
-| `npm run server` | Express API (needs `.env`), run in a second terminal | http://localhost:3001/api/channels/nasa/messages |
+| `npm run server` | Express API (needs `.env` and a reachable MongoDB), run in a second terminal | http://localhost:3001/api/channels/nasa/messages |
+| `npm --prefix server run seed` | Upserts the 8 sample swipe profiles (safe to run twice) | n/a |
 | `npm run build` | Production bundle into `dist/` | n/a |
 | `npm run preview` | Serve the bundle (for Lighthouse); `/api` is proxied too | http://localhost:4173/ |
 | `npm run lint` | `oxlint` (client and server) | n/a |
@@ -38,6 +39,7 @@ cp .env.example .env         # PowerShell: Copy-Item .env.example .env
 | `/forum` | Redirects to `/forum/nasa` | 1.7.1 |
 | `/forum/:channelId` | `ForumBoard`: `nasa`, `esports-tribunal`, `notNasa` | 1.7.1 |
 | `/gallery` | `PhotoGalleryLayout` (lazy): `?category=` filter and `?photoId=` lightbox | HW1 |
+| `/swipe` | `SwipeDeck` (lazy): card deck with keys, drag, buttons, undo and a saved history | HW2 |
 | `*` | `NotFoundPage` | 1.2 |
 
 Old Lab 3 hash links (`#hw1`) are not redirected: use `/hw1`.
@@ -78,7 +80,7 @@ Old Lab 3 hash links (`#hw1`) are not redirected: use `/hw1`.
 
 ## Homework 1: Photo & Evidence Gallery (slides 19 and 29)
 
-Plan and decisions: `TASK_DECOMPOSITION.md`, Part 8. The slides number the three homeworks inconsistently; here HW1 is the gallery, HW2 the swipe deck and HW3 the appeal tribunal (only HW1 is done).
+Plan and decisions: `TASK_DECOMPOSITION.md`, Part 8. The slides number the three homeworks inconsistently; here HW1 is the gallery, HW2 the swipe deck and HW3 the appeal tribunal (HW1 and HW2 are done).
 
 - URL is the state. `/gallery?category=replays&photoId=ph-5` shows the Replays filter with the lightbox open on `ph-5`. Both parameters are untrusted: an unknown `category` falls back to `all`; an unknown `photoId` keeps the dialog closed and renders `role="alert"` "404: Photo Not Found" with a link back.
 - Lightbox: native `<dialog>` opened with `showModal()` (focus trap, inert page, Escape, backdrop). One effect keeps the dialog in step with the URL and nothing else; focus returns to the opening link from the dialog's `close` handler.
@@ -86,6 +88,42 @@ Plan and decisions: `TASK_DECOMPOSITION.md`, Part 8. The slides number the three
 - Thumbnails are links (the visible title is their name, `alt=""`); the lightbox image carries the full `alt`. The filter is a `fieldset` of labelled radios; the result count is an `<output role="status">`.
 - Data and images are sample data written for the exercise (`src/lab4/gallery/photos.js`, `public/gallery/*.svg`), not real evidence.
 - Pure modules with tests: `photos.js`, `galleryParams.js` (`parseGalleryParams`, `updateGalleryParams`, `toSearchString`), `selectPhotos.js`.
+
+## Homework 2: Card-Swipe Deck (slides 20, 30 and 31)
+
+Plan and decisions: `TASK_DECOMPOSITION.md`, Part 9 (it also lists where the slide snippets were not followed and why).
+
+Run it (the forum and the deck now both need MongoDB):
+
+```sh
+docker run -d --name lab4-mongo -p 127.0.0.1:27017:27017 mongo:8   # or use a MongoDB Atlas URI in .env
+npm --prefix server run seed                                      # 8 invented profiles, safe to repeat
+npm run server                                                    # terminal 1
+npm run dev                                                       # terminal 2, open /swipe
+```
+
+- Keys (read with `e.code`, a held key is ignored): Right arrow likes (+10), Left arrow passes (-5), Up arrow super likes (+25), Backspace undoes the newest swipe. Drag right, left or up by more than 50 px does the same; a short, diagonal or downward drag does nothing. Every action also has a button, so dragging is never the only way (WCAG 2.5.7). The result of each action is announced in one `<output role="status">`.
+- The score is derived from the history with an explicit table (`SCORE_BY_ACTION`); an unknown action throws. The slide's `else -5` would score a super like as a pass.
+- Undo is a LIFO stack on both sides: `popSwipe` on the client, `DELETE /api/swipe/last` on the server, which removes only the newest swipe of that player.
+- Persistence is pessimistic: an action sets `busy`, waits for the server and then updates the list from the returned record. Reloading restores the deck, the score and the current card.
+- The player is an anonymous UUID kept in `localStorage` (`lab4.swipe.playerId`). There is no login: anyone who knows an id can read or clear that player's swipes.
+- Client and server share one validation rule set; a parity test feeds the same cases to both. The server copies only `playerId`, `profileId` and `action` out of the body (the slide's `Swipe.create(req.body)` would store forged fields) and answers errors with fixed messages.
+- Routes talk to a repository: an in-memory one (API tests) and a Mongoose 8 one. `createApp` mounts the swipe routes only when it is given a repository.
+
+Differences from the plan, found while building it:
+
+- The current card is the first profile the player has not swiped (not `profiles[history.length]`), so a history written out of order by a direct API call cannot show a card that was already swiped.
+- Unavailable buttons use `aria-disabled` instead of `disabled`, so a button that has focus keeps it after the last card or the last undo. This replaces the plan's "move focus to the deck at the end".
+
+| Method and path | Success | Errors |
+| --- | --- | --- |
+| `GET /api/profiles` | `200` the deck in order, `[{ id, name, age, bio }]` | `500` |
+| `GET /api/swipe?playerId=` | `200` that player's swipes, oldest first | `400` bad `playerId` |
+| `POST /api/swipe` `{ playerId, profileId, action }` | `201` the saved record | `400` invalid body, `404` unknown profile, `409` already swiped |
+| `DELETE /api/swipe/last?playerId=` | `200` the removed record | `400`, `404` nothing to undo |
+| `DELETE /api/swipe?playerId=` | `204` | `400` |
+
+Tests: `npm test` covers the pure modules (`swipeRules`, `swipeHistory`, `swipeInput`, `validateSwipe`, `playerId`, `swipeApi`). `npm run test:server` covers the validator parity, the in-memory repository, every route and the Mongoose schemas (validated offline). `server/src/swipe/mongoSwipeRepository.integration.test.js` talks to a real MongoDB and is skipped unless `MONGODB_URI_TEST` is set; the database name must end with `-test` because the test empties its collections.
 
 ## Checks
 
@@ -102,11 +140,26 @@ grep -rn 'useSearchParams' src --include='*.jsx' --include='*.js'               
 grep -rn 'setSearchParams({})' src                                                             # G3: nothing
 ```
 
+Homework 2 checks, same shell. S1, S2, S3 and S6 must print nothing. S4 prints the `server.js` guard and connect lines, the same two lines in `seed.js` (the seed script has its own guard) and the integration test's `MONGODB_URI_TEST`. S5 prints the import and the one `useEffect` of the deck hook:
+
+```sh
+grep -rnE 'useNewUrlParser|useUnifiedTopology' server/src      # S1
+grep -rnE '\.exec\(\s*(\(|function)' server/src                # S2
+grep -rnE 'create\(\s*req\.body|\.\.\.req\.body' server/src   # S3
+grep -rn 'process.env.MONGODB_URI' server/src                   # S4
+grep -rn 'useEffect' src/lab4/swipe                             # S5
+grep -rnE '\.sort\(|e\.key\b|keyCode|\.which' src/lab4/swipe   # S6
+```
+
+K4 stays empty: no connection string is written in `src` or `server/src` (the example one lives in `.env.example`).
+
 ## Known limits
 
-- Messages are kept in memory: restarting the API resets them to the sample data. No MongoDB is used in the exercises.
+- Forum messages are kept in memory: restarting the API resets them to the sample data. Only the swipe deck uses MongoDB, and because `server.js` now requires `MONGODB_URI`, the forum also needs the API to start with a reachable MongoDB.
 - `oxlint` reports one warning in the Lab 3 `PubgMatchTelemetry.jsx` (`set-state-in-effect`). It pre-dates Lab 4 and is left unchanged.
 - The Lab 3 `DeveloperCard` still shows `commits: 144`, the value of `lab3-final`.
 - Not verified by the AI: Lighthouse scores, CLS, render counts, the Slow 3G abort behaviour and 375px layout. They are checked by the author in the browser.
-- Homework 2 and 3 (slides 20 and 21) are not part of this branch yet.
+- Homework 3 (slide 21) is not part of this branch yet.
 - Lighthouse (HW1 asks for 100/100), screen-reader behaviour and real-device layout of `/gallery` are not verified by the AI. A headless Chrome run covered the URL behaviour, focus return, Back/Forward, Escape, backdrop click and no horizontal scroll at 375px and 320px.
+- Homework 2 was run in headless Chrome against the real API and a `mongo:8` container (Mongoose 8.24): keys, repeat and modifier keys, a double keydown, buttons, drag thresholds, reload restore, Start over, an offline error, and no horizontal scroll at 375px and 320px. Not verified by the AI: MongoDB Atlas, Lighthouse, real touch on a phone, a screen reader, and Backspace with a Vietnamese IME such as UniKey (an IME can consume the key before the page sees it; the Undo button is the fallback).
+- Anyone who knows a `playerId` can read or clear that player's swipes (no login by design). `sanitizeFilter` and the UUID check keep query operators out, which was tested with `?playerId[$ne]=x` and a JSON object body.
