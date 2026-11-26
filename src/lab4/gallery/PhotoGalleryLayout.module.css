@@ -1,20 +1,41 @@
 .gallery {
   display: grid;
   gap: var(--space-4);
+  width: 100%;
+  max-width: var(--view-max-width);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-card-bg);
 }
 
 .title {
   font-size: var(--font-size-lg);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .notice {
   color: var(--color-text-muted);
+  overflow-wrap: anywhere;
 }
 
 .status {
   display: block;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .missing {
   padding: var(--space-3);
+  border: 1px solid var(--color-alert-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-missing-bg);
+  color: var(--color-missing-text);
+  overflow-wrap: anywhere;
+}
+
+.missingLink {
+  color: var(--color-accent);
+  font-weight: 700;
 }

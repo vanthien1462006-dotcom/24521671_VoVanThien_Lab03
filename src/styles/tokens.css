@@ -92,4 +92,13 @@
   --view-max-width: 60rem;
   --skeleton-view-min-height: 32rem;
   --skeleton-detail-min-height: 14rem;
+
+  /* Lab 4 Homework 1: photo gallery and lightbox */
+  --gallery-card-min-width: 12rem;
+  --gallery-thumb-ratio: 8 / 5;
+  --lightbox-max-width: 48rem;
+  --radio-size: 1.5rem;
+  --color-backdrop: rgba(15, 23, 42, 0.72);
+  --color-missing-bg: var(--color-tier-awareness-bg);
+  --color-missing-text: var(--color-tier-awareness-text);
 }
