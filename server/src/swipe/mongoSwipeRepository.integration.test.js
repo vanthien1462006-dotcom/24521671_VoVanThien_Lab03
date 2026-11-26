@@ -7,8 +7,8 @@ import { Swipe } from './Swipe.js'
 import { createMongoSwipeRepository } from './mongoSwipeRepository.js'
 import { SEED_PROFILES, seedProfiles } from './seedProfiles.js'
 
-// Real MongoDB round trip. It runs only when MONGODB_URI_TEST is set, for example:
-//   MONGODB_URI_TEST=mongodb://localhost:27017/lab4-swipe-test npm --prefix server test
+// Real MongoDB round trip. It runs only when MONGODB_URI_TEST is set (see .env.example for the
+// shape of the value), for example in the shell before `npm --prefix server test`.
 // The database name must end with "-test" because the test empties its collections.
 const uri = process.env.MONGODB_URI_TEST
 const skip = uri ? false : 'MONGODB_URI_TEST is not set (needs a real MongoDB)'

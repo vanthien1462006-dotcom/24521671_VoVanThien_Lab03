@@ -14,7 +14,7 @@ const COMMAND_BY_CODE = Object.freeze({
 
 /**
  * Maps `KeyboardEvent.code` to a deck command. Arrow keys and Backspace are not letters, but the
- * code is read for every key so the rule is the same as in Lab 3 (never `e.key`).
+ * code is read for every key so the rule is the same as in Lab 3 (the physical key, not the typed character).
  * @param {unknown} code
  * @returns {DeckCommand | null}
  */
