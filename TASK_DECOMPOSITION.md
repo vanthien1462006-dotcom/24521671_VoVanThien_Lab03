@@ -281,3 +281,104 @@ Also: `npm test`, `npm --prefix server test`, `npm run lint` and `npm run build`
 - Can: unit tests (client and server), the API through the memory repository, offline Mongoose validation, lint, build, K and S checks, and a headless Chrome run of the full UI (keys, drag, buttons, undo, reload restore, 375 px and 320 px) against the API started on the memory repository from a throw-away script.
 - Cannot, unless the author provides a database (Q2): the real MongoDB round trip, indexes and the seed.
 - Cannot: Lighthouse, UniKey Telex behaviour of Backspace (Lab 3 audit #03 showed that UniKey sends extra Backspace events; the Undo button is the fallback and the limit goes into the README), touch gestures on a real phone, screen readers.
+
+## Part 10. Homework 3: Full-Stack Esports Fair-Play Appeal Tribunal, Himass & TanVuu case study (slides 21 and 32)
+
+Homework 3 here means the third of the three Lab 4 homeworks by content (slide 21; the slides print "Homework 2" and "Homework 03" on it, and slide 32 prints "Homework 4").
+
+Goal (slide 21): dynamic player case routing at `/dossier/:playerID`, a context-driven appeal form with real-time field validation, a zero-drift SLA countdown hook `useAppealSlaTimer()` synchronised against the system clock delta, and a post-mortem `AI_FAILURE_AUDIT.md`. Code contract (slide 32): a dossier view per player, a "Disproportionality Derived Matrix" computed during render, and a countdown that re-syncs with the server on `visibilitychange`. General rules of slides 3 and 8 apply: contract first, then a failing test, then the code, then a refactor, and client and server validation must match.
+
+### What the slides leave open, and what this Part assumes
+
+| # | Open point | Assumption (the author can overrule it) |
+| --- | --- | --- |
+| A1 | "Himass" and "TanVuu" look like real handles, and the slides give no case facts. | The handles are used because the slides name them. Every number and sentence in the dossiers is invented for the exercise. The UI and the README say so, and no real incident, allegation or person is described. |
+| A2 | "Disproportionality Derived Matrix" is not defined. | The standard disproportionality index: for each play mode, the share of the player's fair-play flags divided by the share of the player's matches. 1.0 is proportional. The matrix is a pure function of the dossier and is computed during render (H3-D4). |
+| A3 | "Full-Stack" is in the title but the slide lists no database. | The server keeps the dossiers and the submitted appeals in memory, like the forum store. No MongoDB, no new package. A restart resets them. The repository split of Homework 2 would let a database be added later. |
+| A4 | The SLA length is not given. | Himass has a 72 hour window and TanVuu 48 hours, counted from the moment the API starts (so a demo always has time left). |
+
+### Decisions
+
+| ID | Question | Decision |
+| --- | --- | --- |
+| H3-D1 | Where | Client `src/lab4/appeal/`. Routes `/dossier` (a layout with the list of cases and an `<Outlet />`) and `/dossier/:playerID` (the detail). Nav label "L4 HW3 Appeal Tribunal" pointing at `/dossier`. Server code in `server/src/appeal/`, mounted in the existing `createApp`. |
+| H3-D2 | What is reused from earlier labs | Lab 1 `countdown.js`: the `getRemaining` shape (`totalMs`, days, hours, minutes, seconds, never negative), recomputing from the clock on every tick, a self-correcting `setTimeout` that targets the next second boundary, no `setInterval`, `visibilitychange` and `pageshow` re-sync, and an idempotent `stop()`. It is rebuilt as an injectable store so it can be tested with fake timers. Lab 4 context form: `FormContext`, derived `validateForm`, `isErrorVisible`, `flushSync` plus focus on the first invalid field. Lab 4 master-detail: `PeopleLayout` and `PersonDetail` (untrusted `useParams`, 404 with `role="alert"`, `dl`). `useForumMessages` and `forumApi`: one `AbortController` per request, injectable `fetchImpl`, `{ error }` bodies. Homework 2: validator parity test, optional repository in `createApp`, UUID check, fixed error messages. |
+| H3-D3 | Data | Two frozen sample dossiers on the server (`server/src/appeal/dossierData.js`): `himass` and `tanvuu` with team, case id, a one-line summary, and per play mode (`solo`, `duo`, `squad`) the number of matches and of fair-play flags. All invented (A1). The client never contains dossier data: it asks the API. |
+| H3-D4 | Disproportionality matrix | `computeMatrix(rows)` in `src/lab4/appeal/disproportionality.js`. A row is `{ id, label, exposure, events }` (matches and flags). Per row: `exposureShare`, `eventShare`, `index = (events * totalExposure) / (exposure * totalEvents)` computed from integers (no rounding drift), and a `verdict`: `over` when `index > 1.25`, `under` when `index < 0.8`, `proportional` otherwise, and `insufficient` when the row has no matches, or the total number of flags is below 5. Inputs that are not non-negative integers throw `TypeError`. Display rounding happens only in the component. |
+| H3-D5 | Routing | One dynamic route replaces the two hard-coded routes of slide 32. `useParams().playerID` is untrusted: it is checked against `/^[a-z0-9-]{1,32}$/` before it goes into a URL, and an id the server does not know shows `404: Dossier Not Found` with `role="alert"`. The list in `/dossier` comes from `GET /api/dossiers`. |
+| H3-D6 | Appeal form | Context-driven like the Lab 4 form, with its own context in this folder. Fields: `contactEmail` (email), `category` (a `select` with stable values `false-positive`, `missing-context`, `procedural-error`), `statement` (a `textarea`, 50 to 1000 characters after trimming, with a live counter) and `confirmed` (a checkbox that must be checked). The player and the case come from the route and never from a field. Errors are derived in render by `validateAppeal(values)`, shown once a field was left or a submit was tried, and update on every keystroke after that (real-time). No effect, no stored errors. |
+| H3-D7 | SLA clock | The server is the authority for both the deadline and the time. `GET /api/dossiers/:playerId` returns `deadlineAt` and `serverNow`; `GET /api/time` returns `{ now }`. The client estimates the offset `serverNow - (sentAt + receivedAt) / 2` (the round-trip midpoint) and always shows `deadline - (Date.now() + offset)`, so a wrong local clock changes nothing. A tick never decrements a counter. `createSlaClock` is an external store (`subscribe`, `getSnapshot`, `resync`, with injectable `now`, timers, visibility target and `fetchServerTime`); `useAppealSlaTimer` reads it with `useSyncExternalStore`, which gives cleanup, no `setState` in an effect body, and no tearing. Re-sync happens at start, on `visibilitychange` to visible, and on `pageshow` from the back-forward cache. A failed re-sync keeps the old offset and sets `syncError`; a stale response (the clock was disposed or the page hidden again) is ignored. At zero the store stops scheduling. |
+| H3-D8 | API | `GET /api/dossiers` returns `[{ playerId, handle, caseId }]`. `GET /api/dossiers/:playerId` returns the dossier, `deadlineAt`, `serverNow` and `appeal` (`null` or the receipt). `GET /api/time` returns `{ now }`. `POST /api/dossiers/:playerId/appeal` with `{ contactEmail, category, statement, confirmed }` returns `201` with `{ id, playerId, caseId, submittedAt }`, `400` for an invalid body, `404` for an unknown player, `409` when that case already has an appeal, and `409` when the window is closed (checked with the server clock, so the countdown is only information). |
+| H3-D9 | Validation and errors | One rule set on both sides with a parity test, as in Homework 2. The server copies only the four fields out of the body, never echoes the statement, and answers with fixed messages: `400`, `404`, `409`, or `500 { error: 'Internal server error' }`. `playerId` is checked against the same slug pattern before a lookup. |
+| H3-D10 | Accessibility (WCAG 2.2 AA) | The countdown has `role="timer"` (not live, so a screen reader is not flooded every second) and a `<time datetime>` with the deadline. The expiry, a successful appeal and every failure are announced once in `<output role="status" aria-live="polite">` or `role="alert"`. The matrix is a real `<table>` with a `caption` and `th scope`. Each field has a visible label and `aria-describedby` to its error. After a failed submit focus moves to the first invalid field in the handler. No colour-only meaning: a verdict is also written as text. 375 px and 320 px without horizontal scroll. |
+| H3-D11 | Language and sample data | Interface text in English. A visible notice says the dossiers are invented sample data. |
+| H3-D12 | Git | One commit per task row below, in row order, on branch `lab4`. The `test(...)` rows are expected red for their own module only; build and lint stay green. T23 follows the author-only rules. |
+| H3-D13 | Post-mortem audit | Slide 21 asks for a complete `AI_FAILURE_AUDIT.md`. The file holds only real defects (rule 12 of Lab 3 and the header of the file). Entries are added only when a test, a browser run or the author's own observation shows a real defect that reached a commit. If there are fewer than the slide's expectation, the final report says what testing is missing; no defect is invented. |
+
+### Deviations from the slide 21 and 32 snippets (each is covered by a test or a check)
+
+| Slide snippet | Problem | Fix |
+| --- | --- | --- |
+| `<Route path="/dossier/himass" ...>` and `<Route path="/dossier/tanvuu" ...>` with `<DossierView user="Himass" />` | Contradicts slide 21 (`/dossier/:playerID`); a third player needs a code change; the user is a prop, not a lookup | One `:playerID` route, an untrusted-parameter check and a server lookup with a 404 state |
+| `useMemo(() => computeMatrix(dossierData), [dossierData])` | Memoises a computation over three rows; Lab 3 rule: derived values are computed in render | Plain call during render of a pure function |
+| `document.addEventListener('visibilitychange', ...)` in the hook | Never removed (leak on every mount); `resyncTimerWithServer` is not defined; waking the tab alone does not change what a throttled timer already scheduled | The listener is added in `subscribe` and removed in its cleanup; a re-sync recomputes from the clock and re-aims the timer |
+| "Recalculates remaining time against absolute system clock timestamps" | A client clock that is wrong makes the countdown wrong for everyone | Server time and an offset (H3-D7) |
+| `computeMatrix` and "dossierData" | Not defined anywhere | H3-D4 |
+| Countdown as a decrementing number | Drifts, and pauses in a background tab | Recompute from `Date.now() + offset` on every tick (the Lab 1 rule) |
+
+### Tasks
+
+| ID | Task | Files | Done when | Commit |
+| --- | --- | --- | --- | --- |
+| L4H3-T01 | Add this Part | `TASK_DECOMPOSITION.md` | Part 10 present. | `docs(spec): add lab 4 homework 3 plan` |
+| L4H3-T02 | Contracts | `src/lab4/appeal/appeal.contract.js`, `server/src/appeal/appeal.contract.js` | Typedefs `Dossier`, `DossierSummary`, `ModeStat`, `AppealInput`, `AppealReceipt`, `MatrixRow`, `SlaSnapshot`, `AppealStore`. | `feat(appeal): add appeal contracts` |
+| L4H3-T03 | Fail test: matrix | `src/lab4/appeal/disproportionality.test.js` | Fails: module missing. | `test(appeal): add failing test for disproportionality matrix` |
+| L4H3-T04 | `computeMatrix` | `src/lab4/appeal/disproportionality.js` | Green. Shares, exact index, edges 1.25 and 0.8, `insufficient` cases, bad input throws, input not mutated, result frozen. | `feat(appeal): add disproportionality matrix` |
+| L4H3-T05 | Fail test: clock maths | `src/lab4/appeal/slaClock.test.js` | Fails: module missing. | `test(appeal): add failing test for sla clock maths` |
+| L4H3-T06 | `clockOffset`, `getSlaRemaining`, `msUntilNextSecond`, `formatRemaining` | `src/lab4/appeal/slaClock.js` | Green. Midpoint offset; never negative; day, hour, minute, second split; next-second delay in 1 to 1000 ms. | `feat(appeal): add sla clock maths` |
+| L4H3-T07 | Fail test: clock store | `src/lab4/appeal/createSlaClock.test.js` | Fails: module missing. Uses `node:test` fake timers. Cases: ticks on second boundaries, no drift after a 5 minute freeze, a clock offset of plus and minus 1 hour, re-sync on visible, ignore a stale response, failed re-sync keeps the offset, stops at zero, `dispose` removes every listener and timer, the snapshot is stable between ticks. | `test(appeal): add failing test for sla clock store` |
+| L4H3-T08 | `createSlaClock` | `src/lab4/appeal/createSlaClock.js` | Green. | `feat(appeal): add zero-drift sla clock store` |
+| L4H3-T09 | Fail test: form validation | `src/lab4/appeal/validateAppeal.test.js` | Fails: module missing. | `test(appeal): add failing test for appeal validation` |
+| L4H3-T10 | `validateAppeal`, `isAppealValid`, constants | `src/lab4/appeal/validateAppeal.js` | Green. Email, category whitelist, statement 50 to 1000 after trim, `confirmed` must be `true`, only invalid fields have a key. | `feat(appeal): add appeal validation` |
+| L4H3-T11 | Fail test: API client | `src/lab4/appeal/dossierApi.test.js` | Fails: module missing. | `test(appeal): add failing test for dossier api client` |
+| L4H3-T12 | API client | `src/lab4/appeal/dossierApi.js` | Green with a fake `fetchImpl`: URLs, id check before any request, body is the four fields, status mapping, timing of the offset, abort not swallowed. | `feat(appeal): add dossier api client` |
+| L4H3-T13 | Fail test: server validation and parity | `server/src/appeal/validateAppeal.test.js` | Fails: module missing. | `test(server): add failing test for appeal validation parity` |
+| L4H3-T14 | Server validator | `server/src/appeal/validateAppeal.js` | Green; the same case table gives the same verdicts and messages as the client validator. | `feat(server): add appeal validation` |
+| L4H3-T15 | Fail tests: store and routes | `server/src/appeal/appealStore.test.js`, `server/src/appeal/appealRoutes.test.js` | Fail: modules missing. Cases: list, detail, 404, unknown and malformed ids, 201, 400, 409 duplicate, 409 closed window (with an injected clock), the statement is never echoed, forged fields dropped, `serverNow` and `deadlineAt` come from the injected clock, 500 leaks nothing, the forum still works. | `test(server): add failing tests for appeal api` |
+| L4H3-T16 | Sample data, store, routes, mount | `server/src/appeal/dossierData.js`, `server/src/appeal/appealStore.js`, `server/src/appeal/appealRoutes.js`, `server/src/app.js`, `server/src/server.js` | Green. `appealStore` is an optional option of `createApp`; `server.js` passes it. | `feat(server): add appeal api with in-memory store` |
+| L4H3-T17 | Hooks | `src/lab4/appeal/useAppealSlaTimer.js`, `src/lab4/appeal/useDossier.js` | `useAppealSlaTimer` reads the store with `useSyncExternalStore`; `useDossier` loads with an `AbortController` and derives loading from a request key. | `feat(appeal): add sla timer and dossier hooks` |
+| L4H3-T18 | Appeal form | `src/lab4/appeal/AppealContext.js`, `AppealField.jsx`, `AppealForm.jsx` and their `.module.css` (minimal) | Labels, errors, counter, focus on the first invalid field, submit blocked after the window closes, receipt shown. | `feat(appeal): add context-driven appeal form` |
+| L4H3-T19 | Matrix and countdown views | `src/lab4/appeal/DisproportionalityMatrix.jsx`, `SlaCountdown.jsx` and their `.module.css` (minimal) | A captioned table with `th scope`; a `role="timer"` with `<time>`. | `feat(appeal): add matrix table and sla countdown` |
+| L4H3-T20 | Layout, detail, routes, nav | `src/lab4/appeal/DossierLayout.jsx`, `DossierView.jsx`, `.module.css`, `src/App.jsx`, `src/shell/navItems.js`, `src/shell/navItems.test.js` | `/dossier` and `/dossier/:playerID` load lazily; unknown ids give the 404 state. | `feat(appeal): add dossier routes with appeal form and sla timer` |
+| L4H3-T21 | Styles | `src/styles/tokens.css`, the `.module.css` files | Tokens only; 375 px and 320 px without horizontal scroll; focus visible; reduced motion safe. | `style(appeal): add responsive appeal tribunal styles` |
+| L4H3-T22 | README | `README.md` | Routes, API table, the SLA design, checks, known limits. | `docs(readme): document homework 3 appeal tribunal` |
+| L4H3-T23 | Evidence (author) | `docs/evidence/L4_HW3_AppealTribunal/`, `docs/prompt_logs/L4_HW3_AppealTribunal.txt` | Copied by the author. | `docs(evidence): archive homework 3 screenshots` |
+| L4H3-T24 | Audit (only if a real defect reached a commit) | `AI_FAILURE_AUDIT.md` | One entry per real defect, with the fixing commit. | `docs(audit): add ai failure audit for homework 3` |
+
+### Checks
+
+Run from the repository root. K1 to K5 above still apply.
+
+```sh
+# C1. no setInterval anywhere in the appeal code (prints nothing)
+grep -rn 'setInterval' src/lab4/appeal
+# C2. the clock is read in one module only (prints lines of createSlaClock.js and the tests)
+grep -rn 'Date\.now' src/lab4/appeal
+# C3. effects only in useDossier.js (prints the import and the one call there)
+grep -rn 'useEffect' src/lab4/appeal
+# C4. the visibilitychange listener is added and removed in the same module (prints 2 lines)
+grep -rn 'visibilitychange' src/lab4/appeal --include='*.js' --exclude='*.test.js'
+# C5. no memo for the matrix and no timer started in a component (prints nothing)
+grep -rnE 'useMemo|setTimeout' src/lab4/appeal --include='*.jsx'
+# C6. no deprecated key reads or in-place sorts (prints nothing)
+grep -rnE '\.sort\(|e\.key\b|keyCode' src/lab4/appeal
+# C7. the statement is never logged or echoed by the server (prints nothing)
+grep -rnE 'console\.|statement' server/src/appeal --include='*.js' --exclude='*.test.js' --exclude='validateAppeal.js' --exclude='appeal.contract.js'
+```
+
+Also: `npm test`, `npm --prefix server test`, `npm run lint` and `npm run build` pass before every non-test commit.
+
+### What the AI can and cannot verify
+
+- Can: unit tests (client and server), the API through the in-memory store with an injected clock, fake-timer tests of the clock store, lint, build, the C and K checks, and a headless Chrome run of the UI: routes and 404, the matrix, form validation, a successful appeal, a duplicate, a window closed with a short injected deadline, a client clock skewed by one hour (the countdown must still follow the server), a frozen and resumed page (CDP lifecycle), and 375 px and 320 px.
+- Cannot: a real background tab throttled by a desktop browser for minutes (headless Chrome is not throttled the same way), Lighthouse, a real phone or a screen reader, and anything about real players or real cases (the data is invented).
