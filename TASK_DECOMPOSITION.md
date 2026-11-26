@@ -112,3 +112,57 @@ grep -rnE 'mongodb(\+srv)?://' src server/src --include='*.js' --include='*.jsx'
 # K5. No http:// in the client (the dev origin lives in .env.example and vite.config.js)
 grep -rn 'http://' src --include='*.js' --include='*.jsx' --include='*.css'
 ```
+
+## Part 8. Homework 1: Photo & Evidence Gallery SPA (slides 19 and 29)
+
+Homework 1 here means the first of the three Lab 4 homeworks (slide 19). The slides number the three homeworks inconsistently (slide 19 "HOMEWORK 1", slide 20 "HOMEWORK 1", slide 21 "HOMEWORK 2", slide 29 "Homework 3"); this WBS calls them HW1 (gallery), HW2 (swipe deck) and HW3 (appeal tribunal), by content. Part 8 realises decision D11 for HW1 only.
+
+Goal (slide 19): deep linking with `useSearchParams()` for the category filter and the modal photo view; the native HTML `<dialog>` as the lightbox; WCAG 2.2 AA and a 100/100 Lighthouse score (the score is run by the author). Code contract (slide 29): `PhotoGalleryLayout.jsx` with `useSearchParams`, `photoId` read from the URL, a `<dialog>` ref, `showModal()` and `close()`, and a close handler that syncs back to the URL.
+
+### Decisions
+
+| ID | Question | Decision |
+| --- | --- | --- |
+| H1-D1 | Where | `src/lab4/gallery/` (rule 9). Route `/gallery`, nav label "L4 HW1 Gallery". `/hw1` is already the Lab 3 drum kit, so it is not reused. |
+| H1-D2 | Data | 8 sample photos in 4 categories (`screenshots`, `chat-logs`, `replays`, `reports`), frozen in `src/lab4/gallery/photos.js`. Images are local SVG illustrations in `public/gallery/` (no CDN, no remote URL). The UI and the README say "Sample images, not real evidence." |
+| H1-D3 | URL contract | Two query parameters: `category` (`all` or a category id) and `photoId` (slide 29 name). Both are untrusted: an unknown category falls back to `all`; an unknown `photoId` keeps the dialog closed and shows a `role="alert"` message. A photo opens by its id whatever the category filter is, so a shared `?photoId=` link works on its own. |
+| H1-D4 | Deviation from slide 29 | Slide 29 closes with `setSearchParams({})`, which also drops the category filter. Here only `photoId` is removed, so deep-linked filters survive closing the lightbox. |
+| H1-D5 | History | Opening a photo pushes a history entry (Back closes the lightbox). Closing from the dialog replaces the entry, so Back never reopens it. Category changes push an entry. |
+| H1-D6 | The one effect | Opening and closing the native dialog is imperative DOM, so one effect keyed on the selected photo calls `showModal()` or `close()` (slide 29 does the same). It sets no state, starts no timer or listener, and reads the dialog only through a ref. Focus goes back to the link that opened the photo from the dialog's close handler, never from an effect. |
+| H1-D7 | Markup | Thumbnails are links (`<Link>`), because opening a photo is a URL change; the whole card is the link and its name is the photo title (thumbnail `alt=""`, the full `alt` is on the lightbox image). The filter is a `fieldset` of labelled radios. No `div`. |
+| H1-D8 | Dependencies | None added. `useSearchParams` comes from `react-router` 7. Lighthouse, 375px and screen-reader checks are run by the author. |
+| H1-D9 | Git | The worktree link was broken when the Lab 3 and Lab 4 folders moved into `HomeWork_WEBDEV\`; `git worktree repair` fixed it, and the commits below are made in this order on branch `lab4`. One commit per row, in row order (T16 is the author's). |
+
+### Tasks
+
+| ID | Task | Files | Done when | Commit |
+| --- | --- | --- | --- | --- |
+| L4H1-T01 | Add this Part | `TASK_DECOMPOSITION.md` | Part 8 present. | `docs(spec): add lab 4 homework 1 plan` |
+| L4H1-T02 | Sample photo assets | `public/gallery/*.svg` (8 files) | Each file is a valid SVG, 640 by 400, under 2 KB. | `chore(gallery): add sample photo assets` |
+| L4H1-T03 | JSDoc contract | `src/lab4/gallery/gallery.contract.js` | Typedefs `Photo`, `PhotoCategory`, `GalleryParams`. | `feat(gallery): add gallery contract` |
+| L4H1-T04 | Fail test for the photo data | `src/lab4/gallery/photos.test.js` | Fails: module missing. | `test(gallery): add failing test for photo data` |
+| L4H1-T05 | `PHOTOS`, `CATEGORIES`, `ALL_CATEGORY` | `src/lab4/gallery/photos.js` | Green. Frozen, unique ids, every category known, every `src` exists in `public/`. | `feat(gallery): add photo and category data` |
+| L4H1-T06 | Fail test for the URL helpers | `src/lab4/gallery/galleryParams.test.js` | Fails: module missing. | `test(gallery): add failing test for url params` |
+| L4H1-T07 | `parseGalleryParams`, `updateGalleryParams` | `src/lab4/gallery/galleryParams.js` | Green. Unknown category gives `all`; update keeps other keys and never mutates its input. | `feat(gallery): add url param helpers` |
+| L4H1-T08 | Fail test for the selectors | `src/lab4/gallery/selectPhotos.test.js` | Fails: module missing. | `test(gallery): add failing test for photo selectors` |
+| L4H1-T09 | `selectPhotosByCategory`, `findPhotoById` | `src/lab4/gallery/selectPhotos.js` | Green. Non-string id gives `null`; input is never mutated. | `feat(gallery): add photo selectors` |
+| L4H1-T10 | `PhotoLightbox` (native dialog) | `src/lab4/gallery/PhotoLightbox.jsx`, `.module.css` (minimal) | `showModal()` in the one effect; `aria-labelledby`; Close button; backdrop click and Escape close it. | `feat(gallery): add native dialog lightbox` |
+| L4H1-T11 | `CategoryFilter` | `src/lab4/gallery/CategoryFilter.jsx`, `.module.css` (minimal) | Radios with `useId()` labels; value comes from props. | `feat(gallery): add category filter` |
+| L4H1-T12 | `PhotoGrid` | `src/lab4/gallery/PhotoGrid.jsx`, `.module.css` (minimal) | One link per photo, keyed by id; `width` and `height` on every image. | `feat(gallery): add photo grid` |
+| L4H1-T13 | `PhotoGalleryLayout`, route, nav | `src/lab4/gallery/PhotoGalleryLayout.jsx`, `.module.css` (minimal), `src/App.jsx`, `src/shell/navItems.js`, `src/shell/navItems.test.js` | `/gallery?category=replays&photoId=...` opens the lightbox; closing keeps `category`. | `feat(gallery): add url-driven gallery route` |
+| L4H1-T14 | Styles | `src/styles/tokens.css`, the four `.module.css` files | Tokens only (no hard-coded colour outside `tokens.css`); no horizontal scroll at 375px and 320px; focus visible; `prefers-reduced-motion` safe. | `style(gallery): add responsive gallery and lightbox styles` |
+| L4H1-T15 | README | `README.md` | Route, URL contract, checks, known limits. | `docs(readme): document homework 1 gallery` |
+| L4H1-T16 | Evidence (author) | `docs/evidence/L4_HW1_Gallery/`, `docs/prompt_logs/L4_HW1_Gallery.txt` | Copied by the author. | `docs(evidence): archive homework 1 screenshots` |
+
+### Checks
+
+Run from the repository root. K1 to K5 above still apply.
+
+```sh
+# G1. showModal is called in exactly one place (prints 1 line)
+grep -rn 'showModal' src --include='*.jsx'
+# G2. useSearchParams is used only by the gallery layout (prints 2 lines: import and call)
+grep -rn 'useSearchParams' src --include='*.jsx' --include='*.js'
+# G3. the slide 29 close handler that drops every parameter is not used (prints nothing)
+grep -rn 'setSearchParams({})' src
+```
