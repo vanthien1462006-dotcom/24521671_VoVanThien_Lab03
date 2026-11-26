@@ -168,3 +168,116 @@ grep -rn 'useSearchParams' src --include='*.jsx' --include='*.js'
 # G3. the slide 29 close handler that drops every parameter is not used (prints nothing)
 grep -rn 'setSearchParams({})' src
 ```
+
+## Part 9. Homework 2: Card-Swipe Deck, "Hẹn Hò Nhưng Không Yêu" edition (slides 20, 30 and 31)
+
+Homework 2 here means the second of the three Lab 4 homeworks by content (slide 20; the slides print "Homework 1/4" on it). It extends the Lab 3 Bonus (same title) from a client-only state machine to a full-stack app.
+
+Goal (slide 20): a dual keyboard and pointer swipe deck, a LIFO undo stack, an asymmetric score computed only as derived state, and a persistence layer on Express and Mongoose 8 with async/await. Code contracts: slide 30 (frontend: key handlers, pointer gestures, history stack, score) and slide 31 (backend: `process.env.MONGODB_URI` guard, `mongoose.connect` without deprecated flags, `GET /api/profiles` with `.lean()`, `POST /api/swipe` with try/catch). General rules from slides 3 and 8 apply: contract first, then a failing test, then the code, then a refactor, and client and server validation must match.
+
+### Needs the author's answer before the marked tasks
+
+| # | Question | Blocks | My proposal |
+| --- | --- | --- | --- |
+| Q1 | Approve the new package `mongoose@^8.24` in `server/package.json` (rule 1 in `project-rules.md` needs approval for any package beyond `express` and `cors`). No other package is added (no `mongodb-memory-server`, no `supertest`). | L4H2-T02 | Approve. The slide asks for Mongoose 8, and nothing else is needed. |
+| Q2 | Where does MongoDB run? This machine has no `mongod`, and Docker Desktop is installed but its engine is not running. | L4H2-T21, T22 and every real-database check | Docker Desktop with `docker run -d -p 27017:27017 mongo:8`, or a free Atlas cluster. The URI goes only in `.env`, never in git. |
+| Q3 | The slides define LIKE as +10 and "everything else" as -5, and say nothing about the up key. Proposal: ArrowUp is SUPERLIKE, +25. A "Start over" button clears the player's history so the demo can be repeated. | L4H2-T06, T18 | Accept both. |
+
+### Decisions
+
+| ID | Question | Decision |
+| --- | --- | --- |
+| H2-D1 | Where | Client `src/lab4/swipe/`, route `/swipe`, nav label "L4 HW2 Swipe Deck". Server code in `server/src/swipe/`, mounted in the existing Express app. |
+| H2-D2 | What is reused from earlier labs | The Lab 3 Bonus idea and title (`situationshipModel.js` pure model, `lang="vi"` phrases, append-only logs with `crypto.randomUUID()`). `getInitials` for avatars (no remote images). The `forumApi.js` pattern for the API client (injectable `fetchImpl`, `AbortSignal`, `{ error }` bodies). The `useForumMessages` pattern for loading (one `AbortController` per request, `signal.aborted` checks, loading derived from a request key). The `validateMessage.js` pattern for server validation (copy only allowed fields). The Lab 3 key guard idea of `shouldHandleKey` (ignore `repeat`, modifiers, editable targets). The vite `/api` proxy and the `createApp` factory (tests start it on a random port). |
+| H2-D3 | Actions and score | `LIKE` (ArrowRight, drag right) +10. `NOPE` (ArrowLeft, drag left) -5. `SUPERLIKE` (ArrowUp, drag up) +25. `UNDO` (Backspace) is not a swipe: it pops the stack. The score is one `reduce` over an explicit table `SCORE_BY_ACTION`; an unknown action throws. There is no `else` branch that scores "anything else" (see H2-D13). |
+| H2-D4 | State shape | The only raw state is `history`, a list of saved swipes `{ id, profileId, action }` in order. Everything else is derived in render: `currentProfile = profiles[history.length]`, `remaining`, `score`, counts per action, `isFinished`. No second `useState` for the score or the index, and no effect that copies one state into another. |
+| H2-D5 | LIFO stack | A pure module with `pushSwipe(history, entry)`, `popSwipe(history)` (returns `{ history, removed }`, or `removed: null` when empty) and `peekSwipe(history)`. Lists are frozen and replaced, never mutated. Undo needs the removed entry, which is why the slide's `slice(0, -1)` alone is not enough. |
+| H2-D6 | Persistence flow | The server is the source of truth, and the client is pessimistic: a handler sets `busy`, awaits the request, then appends or pops with the record the server returned. Input is ignored while `busy`. Optimistic updates were rejected: a failed POST needs a rollback, and a fast undo can race an unsaved swipe. |
+| H2-D7 | Who is the player | An anonymous `playerId` (`crypto.randomUUID()`) kept in `localStorage` under `lab4.swipe.playerId`. The stored value is untrusted: it is accepted only if it matches the UUID pattern. Storage errors (private window) are caught and the id then lives in memory only. There is no login; anyone who knows an id can read that player's swipes. This is a documented limit. |
+| H2-D8 | API contract | `GET /api/profiles` returns `200 [{ id, name, age, bio }]` in deck order. `GET /api/swipe?playerId=` returns `200` with that player's swipes, oldest first. `POST /api/swipe` with `{ playerId, profileId, action }` returns `201` with the saved record, `400` for an invalid body, `404` for an unknown profile, `409` if that player already swiped that profile. `DELETE /api/swipe/last?playerId=` removes the player's newest swipe and returns `200` with it, or `404` when there is nothing to undo (the server enforces LIFO, so the client cannot remove a middle entry). `DELETE /api/swipe?playerId=` clears the player's history and returns `204`. Every error body is `{ error }` with a fixed message. The first two paths are the slide's; the last two are additions (Q3). |
+| H2-D9 | Validation parity | One rule set on both sides: `action` is one of the three actions; `playerId` is a UUID and `profileId` is a non-empty string of at most 64 characters; extra fields are dropped. The client validator runs before each request; the server validator runs before each write. A parity test feeds the same table of cases to both validators and expects the same verdicts. |
+| H2-D10 | Mongoose 8 | `await mongoose.connect(process.env.MONGODB_URI)` with no `useNewUrlParser` or `useUnifiedTopology`; `serverSelectionTimeoutMS` set so a wrong URI fails fast; `.lean()` on reads; `await Model.init()` before listening, so the unique index exists; `SIGINT` and `SIGTERM` call `mongoose.disconnect()`. No callback API. `Swipe` has a `_id` that is a `crypto.randomUUID()` string (rule 6), a unique compound index on `(playerId, profileId)` and `createdAt` only. A stored swipe is built from the validated fields, never from `req.body` (the slide's `Swipe.create(req.body)` is mass assignment). |
+| H2-D11 | Errors | A Mongoose `ValidationError` is `400`, a duplicate key (`code 11000`) is `409`, an unknown profile is `404`, anything else is `500 { error: 'Internal server error' }`. The slide returns `err.message` with `400` for every failure, which leaks internals and calls a database outage a client error. Express 5 forwards a rejected async handler to the error handler, so a `try/catch` is used only where an error is mapped. |
+| H2-D12 | Repository split | Routes talk to a repository object (`listProfiles`, `hasProfile`, `listSwipes`, `createSwipe`, `deleteLastSwipe`, `deleteAllSwipes`). Two implementations: an in-memory one (tests and the AI's browser check) and a Mongoose one. This lets the API be tested without MongoDB. The Mongoose side is checked offline with `validateSync()`, plus one integration test that is skipped unless `MONGODB_URI_TEST` is set. |
+| H2-D13 | Deviations from the slide snippets | See the table below. |
+| H2-D14 | Input handling | Key and pointer handlers are props on one focusable `<section tabIndex={0}>`, so no `window` listener and no effect for input. Keys are read with `e.code` (Lab 3 rule), `e.repeat` is ignored so a held key cannot swipe or undo the whole deck, and the handler calls `preventDefault` on the four keys. A pointer gesture starts on `pointerdown` (primary pointer, main button), stores the start point in a `ref`, uses `setPointerCapture`, and is decided on `pointerup` by a pure function: the larger axis wins, the 50 px threshold from the slide applies, and a smaller move is not a swipe. `pointercancel` clears the start. The card has `touch-action: none` so a vertical swipe is not taken by page scroll. |
+| H2-D15 | Accessibility (WCAG 2.2 AA) | Dragging has a single-pointer alternative (SC 2.5.7): visible buttons Nope, Like, Super like, Undo and Start over, each at least 24 by 24 px. The keys are listed in visible text. The result of each action is announced in one `<output role="status" aria-live="polite">` ("Liked Mai. Score 10."). Failures use `role="alert"`. When the last card is swiped, focus moves to the deck from the handler (a ref, not an effect). Motion respects `prefers-reduced-motion`. Contrast 4.5:1, no horizontal scroll at 375 px and 320 px. |
+| H2-D16 | Data | 8 invented adult profiles (name, age 21 to 35, one-line bio) in `server/src/swipe/seedProfiles.js`, marked as sample data in the UI. An explicit script `npm --prefix server run seed` upserts them by a stable key; the server never seeds at startup. Avatars are initials on a token colour. The Vietnamese title and any short phrase are wrapped in `lang="vi"`; no lyrics. |
+| H2-D17 | Configuration | `.env.example` gains `MONGODB_URI` (a local example value, no credentials) and a commented `MONGODB_URI_TEST`. `server.js` stops with a clear error when `MONGODB_URI` is missing (the slide's guard). Consequence: after this homework `npm run server` needs a reachable MongoDB for the forum too. |
+| H2-D18 | Git | One commit per task row below, in row order, on branch `lab4`. The `test(...)` rows are expected red for their own module only; build and lint stay green. T28 and T29 follow the author-only rules. |
+
+### Deviations from the slide 30 and 31 snippets (each is covered by a test or a check)
+
+| Slide snippet | Problem | Fix |
+| --- | --- | --- |
+| `<div onKeyDown={...} tabIndex={0}>` | `div` is banned in `src/`; a focusable region with no label or instructions | `<section aria-label tabIndex={0}>` with visible key instructions |
+| `if (e.key === 'ArrowLeft')` | Lab 3 rule: `e.code`; no `repeat` guard, so holding a key swipes every card | `keyToAction(e.code)` and `if (e.repeat) return` |
+| `handlePointerUp` reads `startPos.x` | `startPos` is `null` after a release outside the card or a cancel: `TypeError` | Start point in a `ref`, null check, `pointercancel`, pointer capture |
+| `useState` for the start point | An extra render on every `pointerdown` | `ref` |
+| Pointer handles only left and right | The up swipe exists only on the keyboard | `classifySwipe(dx, dy)` returns left, right or up |
+| `if (action.type === 'LIKE') +10 else -5` | A SUPERLIKE (or any typo) silently scores -5 | Explicit `SCORE_BY_ACTION`; unknown action throws |
+| `setHistory(prev => prev.slice(0, -1))` | The server is not told which swipe was undone | `popSwipe` returns the removed entry; `DELETE /api/swipe/last` |
+| `Swipe.create(req.body)` | Mass assignment | Validate, then create from the picked fields |
+| `res.status(400).json({ error: err.message })` for all errors | Leaks internals; a database outage is not a client error | 400, 404, 409 or 500 with fixed messages |
+| `throw` at the top of `server.js`, then an unguarded `await mongoose.connect` | An unreadable crash on a wrong URI | One startup function: guard, connect with a timeout, log a clear error, exit non-zero |
+
+### Tasks
+
+| ID | Task | Files | Done when | Commit |
+| --- | --- | --- | --- | --- |
+| L4H2-T01 | Add this Part | `TASK_DECOMPOSITION.md` | Part 9 present. | `docs(spec): add lab 4 homework 2 plan` |
+| L4H2-T02 | Add Mongoose 8 (after Q1) | `server/package.json`, `server/package-lock.json` | `mongoose` `^8.24` is the only new package; `npm --prefix server test` still passes. | `chore(deps): add mongoose 8 to the server package` |
+| L4H2-T03 | Env template | `.env.example` | `MONGODB_URI` and `MONGODB_URI_TEST` documented, no secret. | `chore(repo): add mongodb uri to env template` |
+| L4H2-T04 | Contracts | `src/lab4/swipe/swipe.contract.js`, `server/src/swipe/swipe.contract.js` | Typedefs `Profile`, `SwipeAction`, `SwipeRecord`, `SwipeInput`, `SwipeRepository`. | `feat(swipe): add swipe contracts` |
+| L4H2-T05 | Fail test: score | `src/lab4/swipe/swipeRules.test.js` | Fails: module missing. | `test(swipe): add failing test for asymmetric score` |
+| L4H2-T06 | Actions, score table, `scoreOf`, `statsOf` | `src/lab4/swipe/swipeRules.js` | Green. +10, -5, +25; empty history is 0; unknown action throws; input is not mutated. | `feat(swipe): add asymmetric score derived from history` |
+| L4H2-T07 | Fail test: LIFO stack | `src/lab4/swipe/swipeHistory.test.js` | Fails: module missing. | `test(swipe): add failing test for lifo undo stack` |
+| L4H2-T08 | `pushSwipe`, `popSwipe`, `peekSwipe` | `src/lab4/swipe/swipeHistory.js` | Green. Last in, first out; pop on empty gives `removed: null`; results frozen. | `feat(swipe): add lifo undo stack` |
+| L4H2-T09 | Fail test: input mapping | `src/lab4/swipe/swipeInput.test.js` | Fails: module missing. | `test(swipe): add failing test for swipe input mapping` |
+| L4H2-T10 | `classifySwipe`, `keyToAction` | `src/lab4/swipe/swipeInput.js` | Green. 50 px is the edge; the larger axis wins; unknown code gives null; `Backspace` gives `UNDO`. | `feat(swipe): add swipe gesture and key mapping` |
+| L4H2-T11 | Fail test: validation and player id | `src/lab4/swipe/validateSwipe.test.js`, `src/lab4/swipe/playerId.test.js` | Fail: modules missing. | `test(swipe): add failing test for swipe validation and player id` |
+| L4H2-T12 | `validateSwipe`, `readPlayerId`, `ensurePlayerId` | `src/lab4/swipe/validateSwipe.js`, `src/lab4/swipe/playerId.js` | Green. A bad stored id is replaced; a throwing storage still returns an id. | `feat(swipe): add swipe validation and player id` |
+| L4H2-T13 | Fail test: API client | `src/lab4/swipe/swipeApi.test.js` | Fails: module missing. | `test(swipe): add failing test for swipe api client` |
+| L4H2-T14 | API client | `src/lab4/swipe/swipeApi.js` | Green with a fake `fetchImpl`: URLs, bodies, status mapping, abort not swallowed. | `feat(swipe): add swipe api client` |
+| L4H2-T15 | Fail test: server validation and parity | `server/src/swipe/validateSwipe.test.js` | Fails: module missing. | `test(server): add failing test for swipe validation parity` |
+| L4H2-T16 | Server validator | `server/src/swipe/validateSwipe.js` | Green; the same case table gives the same verdicts as the client validator. | `feat(server): add swipe validation` |
+| L4H2-T17 | Fail tests: memory repository and routes | `server/src/swipe/memorySwipeRepository.test.js`, `server/src/swipe/swipeRoutes.test.js` | Fail: modules missing. Cases: 201, 400 (action, ids, body not an object), 404, 409, order, LIFO delete, empty undo 404, reset 204, forged `_id` and `createdAt` dropped, error bodies never contain a stack. | `test(server): add failing tests for swipe api` |
+| L4H2-T18 | Memory repository, routes, mount | `server/src/swipe/memorySwipeRepository.js`, `server/src/swipe/swipeRoutes.js`, `server/src/app.js` | Green. The swipe repository is an optional option of `createApp`, so the 14 existing server tests stay green. | `feat(server): add swipe api routes with memory repository` |
+| L4H2-T19 | Fail test: Mongoose models | `server/src/swipe/models.test.js` | Fails: modules missing. Offline `validateSync()` cases: bad action, missing fields, unique index declared, id is a UUID string, no `updatedAt`. | `test(server): add failing test for mongoose models` |
+| L4H2-T20 | Models and Mongoose repository | `server/src/swipe/Profile.js`, `server/src/swipe/Swipe.js`, `server/src/swipe/mongoSwipeRepository.js` | Green offline. `.lean()` reads; `11000` maps to a conflict result. | `feat(server): add mongoose models and repository` |
+| L4H2-T21 | Startup, seed (after Q2) | `server/src/server.js`, `server/src/swipe/seedProfiles.js`, `server/src/swipe/seed.js`, `server/package.json` | Missing `MONGODB_URI` stops with a clear error; connect has a timeout; indexes ready before listen; seed is idempotent; shutdown disconnects. | `feat(server): connect mongoose 8 and seed profiles` |
+| L4H2-T22 | Gated integration test (after Q2) | `server/src/swipe/mongoSwipeRepository.integration.test.js` | Skipped when `MONGODB_URI_TEST` is unset; otherwise runs the repository against a real database and drops its test collection. | `test(server): add gated mongodb integration test` |
+| L4H2-T23 | Deck hook | `src/lab4/swipe/useSwipeDeck.js` | One effect loads profiles and history with an `AbortController`; loading derived from a request key; `swipe`, `undo` and `reset` set `busy` and await the API. | `feat(swipe): add swipe deck hook with abort cleanup` |
+| L4H2-T24 | Presentational parts | `src/lab4/swipe/ProfileCard.jsx`, `SwipeControls.jsx`, `ScoreBoard.jsx` and their `.module.css` (minimal) | Card shows initials, name, age, bio; buttons have `type="button"` and visible text; the scoreboard is a derived `<output>`. | `feat(swipe): add profile card, controls and scoreboard` |
+| L4H2-T25 | Deck view, route, nav | `src/lab4/swipe/SwipeDeck.jsx`, `.module.css` (minimal), `src/App.jsx`, `src/shell/navItems.js`, `src/shell/navItems.test.js` | `/swipe` loads lazily; keys and pointer swipe; Backspace undoes; focus returns to the deck at the end. | `feat(swipe): add swipe deck route with keyboard and pointer input` |
+| L4H2-T26 | Styles | `src/styles/tokens.css`, the `.module.css` files | Tokens only; 375 px and 320 px without horizontal scroll; focus visible; reduced motion safe. | `style(swipe): add responsive swipe deck styles` |
+| L4H2-T27 | README | `README.md` | Route, API table, how to run MongoDB and the seed, checks, known limits. | `docs(readme): document homework 2 swipe deck` |
+| L4H2-T28 | Evidence (author) | `docs/evidence/L4_HW2_SwipeDeck/`, `docs/prompt_logs/L4_HW2_SwipeDeck.txt` | Copied by the author. | `docs(evidence): archive homework 2 screenshots` |
+| L4H2-T29 | Audit (only if a real defect reached a commit) | `AI_FAILURE_AUDIT.md` | One entry per real defect, with the fixing commit. | `docs(audit): add ai failure audit for homework 2` |
+
+### Checks
+
+Run from the repository root. K1 to K5 above still apply (K4 must stay empty: no connection string in `src` or `server/src`).
+
+```sh
+# S1. no deprecated Mongoose connection flags (prints nothing)
+grep -rnE 'useNewUrlParser|useUnifiedTopology' server/src
+# S2. no Mongoose callback API (prints nothing)
+grep -rnE '\.exec\(\s*(\(|function)' server/src
+# S3. no mass assignment from the request body (prints nothing)
+grep -rnE 'create\(\s*req\.body|\.\.\.req\.body' server/src
+# S4. the env guard lives in server.js; tests may set it (prints server.js lines only)
+grep -rn 'process.env.MONGODB_URI' server/src
+# S5. client effects: only the deck hook (prints the hook lines)
+grep -rn 'useEffect' src/lab4/swipe
+# S6. no in-place array sort and no deprecated key reads in the client swipe code (prints nothing)
+grep -rnE '\.sort\(|e\.key\b|keyCode|\.which' src/lab4/swipe
+```
+
+Also: `npm test`, `npm --prefix server test`, `npm run lint` and `npm run build` pass before every non-test commit.
+
+### What the AI can and cannot verify
+
+- Can: unit tests (client and server), the API through the memory repository, offline Mongoose validation, lint, build, K and S checks, and a headless Chrome run of the full UI (keys, drag, buttons, undo, reload restore, 375 px and 320 px) against the API started on the memory repository from a throw-away script.
+- Cannot, unless the author provides a database (Q2): the real MongoDB round trip, indexes and the seed.
+- Cannot: Lighthouse, UniKey Telex behaviour of Backspace (Lab 3 audit #03 showed that UniKey sends extra Backspace events; the Undo button is the fallback and the limit goes into the README), touch gestures on a real phone, screen readers.
